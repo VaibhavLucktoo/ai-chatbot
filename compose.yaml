@@ -1,0 +1,24 @@
+services:
+  db:
+    image: pgvector/pgvector:0.8.6-pg16-trixie
+    container_name: postgres_db
+    environment:
+      POSTGRES_DB: chatbot_db
+      POSTGRES_USER: chatbot_admin
+      POSTGRES_PASSWORD: your_password_here
+    ports:
+      - "127.0.0.1:5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U chatbot_admin -d chatbot_db
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  postgres_data:
