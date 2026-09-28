@@ -140,3 +140,85 @@ Alembic -> synchronous Psycopg connection -> PostgreSQL tables
 - [ ] Verify a small multipage PDF end to end: page attribution, chunk ordering, nonempty content, 384-dimensional embeddings, persisted rows, and final document status. Cover duplicate uploads, invalid PDFs, and failures without leaving a partially completed document marked `ready`.
 
 **Milestone acceptance:** A valid PDF can be uploaded and stored with traceable chunks and compatible embeddings; repeat uploads follow a defined deduplication policy; failures produce consistent responses and database state. Retrieval and chat integration follow this ingestion milestone.
+
+## 6. Foundation Verification — 2026-09-28 (Asia/Kolkata)
+
+Step 1 is complete. The results below were checked against the local running system;
+the earlier sections describe the original 2026-09-24 implementation review.
+
+### Configuration and documentation
+
+- Added the database credentials and local host/port settings to `.env.example`.
+- Updated Compose to read database credentials and the published port from `.env`.
+  Its health check now uses the container's configured database name and user.
+- Confirmed the existing local `.env` matched the previous Compose configuration.
+- Added local setup, migration, and API startup instructions to `README.md`.
+
+### Verified results
+
+- Compose configuration validates with both `.env` and `.env.example`.
+- Docker Desktop is running, and `postgres_db` reports healthy on localhost port `5433`.
+- PostgreSQL reports the `vector` extension at version `0.8.6`.
+- `alembic upgrade head` succeeded; the database was already at revision `7f7483ec3680`.
+- `alembic current` reports `7f7483ec3680 (head)`; `alembic check` detects no schema changes.
+- The API started through `run.py`; `/v1/health` returned HTTP 200 with `ok`, and
+  `/v1/ready` returned HTTP 200 with `ready`.
+- Downloaded the configured FastEmbed model into the ignored `.cache/fastembed`
+  directory and generated two document embeddings plus one query embedding.
+  All three vectors contain 384 finite values and have L2 norm 1 within `1e-6`.
+- `git diff --check` passed.
+
+**Next step:** Implement PDF extraction with page numbers and explicit handling for
+invalid, encrypted, empty, and image-only documents, then connect it to chunking
+and the upload workflow described above.
+
+## 7. PDF Ingestion Complete — 2026-09-28 (Asia/Kolkata)
+
+Step 2 is complete. PDF upload, extraction, chunking, inference, and persistence
+have been verified together using the real embedding model and PostgreSQL.
+
+### Final behavior
+
+- `POST /v1/documents/upload` validates file metadata and PDF bytes. Invalid,
+  encrypted, textless, and unsupported PDFs return controlled errors. Parser
+  failures such as unsupported stream filters now return HTTP 422.
+- Text retains its one-based source page. Chunking preserves original text,
+  uses 350-token windows with 40-token overlap, and disables tokenizer truncation.
+  Documents exceeding the explicit limits are rejected without silent truncation.
+- SHA-256 deduplication returns ready documents without repeating extraction or
+  inference. Database claims prevent concurrent requests from indexing the same
+  bytes. A pending duplicate returns HTTP 409 with `Retry-After: 5`.
+- Valid documents transition from `pending` to `ready` or `failed`. Failed
+  uploads can be retried using the original document ID and filename.
+- Inference batches contain at most 32 chunks and use the internal Pydantic
+  batch contract. Vectors must be finite, normalized, and 384-dimensional.
+- Storage commits every chunk and the ready status atomically, using write
+  batches of at most 256 chunks. Parsing and inference hold no database connection.
+  Ordinary processing failures and cancellation leave retryable failed records.
+- New ready documents return HTTP 201. Ready duplicates and successful retries
+  return HTTP 200 with `already_existed=true`. Model/storage failures return 503.
+- The upload response uses `DocumentUploadResponse` with `document_id`, filename,
+  page count, chunk count, ready status, and the duplicate flag.
+- Both module and direct-file CLI invocation work. File reads are bounded by the
+  PDF size limit. README now documents uploads, statuses, limits, and test commands.
+
+### Verification
+
+The complete suite passed: **27 tests, zero failures, zero skips**, with
+`RUN_DB_TESTS=1`, `RUN_MODEL_TESTS=1`, and deprecation warnings treated as errors.
+Tests cover page attribution, long-page text coverage, invalid/scanned/encrypted
+PDFs, API statuses, duplicate and concurrent uploads, failed retries, cancellation,
+invalid vectors, and rollback after the second write batch of a 300-chunk upload.
+The full model test verifies actual BGE vectors and persisted database rows.
+Database tests create and remove isolated schemas rather than altering uploaded
+documents. No schema migration was needed for the existing document statuses.
+
+Automatic recovery after a hard process kill is outside this synchronous upload
+milestone. If an upload is abandoned in `pending`, an operator must first ensure
+no worker owns it, then mark it `failed` before retrying. The same applies when a
+database outage prevents failure cleanup. This limitation is documented in README.
+
+**Progress:** Steps 1 and 2 are complete. Next is vector similarity retrieval:
+embed a query, search chunks belonging to ready documents, and return matching
+text with filename and page references. Chat and application containerization
+remain later milestones.

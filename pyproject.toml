@@ -6,9 +6,16 @@ dependencies = [
     "alembic>=1.20.0",
     "fastapi>=0.141.1",
     "fastembed>=0.8.1",
+    "huggingface-hub>=1.33.0",
     "pgvector>=0.5.0",
     "psycopg[binary]>=3,<4",
     "pydantic-settings>=2.15.0",
+    "pypdf>=6.19.0",
+    "python-multipart>=0.0.32",
     "sqlalchemy[asyncio]>=2.0,<2.1",
+    "tokenizers>=0.23.2",
     "uvicorn>=0.53.0",
 ]
+
+[dependency-groups]
+dev = ["httpx>=0.28.1"]
