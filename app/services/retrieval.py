@@ -3,6 +3,8 @@
 import math
 from dataclasses import dataclass
 
+from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.providers.base import BaseEmbeddingProvider
 from app.storage.db import Database
 from app.storage.documents import StoredChunkResult, search_similar_chunks
@@ -23,7 +25,7 @@ class RetrievalResult:
 
 
 async def retrieve_chunks(
-    database: Database,
+    database: Database | AsyncSession,
     embeddings: BaseEmbeddingProvider,
     query: str,
     top_k: int = 5,

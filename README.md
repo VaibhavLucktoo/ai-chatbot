@@ -2,7 +2,8 @@
 
 A FastAPI backend for answering questions from documents. PDF ingestion includes
 page-aware extraction, token-aware chunking, FastEmbed embeddings, PostgreSQL
-persistence, duplicate detection, and retries. Retrieval and chat are next.
+persistence, duplicate detection, and retries. Vector retrieval and the RAG chat
+endpoint return answers with document and page references.
 
 ## Local setup
 
@@ -24,6 +25,63 @@ both the API and Docker Compose read these values. The API connects to
 
 The database volume keeps its data between container restarts. Changing database
 credentials in `.env` does not change credentials in an existing database volume.
+
+### Configure the language model
+
+The example configuration runs Llama locally through Ollama, with no paid API
+account or API key. Questions and retrieved passages are sent to the local
+Ollama server using the existing HTTPX client.
+
+Install [Ollama for Windows](https://docs.ollama.com/windows), or use:
+
+```powershell
+winget install --id Ollama.Ollama --exact --source winget
+```
+
+Start Ollama and open a new terminal so the `ollama` command is on PATH. Download
+the model:
+
+```powershell
+ollama pull llama3.2:1b-instruct-q4_K_M
+ollama list
+```
+
+In `.env`, use:
+
+```dotenv
+LLM_BASE_URL=http://127.0.0.1:11434/v1
+LLM_MODEL=llama3.2:1b-instruct-q4_K_M
+LLM_API_KEY=
+```
+
+Leave `LLM_API_KEY` empty for local Ollama. The quantized
+[Llama 3.2 1B model](https://ollama.com/library/llama3.2:1b-instruct-q4_K_M)
+is about 808 MB to download; inference needs additional memory. It is a small
+starting model for testing the RAG workflow. Evaluate answer quality on your
+documents before relying on it. Close unused applications on machines with
+limited RAM. With more available memory, pull `llama3.2:3b` and update `LLM_MODEL`.
+
+Keep Ollama running while using chat. If its background application is not
+running, start `ollama serve` in a separate terminal. The API has a 30-second
+generation deadline; model loading and longer CPU-only answers can exceed it.
+After downloading, you can load the model before testing chat:
+
+```powershell
+ollama run llama3.2:1b-instruct-q4_K_M "Reply with one word: Ready"
+```
+
+Restart the API after changing configuration. Shell environment variables override
+`.env`. Health/readiness checks verify the API and database, not LLM credentials.
+
+For hosted Llama, Together supports `LLM_BASE_URL=https://api.together.ai/v1`
+and `LLM_MODEL=meta-llama/Llama-3.3-70B-Instruct-Turbo`, with a Together key in
+`LLM_API_KEY` and account credits. Check its current
+[model availability and pricing](https://docs.together.ai/docs/serverless/models).
+Hosted generation sends the question and retrieved document passages to that
+provider. Embeddings and document storage remain local.
+For Groq, check [its deprecation notices](https://console.groq.com/docs/deprecations):
+Llama 3.1 8B and Llama 3.3 70B were retired for free/developer accounts on
+August 16, 2026, and remain available only under qualifying enterprise contracts.
 
 ### 2. Start the database and apply migrations
 
@@ -124,12 +182,23 @@ Install the locked dependencies, including the default `dev` group:
 
 ```powershell
 uv sync --locked
-uv run python -W error::DeprecationWarning -m unittest discover -s tests -t . -v
+uv run pytest -W error::DeprecationWarning tests -v
 ```
 
 The default run needs neither PostgreSQL nor model downloads. Database tests are
 opt-in and create/drop isolated `ingestion_test_*` schemas in the configured
 database; the database user needs permission to create schemas.
+
+To run only the RAG chat endpoint integration tests:
+
+```powershell
+uv run pytest tests/test_rag.py -v
+```
+
+These three tests use the real API route and RAG service with mocked retrieval,
+embedding initialization, and LLM responses. They cover answers and source
+metadata, empty-context fallback, and HTTP 504 on an LLM timeout. Prompt and
+service unit tests are in `tests/test_rag_service.py`.
 
 ```powershell
 $env:RUN_DB_TESTS = "1"
@@ -141,14 +210,17 @@ For the complete suite with real BGE tokenization, inference, and persistence:
 ```powershell
 $env:RUN_DB_TESTS = "1"
 $env:RUN_MODEL_TESTS = "1"
-uv run python -W error::DeprecationWarning -m unittest discover -s tests -t . -v
+uv run pytest -W error::DeprecationWarning tests -v
 ```
 
 The model check may download assets on its first run. Tests cover multipage
 uploads, duplicates and concurrent claims, failed retries, cancellation, invalid
 PDFs, vector validation, and rollback after a later chunk-write batch fails.
 
-## Next milestone
+## Try document chat
 
-Implement vector similarity retrieval over `ready` documents: embed a question,
-find the closest chunks, and return text with document and page references.
+After configuring the LLM and uploading a PDF, use `POST /v1/chat` in the API docs
+with a question about the document and a `top_k` value between 1 and 20. The
+response contains `answer` and `sources`; each source includes the document ID,
+chunk ID, filename, and page number. Empty retrieval returns an insufficient-context
+answer with an empty source list without calling the LLM.

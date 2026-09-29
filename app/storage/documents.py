@@ -7,7 +7,7 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import delete, func, insert, select, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
-from sqlalchemy.ext.asyncio import AsyncConnection
+from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
 
 from app.schemas.documents import MAX_INGESTION_BATCH_SIZE
 from app.storage.db import Database
@@ -199,7 +199,7 @@ async def fail_document(database: Database, document_id: UUID) -> None:
 
 
 async def search_similar_chunks(
-    database: Database,
+    database: Database | AsyncSession,
     query_vector: Sequence[float],
     top_k: int = 5,
 ) -> list[StoredChunkResult]:
@@ -250,10 +250,16 @@ async def search_similar_chunks(
         .limit(top_k)
     )
 
-    async with database.transaction() as connection:
-        rows = (
-            await connection.execute(statement)
-        ).mappings().all()
+    if isinstance(database, AsyncSession):
+        # The caller owns the session and its transaction. Retrieval must not
+        # flush unrelated changes, commit, roll back, or close that session.
+        with database.no_autoflush:
+            rows = (await database.execute(statement)).mappings().all()
+    else:
+        async with database.transaction() as connection:
+            rows = (
+                await connection.execute(statement)
+            ).mappings().all()
 
     results: list[StoredChunkResult] = []
 

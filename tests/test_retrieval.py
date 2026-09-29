@@ -8,6 +8,7 @@ from uuid import UUID, uuid4
 from pydantic import ValidationError
 from sqlalchemy import delete, insert, text, update
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.schema import CreateSchema, DropSchema
 
 from app.core.config import get_settings
@@ -242,6 +243,21 @@ class RetrievalDatabaseTests(AsyncTestCase):
         self.assertEqual(results[0].filename, 'source-1.pdf')
         limited = await search_similar_chunks(self.database, vector(), top_k=2)
         self.assertEqual([item.chunk_id.int for item in limited], [1, 2])
+
+    @async_test
+    async def test_async_session_search_preserves_pending_changes_and_transaction(self):
+        async with self.database.transaction() as connection:
+            async with AsyncSession(bind=connection) as session:
+                # This incomplete object would fail if retrieval autoflushed it.
+                pending_document = Document(filename='unsaved.pdf')
+                session.add(pending_document)
+                results = await search_similar_chunks(session, vector(), top_k=2)
+                self.assertEqual([item.chunk_id.int for item in results], [1, 2])
+                self.assertIn(pending_document, session.new)
+                self.assertTrue(session.autoflush)
+                self.assertTrue(session.in_transaction())
+                self.assertTrue(connection.in_transaction())
+                session.expunge(pending_document)
 
     @async_test
     async def test_endpoint_uses_real_sql_and_reports_actual_matches(self):

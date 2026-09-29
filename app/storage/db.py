@@ -8,6 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncEngine,
+    AsyncSession,
     create_async_engine,
 )
 
@@ -57,6 +58,16 @@ class Database:
         """Commit on success; roll back if the operation fails."""
         async with self._engine.begin() as connection:
             yield connection
+
+    @asynccontextmanager
+    async def session(self) -> AsyncIterator[AsyncSession]:
+        """Provide a session and release its resources without auto-committing."""
+        async with AsyncSession(
+            bind=self._engine,
+            autoflush=False,
+            expire_on_commit=False,
+        ) as session:
+            yield session
 
     async def is_ready(self) -> bool:
         """Check database access and the required vector extension."""
