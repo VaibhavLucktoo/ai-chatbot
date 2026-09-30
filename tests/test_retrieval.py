@@ -2,7 +2,7 @@ import asyncio
 import math
 import os
 import unittest
-from unittest.mock import AsyncMock, patch
+from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from pydantic import ValidationError
@@ -13,6 +13,7 @@ from sqlalchemy.schema import CreateSchema, DropSchema
 
 from app.core.config import get_settings
 from app.providers.embeddings import get_embedding_provider
+from app.schemas.chat import ChatRequest
 from app.schemas.documents import DocumentSearchRequest
 from app.services.retrieval import RetrievalProviderError, RetrievalResult, retrieve_chunks
 from app.storage.db import Database
@@ -39,9 +40,24 @@ class SearchSchemaTests(unittest.TestCase):
     def test_rejects_invalid_requests(self):
         for body in ({'query': ''}, {'query': ' \n\t '}, {'query': 123},
                      {'query': 'test', 'top_k': 0}, {'query': 'test', 'top_k': 21},
+                     {'query': 'test', 'top_k': True}, {'query': 'test', 'top_k': '5'},
                      {'query': 'test', 'extra': True}):
             with self.subTest(body=body), self.assertRaises(ValidationError):
                 DocumentSearchRequest.model_validate(body)
+
+    def test_search_and_chat_accept_selected_document_ids(self):
+        document_id = uuid4()
+        for schema, field in ((DocumentSearchRequest, 'query'), (ChatRequest, 'question')):
+            with self.subTest(schema=schema.__name__):
+                request = schema.model_validate({field: 'Question', 'document_ids': [str(document_id)]})
+                self.assertEqual(request.document_ids, [document_id])
+                self.assertIsNone(schema.model_validate({field: 'Question'}).document_ids)
+
+    def test_search_and_chat_reject_invalid_document_selection(self):
+        for schema, field in ((DocumentSearchRequest, 'query'), (ChatRequest, 'question')):
+            for selection in ([], ['bad-id'], [str(uuid4())] * 21, str(uuid4())):
+                with self.subTest(schema=schema.__name__, selection=selection), self.assertRaises(ValidationError):
+                    schema.model_validate({field: 'Question', 'document_ids': selection})
 
 
 class RetrievalServiceTests(AsyncTestCase):
@@ -54,8 +70,50 @@ class RetrievalServiceTests(AsyncTestCase):
             with patch('app.services.retrieval.search_similar_chunks', new_callable=AsyncMock, return_value=results) as search:
                 result = await retrieve_chunks(database, provider, '  Question  ')
         embed.assert_awaited_once_with('Question')
-        search.assert_awaited_once_with(database=database, query_vector=vector(), top_k=5)
+        search.assert_awaited_once_with(database=database, query_vector=vector(), top_k=5, document_ids=None)
         self.assertEqual(result, RetrievalResult('Question', 5, results))
+
+    @async_test
+    async def test_document_selection_is_forwarded_to_storage(self):
+        document_id = uuid4()
+        database = object()
+        with patch('app.services.retrieval.search_similar_chunks', new_callable=AsyncMock, return_value=[]) as search:
+            await retrieve_chunks(database, StubEmbeddings(), 'Question', document_ids=[document_id])
+        search.assert_awaited_once_with(
+            database=database, query_vector=vector(), top_k=5, document_ids=(document_id,),
+        )
+
+    @async_test
+    async def test_invalid_document_filter_fails_before_embedding_or_database_access(self):
+        provider = StubEmbeddings()
+        with patch.object(provider, 'embed_query') as embed:
+            for selection in ([], [uuid4()] * 21, ['not-a-uuid'], str(uuid4()), 123):
+                with self.subTest(selection=selection):
+                    with self.assertRaises(ValueError):
+                        await retrieve_chunks(object(), provider, 'Question', document_ids=selection)
+                    with self.assertRaises(ValueError):
+                        await search_similar_chunks(object(), vector(), document_ids=selection)
+            embed.assert_not_awaited()
+
+    @async_test
+    async def test_storage_applies_selection_in_sql_before_ranking_limit(self):
+        document_id = uuid4()
+        database = MagicMock(spec=Database)
+        connection = AsyncMock()
+        result = MagicMock()
+        result.mappings.return_value.all.return_value = []
+        connection.execute.return_value = result
+        database.transaction.return_value.__aenter__.return_value = connection
+        self.assertEqual(await search_similar_chunks(
+            database, vector(), top_k=1, document_ids=[document_id],
+        ), [])
+        statement = connection.execute.await_args.args[0]
+        compiled = statement.compile()
+        sql = str(compiled)
+        self.assertIn('document_chunks.document_id IN', sql)
+        self.assertLess(sql.index('document_chunks.document_id IN'), sql.index('ORDER BY'))
+        self.assertLess(sql.index('ORDER BY'), sql.index('LIMIT'))
+        self.assertIn([document_id], list(compiled.params.values()))
 
     @async_test
     async def test_bad_parameters_fail_before_embedding(self):
@@ -146,6 +204,17 @@ class SearchApiTests(AsyncTestCase):
         self.assertEqual(response.json()['matches'], 0)
 
     @async_test
+    async def test_search_forwards_document_selection(self):
+        document_id = uuid4()
+        with patch('app.api.v1.documents.retrieve_chunks', new_callable=AsyncMock, return_value=RetrievalResult('Question', 5, [])) as retrieve:
+            async with api_client() as client:
+                response = await client.post('/v1/documents/search', json={
+                    'query': 'Question', 'document_ids': [str(document_id)],
+                })
+        self.assertEqual(response.status_code, 200, response.text)
+        self.assertEqual(retrieve.await_args.kwargs['document_ids'], [document_id])
+
+    @async_test
     async def test_requested_exception_mapping(self):
         async with api_client() as client:
             for failure, expected in ((ValueError('private detail'), 400),
@@ -163,7 +232,8 @@ class SearchApiTests(AsyncTestCase):
     async def test_schema_errors_remain_http_422(self):
         with patch('app.api.v1.documents.retrieve_chunks', new_callable=AsyncMock) as retrieve:
             async with api_client() as client:
-                for body in ({}, {'query': ''}, {'query': '  '}, {'query': 'Q', 'top_k': 21}):
+                for body in ({}, {'query': ''}, {'query': '  '}, {'query': 'Q', 'top_k': 21},
+                             {'query': 'Q', 'document_ids': []}, {'query': 'Q', 'document_ids': ['invalid']}):
                     response = await client.post('/v1/documents/search', json=body)
                     self.assertEqual(response.status_code, 422, response.text)
             retrieve.assert_not_awaited()
@@ -243,6 +313,37 @@ class RetrievalDatabaseTests(AsyncTestCase):
         self.assertEqual(results[0].filename, 'source-1.pdf')
         limited = await search_similar_chunks(self.database, vector(), top_k=2)
         self.assertEqual([item.chunk_id.int for item in limited], [1, 2])
+
+    @async_test
+    async def test_document_filter_excludes_nearer_chunks_from_other_uploads(self):
+        all_results = await search_similar_chunks(self.database, vector())
+        selected_document = all_results[3].document_id
+        results = await search_similar_chunks(
+            self.database, vector(), top_k=1, document_ids=[selected_document],
+        )
+        self.assertEqual([item.chunk_id.int for item in results], [4])
+        self.assertEqual(await search_similar_chunks(
+            self.database, vector(), document_ids=[uuid4()],
+        ), [])
+
+    @async_test
+    async def test_chat_returns_database_connection_before_model_generation(self):
+        from app.services.rag import answer_question
+
+        async with self.database.session() as session:
+            async def generate(prompt, *, system_prompt, trace=None):
+                self.assertFalse(session.in_transaction())
+                self.assertEqual(self.database._engine.pool.checkedout(), 0)
+                self.assertIn("Passage 1", prompt)
+                return "Passage 1 [1]"
+
+            with (
+                patch('app.services.rag.get_embedding_provider', return_value=StubEmbeddings()),
+                patch('app.services.rag.generate_llm_response', side_effect=generate),
+            ):
+                response = await answer_question(session, ChatRequest(question='Question'))
+        self.assertEqual(response.answer, 'Passage 1 [1]')
+        self.assertEqual(len(response.sources), 1)
 
     @async_test
     async def test_async_session_search_preserves_pending_changes_and_transaction(self):

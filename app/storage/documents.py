@@ -202,11 +202,15 @@ async def search_similar_chunks(
     database: Database | AsyncSession,
     query_vector: Sequence[float],
     top_k: int = 5,
+    *,
+    document_ids: Sequence[UUID] | None = None,
 ) -> list[StoredChunkResult]:
-    """Return nearest compatible chunks from ready documents."""
+    """Return nearest compatible chunks within the selected ready documents."""
 
     if type(top_k) is not int or not 1 <= top_k <= 20:
         raise ValueError("top_k must be an integer between 1 and 20.")
+
+    selected_documents = validate_document_ids(document_ids)
 
     if len(query_vector) != EMBEDDING_DIMENSIONS:
         raise ValueError("Query vector has incorrect dimensions.")
@@ -250,6 +254,11 @@ async def search_similar_chunks(
         .limit(top_k)
     )
 
+    if selected_documents is not None:
+        statement = statement.where(
+            DocumentChunk.document_id.in_(selected_documents)
+        )
+
     if isinstance(database, AsyncSession):
         # The caller owns the session and its transaction. Retrieval must not
         # flush unrelated changes, commit, roll back, or close that session.
@@ -286,3 +295,19 @@ async def search_similar_chunks(
         )
 
     return results
+
+
+def validate_document_ids(
+    document_ids: Sequence[UUID] | None,
+) -> tuple[UUID, ...] | None:
+    """Validate an optional filter without interpreting an empty list as all."""
+    if document_ids is None:
+        return None
+    if (
+        not isinstance(document_ids, Sequence)
+        or isinstance(document_ids, (str, bytes))
+        or not 1 <= len(document_ids) <= 20
+        or not all(isinstance(document_id, UUID) for document_id in document_ids)
+    ):
+        raise ValueError("document_ids must contain between 1 and 20 UUIDs.")
+    return tuple(document_ids)

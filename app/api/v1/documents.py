@@ -218,6 +218,7 @@ async def search_documents(
             embeddings=embedding_provider,
             query=payload.query,
             top_k=payload.top_k,
+            document_ids=payload.document_ids,
         )
 
         chunks = [

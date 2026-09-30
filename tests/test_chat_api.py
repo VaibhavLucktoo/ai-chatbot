@@ -121,7 +121,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
                 response = await client.post("/v1/chat", json={"question": "Question"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json(), {"answer": INSUFFICIENT_CONTEXT_ANSWER, "sources": []})
-        search.assert_awaited_once_with(db=self.db, question="Question", top_k=5)
+        search.assert_awaited_once_with(db=self.db, question="Question", top_k=5, document_ids=None)
         generate.assert_not_awaited()
 
     async def test_real_rag_service_returns_generated_answer_and_sources(self):
@@ -148,6 +148,28 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
                 response = await client.post("/v1/chat", json={"question": "Question"})
         self.assertEqual(response.status_code, 500)
         answer.assert_not_awaited()
+
+    async def test_real_rag_rejects_fabricated_citations_with_502(self):
+        chunk = StoredChunkResult(uuid4(), uuid4(), "policy.pdf", 11, 0, "Policy text.", 0.1)
+        with (
+            patch("app.services.rag.search_similar_chunks", return_value=[asdict(chunk)]),
+            patch("app.services.rag.generate_llm_response", return_value="Unsupported claim [99]"),
+        ):
+            async with self.client() as client:
+                response = await client.post("/v1/chat", json={"question": "Policy?"})
+        self.assertEqual(response.status_code, 502)
+        self.assertNotIn("Unsupported claim", response.text)
+
+    async def test_nonempty_context_fallback_has_no_sources(self):
+        chunk = StoredChunkResult(uuid4(), uuid4(), "manual.pdf", 1, 0, "Unrelated text.", 0.8)
+        with (
+            patch("app.services.rag.search_similar_chunks", return_value=[asdict(chunk)]),
+            patch("app.services.rag.generate_llm_response", return_value=INSUFFICIENT_CONTEXT_ANSWER),
+        ):
+            async with self.client() as client:
+                response = await client.post("/v1/chat", json={"question": "Policy?"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {"answer": INSUFFICIENT_CONTEXT_ANSWER, "sources": []})
 
     async def test_dependency_setup_and_cleanup_errors_are_http_500(self):
         self.app.dependency_overrides.clear()

@@ -51,6 +51,7 @@ In `.env`, use:
 ```dotenv
 LLM_BASE_URL=http://127.0.0.1:11434/v1
 LLM_MODEL=llama3.2:1b-instruct-q4_K_M
+LLM_TIMEOUT_SECONDS=120
 LLM_API_KEY=
 ```
 
@@ -62,8 +63,11 @@ documents before relying on it. Close unused applications on machines with
 limited RAM. With more available memory, pull `llama3.2:3b` and update `LLM_MODEL`.
 
 Keep Ollama running while using chat. If its background application is not
-running, start `ollama serve` in a separate terminal. The API has a 30-second
-generation deadline; model loading and longer CPU-only answers can exceed it.
+running, start `ollama serve` in a separate terminal. `LLM_TIMEOUT_SECONDS` sets
+the total generation deadline, including model loading. The local example uses
+120 seconds because document prompts and CPU inference can exceed 30 seconds.
+If unset, the deadline is 30 seconds; valid values are greater than 0 and at most
+600 seconds. The connection timeout remains 5 seconds.
 After downloading, you can load the model before testing chat:
 
 ```powershell
@@ -224,3 +228,76 @@ with a question about the document and a `top_k` value between 1 and 20. The
 response contains `answer` and `sources`; each source includes the document ID,
 chunk ID, filename, and page number. Empty retrieval returns an insufficient-context
 answer with an empty source list without calling the LLM.
+
+### Select documents and interpret sources
+
+Both `POST /v1/chat` and `POST /v1/documents/search` accept an optional
+`document_ids` array containing 1–20 upload IDs. Omit it to search all ready
+documents. An unknown ID returns no matches; it never broadens the search.
+Search uses `query`; chat uses `question`. Use the same text, `top_k`, and IDs
+when comparing their results.
+
+```json
+{
+  "question": "Can I take leave during probation?",
+  "top_k": 5,
+  "document_ids": ["replace-with-the-document-id-from-your-upload"]
+}
+```
+
+Chat releases its retrieval transaction before contacting the language model.
+Grounding rules are sent as a system message. Generation uses temperature zero
+and a 1,024-token output limit; incomplete output is rejected. These controls
+do not guarantee factual accuracy, particularly with the small 1B model.
+
+Successful answers return only cited sources. Citation numbers are renumbered
+to match their one-based positions in `sources`. A canonical insufficient-context
+answer has no sources even when retrieval found passages. Answers with missing,
+malformed, or nonexistent citation numbers return HTTP 502. This validates
+references, not whether every claim is supported by the referenced passage.
+
+### Trace a failed question
+
+Run the same question through the chat pipeline and save its intermediate results:
+
+```powershell
+uv run python -m scripts.trace_rag "Can I take leave during probation?" --document-id YOUR_DOCUMENT_UUID
+```
+
+The command prints a path under the ignored `.cache/rag-traces/` directory.
+The JSON records the request, exact ranked chunks and distances, system/user
+messages, raw provider response when available, model answer, and final response.
+If a step fails, earlier results and the exception type are retained. No trace
+is recorded during normal API use. Trace files contain private document text;
+keep them local. The command uses the same configured provider as chat.
+Use `--top-k` to match your API request and `--output` to choose a new filename.
+
+`evaluation/questions.json` contains representative questions for the existing
+51-page policy document, including the probation-leave case. These are evaluation
+examples; the original failed question was not supplied verbatim. Run the live
+checks explicitly:
+
+```powershell
+$env:RUN_POLICY_TESTS = "1"
+$env:POLICY_DOCUMENT_ID = "YOUR_DOCUMENT_UUID"
+uv run pytest tests/test_policy_live.py -v
+```
+
+This uses the real stored policy and configured language model. It saves traces
+in `.cache/policy-evaluation/` and checks fallback behavior, expected cited pages,
+and a known invented duration. Review answers against each case's `review_criteria`;
+passing these checks alone does not establish grounding. The default test suite
+skips this evaluation. Database/model integration flags are separate.
+
+### MVP boundaries
+
+The API remains a local, single-user MVP bound to `127.0.0.1` by `run.py`.
+Document selection is not access control. Authentication and document ownership
+checks are required before sharing the service. App containerization is still
+unimplemented (`Dockerfile` is an empty placeholder); Compose starts PostgreSQL.
+
+Stored chunk text can be embedded again. Original PDFs are needed for fresh
+extraction and re-chunking, page inspection, and downloads. Vector search remains
+exact. Approximate indexes and relevance thresholds need performance and answer
+quality measurements before introduction. Larger `top_k` values increase prompt
+size and latency; match the model server's actual context capacity when evaluating.

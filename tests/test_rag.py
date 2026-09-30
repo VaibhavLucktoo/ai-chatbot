@@ -153,12 +153,13 @@ async def test_successful_rag_answer_returns_matching_sources(
         embeddings=embedding_provider,
         query=question,
         top_k=2,
+        document_ids=None,
     )
     generate_llm_response_mock.assert_awaited_once()
 
     prompt = generate_llm_response_mock.await_args.args[0]
     assert question in prompt
-    assert "Answer ONLY" in prompt
+    assert "ONLY" in generate_llm_response_mock.await_args.kwargs["system_prompt"]
     for chunk in mock_chunks:
         assert chunk.content in prompt
         assert chunk.filename in prompt
@@ -191,6 +192,7 @@ async def test_empty_retrieval_returns_fallback_without_invoking_llm(
         embeddings=embedding_provider,
         query=question,
         top_k=5,
+        document_ids=None,
     )
     generate_llm_response_mock.assert_not_called()
     generate_llm_response_mock.assert_not_awaited()
@@ -228,5 +230,6 @@ async def test_llm_timeout_returns_http_504(
         embeddings=embedding_provider,
         query=question,
         top_k=2,
+        document_ids=None,
     )
     generate_llm_response_mock.assert_awaited_once()

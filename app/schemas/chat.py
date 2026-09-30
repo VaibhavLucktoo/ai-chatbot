@@ -5,6 +5,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
+from app.schemas.documents import DocumentIds
+
 
 QuestionText = Annotated[
     str,
@@ -24,10 +26,11 @@ class StrictSchema(BaseModel):
 
 
 class ChatRequest(StrictSchema):
-    """Question and maximum number of passages to retrieve."""
+    """Question, result limit, and optional document selection."""
 
     question: QuestionText
     top_k: int = Field(default=5, ge=1, le=20, strict=True)
+    document_ids: DocumentIds | None = None
 
 
 class ChatSource(StrictSchema):

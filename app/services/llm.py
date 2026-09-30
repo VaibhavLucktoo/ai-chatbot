@@ -4,6 +4,7 @@ Environment variables override values in the project's .env file:
     LLM_BASE_URL: API prefix, including /v1 (default: local Ollama).
     LLM_MODEL: The exact model name served by the provider.
     LLM_API_KEY: Optional bearer token; local Ollama needs no key.
+    LLM_TIMEOUT_SECONDS: Total generation deadline (default: 30 seconds).
 """
 
 import asyncio
@@ -16,6 +17,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict, SettingsError
 
 CONNECT_TIMEOUT_SECONDS = 5.0
 EXECUTION_TIMEOUT_SECONDS = 30.0
+MAX_OUTPUT_TOKENS = 1024
 
 
 class LLMError(RuntimeError):
@@ -59,11 +61,14 @@ class _LLMSettings(BaseSettings):
     )
 
     base_url: str = Field(default="http://127.0.0.1:11434/v1", min_length=1)
-    model: str = Field(default="llama3.1", min_length=1)
+    model: str = Field(default="llama3.2:1b-instruct-q4_K_M", min_length=1)
     api_key: SecretStr = SecretStr("")
+    timeout_seconds: float = Field(
+        default=EXECUTION_TIMEOUT_SECONDS, gt=0, le=600, allow_inf_nan=False,
+    )
 
 
-def _request_settings() -> tuple[str, str, dict[str, str]]:
+def _request_settings() -> tuple[str, str, dict[str, str], float]:
     """Validate configuration without exposing URLs or credentials in errors."""
     try:
         settings = _LLMSettings()
@@ -71,7 +76,7 @@ def _request_settings() -> tuple[str, str, dict[str, str]]:
     except (ValidationError, SettingsError, httpx.InvalidURL, OSError, UnicodeError):
         raise LLMConnectionError(
             "Invalid LLM configuration. Check LLM_BASE_URL, LLM_MODEL, "
-            "and LLM_API_KEY."
+            "LLM_API_KEY, and LLM_TIMEOUT_SECONDS."
         ) from None
 
     if (
@@ -99,7 +104,7 @@ def _request_settings() -> tuple[str, str, dict[str, str]]:
         headers["Authorization"] = f"Bearer {api_key}"
 
     endpoint = str(base_url).rstrip("/") + "/chat/completions"
-    return endpoint, settings.model, headers
+    return endpoint, settings.model, headers, settings.timeout_seconds
 
 
 def _extract_answer(response: httpx.Response) -> str:
@@ -138,6 +143,16 @@ def _extract_answer(response: httpx.Response) -> str:
     if not isinstance(message, dict):
         raise LLMResponseError("LLM provider returned an invalid message.")
 
+    if message.get("role") not in (None, "assistant"):
+        raise LLMResponseError("LLM provider returned an invalid message role.")
+
+    # Some compatible providers omit finish_reason. Do not mistake a refusal
+    # or a message that requests tool execution for a completed answer.
+    if message.get("refusal"):
+        raise LLMResponseError("LLM provider refused to answer the request.")
+    if message.get("tool_calls") or message.get("function_call"):
+        raise LLMResponseError("LLM provider returned an unsupported tool request.")
+
     content = message.get("content")
     if not isinstance(content, str) or not content.strip():
         raise LLMResponseError("LLM provider returned an empty or non-text answer.")
@@ -145,32 +160,54 @@ def _extract_answer(response: httpx.Response) -> str:
     return content.strip()
 
 
-async def generate_llm_response(prompt: str) -> str:
+async def generate_llm_response(
+    prompt: str, *, system_prompt: str | None = None, trace: dict | None = None,
+) -> str:
     """Generate one text answer using the configured Llama provider.
 
     The connection timeout is 5 seconds. The entire HTTP operation, including
-    connection setup and response reading, has a 30-second deadline. Requests
-    do not stream or retry automatically. Caller cancellation propagates.
+    connection setup and response reading, is bounded by LLM_TIMEOUT_SECONDS
+    (30 seconds by default). Requests do not stream or retry automatically.
+    Caller cancellation propagates. Trusted instructions can be supplied in a
+    separate system message. Output is capped at 1,024 tokens; truncated output
+    is rejected by the completion parser.
 
     Raises:
-        ValueError: The prompt is not a nonempty string.
+        ValueError: A supplied prompt is not a nonempty string.
         LLMConnectionError: Invalid configuration or a transport failure.
         LLMTimeoutError: A network timeout or execution deadline was reached.
         LLMResponseError: HTTP failure, malformed response, or incomplete answer.
     """
     if not isinstance(prompt, str) or not prompt.strip():
         raise ValueError("prompt must be a nonempty string.")
+    if system_prompt is not None and (
+        not isinstance(system_prompt, str) or not system_prompt.strip()
+    ):
+        raise ValueError("system_prompt must be a nonempty string when supplied.")
 
-    endpoint, model, headers = _request_settings()
+    messages = []
+    if system_prompt is not None:
+        messages.append({"role": "system", "content": system_prompt})
+    messages.append({"role": "user", "content": prompt})
+
+    endpoint, model, headers, timeout_seconds = _request_settings()
+    if trace is not None:
+        trace.update(
+            llm_model=model,
+            generation={
+                "temperature": 0, "max_tokens": MAX_OUTPUT_TOKENS,
+                "timeout_seconds": timeout_seconds,
+            },
+        )
     timeout = httpx.Timeout(
         connect=CONNECT_TIMEOUT_SECONDS,
-        read=EXECUTION_TIMEOUT_SECONDS,
-        write=EXECUTION_TIMEOUT_SECONDS,
+        read=timeout_seconds,
+        write=timeout_seconds,
         pool=CONNECT_TIMEOUT_SECONDS,
     )
 
     try:
-        async with asyncio.timeout(EXECUTION_TIMEOUT_SECONDS):
+        async with asyncio.timeout(timeout_seconds):
             async with httpx.AsyncClient(
                 timeout=timeout,
                 headers=headers,
@@ -180,7 +217,9 @@ async def generate_llm_response(prompt: str) -> str:
                     endpoint,
                     json={
                         "model": model,
-                        "messages": [{"role": "user", "content": prompt}],
+                        "messages": messages,
+                        "temperature": 0,
+                        "max_tokens": MAX_OUTPUT_TOKENS,
                         "stream": False,
                     },
                 )
@@ -191,4 +230,10 @@ async def generate_llm_response(prompt: str) -> str:
     except (httpx.RequestError, httpx.InvalidURL):
         raise LLMConnectionError("Could not communicate with the LLM provider.") from None
 
+    if trace is not None:
+        trace["llm_http_status"] = response.status_code
+        try:
+            trace["llm_response"] = response.json()
+        except (ValueError, UnicodeError):
+            trace["llm_response_text"] = response.text
     return _extract_answer(response)

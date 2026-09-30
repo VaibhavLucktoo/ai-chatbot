@@ -20,6 +20,8 @@ NonBlankText = Annotated[
     StringConstraints(strip_whitespace=True, min_length=1),
 ]
 
+DocumentIds = Annotated[list[UUID], Field(min_length=1, max_length=20)]
+
 INVALID_FILENAME_CHARACTERS = set('<>:"/\\|?*')
 MAX_INGESTION_BATCH_SIZE = 256
 
@@ -157,10 +159,11 @@ class DocumentUploadResponse(StrictSchema):
 
 
 class DocumentSearchRequest(StrictSchema):
-    """Question and maximum number of passages to retrieve."""
+    """Question, result limit, and optional document selection."""
 
     query: str = Field(min_length=1)
-    top_k: int = Field(default=5, ge=1, le=20)
+    top_k: int = Field(default=5, ge=1, le=20, strict=True)
+    document_ids: DocumentIds | None = None
 
     @field_validator("query", mode="before")
     @classmethod

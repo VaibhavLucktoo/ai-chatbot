@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "id": "probation-leave",
+    "question": "Can I take leave during probation?",
+    "top_k": 5,
+    "expected_page_groups": [[9, 11], [47]],
+    "expect_fallback": false,
+    "forbidden_answer_phrases": ["90 days", "ninety days"],
+    "review_criteria": "Explain the leave restriction and the separate approved-leave clause, citing each. Do not invent which clause overrides another or a standard probation duration."
+  },
+  {
+    "id": "approved-leave",
+    "question": "What happens to probation if I take leave approved by my reporting manager?",
+    "top_k": 5,
+    "expected_page_groups": [[47]],
+    "expect_fallback": false,
+    "forbidden_answer_phrases": [],
+    "review_criteria": "Explain that approved leave extends probation. Distinguish approved leave from the consequences described for unapproved or unplanned leave."
+  },
+  {
+    "id": "unsupported-question",
+    "question": "What is the company's budget for a mission to Mars?",
+    "top_k": 5,
+    "expected_page_groups": [],
+    "expect_fallback": true,
+    "forbidden_answer_phrases": [],
+    "review_criteria": "Return the canonical insufficient-context response with no sources."
+  }
+]

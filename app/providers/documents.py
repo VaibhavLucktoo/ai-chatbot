@@ -69,7 +69,10 @@ def extract_pdf(data: bytes) -> ExtractedDocument:
         total_chars = 0
 
         for page_number, page in enumerate(reader.pages, start=1):
-            text = (page.extract_text() or "").strip()
+            # PDF font mappings can produce null padding. PostgreSQL text
+            # cannot store U+0000; keep a word boundary instead of joining
+            # adjacent text or making an otherwise readable PDF fail storage.
+            text = (page.extract_text() or "").replace("\x00", " ").strip()
 
             total_chars += len(text)
             if total_chars > MAX_EXTRACTED_CHARS:

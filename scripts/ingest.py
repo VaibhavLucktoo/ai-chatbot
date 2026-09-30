@@ -7,14 +7,7 @@ import sys
 if __package__ in (None, ""):
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from sqlalchemy.exc import SQLAlchemyError
-from app.core.config import get_settings
-from app.providers.embeddings import get_embedding_provider
 from app.providers.documents import MAX_PDF_BYTES, PDFExtractionError
-from app.services.chunking import ChunkingError
-from app.services.ingestion import ingest_pdf
-from app.storage.db import Database
-from run import create_event_loop
 
 
 def read_pdf(path: Path) -> bytes:
@@ -26,6 +19,12 @@ def read_pdf(path: Path) -> bytes:
 
 
 async def ingest_file(path: Path) -> None:
+    # Load database and model dependencies only for an actual ingestion.
+    from app.core.config import get_settings
+    from app.providers.embeddings import get_embedding_provider
+    from app.services.ingestion import ingest_pdf
+    from app.storage.db import Database
+
     database = Database(get_settings())
 
     try:
@@ -60,6 +59,10 @@ def main() -> None:
 
     if not args.pdf.is_file():
         parser.error(f"PDF not found: {args.pdf}")
+
+    from sqlalchemy.exc import SQLAlchemyError
+    from app.services.chunking import ChunkingError
+    from run import create_event_loop
 
     try:
         with asyncio.Runner(loop_factory=create_event_loop) as runner:

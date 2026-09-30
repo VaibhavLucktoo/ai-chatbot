@@ -27,6 +27,16 @@ from tests.helpers import (
 
 
 class ExtractionTests(unittest.TestCase):
+    def test_null_padding_preserves_words_and_blank_page_positions(self):
+        result = extract_pdf(make_pdf('Before\x00after', '\x00\x00', 'Last page'))
+        self.assertEqual(result.page_count, 3)
+        self.assertEqual([(page.page_number, page.text) for page in result.pages],
+                         [(1, 'Before after'), (3, 'Last page')])
+
+    def test_null_only_pdf_has_no_searchable_text(self):
+        with self.assertRaisesRegex(PDFExtractionError, 'No searchable text'):
+            extract_pdf(make_pdf('\x00\x00'))
+
     def test_preserves_page_numbers_across_blank_pages(self):
         result = extract_pdf(make_pdf('First page', None, 'Third page'))
         self.assertEqual(result.page_count, 3)

@@ -94,8 +94,9 @@ async def chat(
     """Retrieve passages and generate an answer with document references.
 
     FastAPI validates the JSON body before invoking this function. Function
-    scope closes the session before the response is sent. Caller cancellation
-    propagates; error logs contain exception types instead of private inputs.
+    scope closes the session before the response is sent. The RAG service ends
+    its read transaction before model generation, releasing the pooled connection.
+    Caller cancellation propagates; logs omit prompts and provider details.
     """
     try:
         return await answer_question(db, request)
