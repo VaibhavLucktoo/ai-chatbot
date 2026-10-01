@@ -1,7 +1,7 @@
 """Query embedding and document retrieval orchestration."""
 
 import math
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -30,6 +30,33 @@ class RetrievalResult:
     chunks: list[StoredChunkResult]
 
 
+def has_sufficient_evidence(
+    chunks: Sequence[Mapping], *, max_cosine_distance: float,
+) -> bool:
+    """MVP gate over only the returned candidates; never filters or reorders them.
+
+    Any strong semantic match passes. Otherwise require two distinct query
+    lexemes across the set (one for a single-lexeme query). Repeated occurrences
+    of one generic term cannot satisfy a multi-term question. Lexemes come from
+    the same PostgreSQL English dictionaries used by hybrid retrieval.
+    Neither signal proves factual support; calibrate against the target corpus.
+    """
+    query_terms: set[str] = set()
+    matched_terms: set[str] = set()
+    for chunk in chunks:
+        distance = chunk.get("cosine_distance")
+        if (
+            isinstance(distance, (int, float))
+            and math.isfinite(distance)
+            and 0 <= distance <= max_cosine_distance
+        ):
+            return True
+        terms = set(chunk.get("query_lexemes", ()))
+        query_terms.update(terms)
+        matched_terms.update(terms.intersection(chunk.get("matched_lexemes", ())))
+    return bool(query_terms) and len(matched_terms) >= min(2, len(query_terms))
+
+
 async def retrieve_chunks(
     database: Database | AsyncSession,
     embeddings: BaseEmbeddingProvider,
@@ -38,7 +65,7 @@ async def retrieve_chunks(
     *,
     document_ids: Sequence[UUID] | None = None,
 ) -> RetrievalResult:
-    """Generate one query embedding and execute one vector search."""
+    """Generate one query embedding and fuse semantic and lexical retrieval."""
 
     if not isinstance(query, str):
         raise ValueError("Query must be text.")
@@ -94,6 +121,7 @@ async def retrieve_chunks(
         query_vector=vector,
         top_k=top_k,
         document_ids=selected_documents,
+        query=normalized_query,
     )
 
     return RetrievalResult(

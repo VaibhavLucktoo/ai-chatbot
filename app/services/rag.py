@@ -5,21 +5,30 @@ transaction on a fresh session and releases it before language generation.
 """
 
 import json
-import re
 from dataclasses import asdict
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import get_settings
 from app.providers.embeddings import get_embedding_provider
 from app.prompts.rag import INSUFFICIENT_CONTEXT_ANSWER, RAG_SYSTEM_PROMPT
 from app.schemas.chat import ChatRequest, ChatResponse, ChatSource
 from app.services.llm import LLMResponseError, generate_llm_response
-from app.services.retrieval import RetrievalProviderError, retrieve_chunks
+from app.services.retrieval import RetrievalProviderError, has_sufficient_evidence, retrieve_chunks
 
 
-CITATION_PATTERN = re.compile(r"\[\s*([0-9]+(?:\s*,\s*[0-9]+)*)\s*\]")
+MAX_LLM_CONTEXT_CHUNKS = 2
+
+
+class _StructuredAnswer(BaseModel):
+    """Validated structured response returned by the LLM."""
+
+    model_config = ConfigDict(strict=True, extra="forbid")
+
+    answer: str = Field(strict=True, min_length=1)
+    source_numbers: list[int] = Field(default_factory=list)
 
 
 class _PromptChunk(BaseModel):
@@ -104,30 +113,41 @@ async def search_similar_chunks(
 
 
 def validate_answer(answer: str, sources: list[ChatSource]) -> ChatResponse:
-    """Check citation references, not whether the cited text proves a claim."""
+    """Validate JSON and append citations using retrieved passage positions."""
     if not isinstance(answer, str) or not answer.strip():
         raise LLMResponseError("The language model returned an empty answer.")
-    answer = answer.strip()
-    without_citations = CITATION_PATTERN.sub("", answer)
-    normalized = " ".join(without_citations.replace("\u2019", "'").split())
-    if normalized.casefold() == INSUFFICIENT_CONTEXT_ANSWER.casefold():
-        return ChatResponse(answer=INSUFFICIENT_CONTEXT_ANSWER, sources=[])
 
-    matches = list(CITATION_PATTERN.finditer(answer))
-    if not matches or re.search(r"\[\s*\d", without_citations):
-        raise LLMResponseError("The language model omitted or malformed its citations.")
-    cited = {int(number) for match in matches for number in match[1].split(",")}
-    if not cited.issubset(range(1, len(sources) + 1)):
+    try:
+        payload = json.loads(answer)
+    except json.JSONDecodeError as exc:
+        raise LLMResponseError(
+            "The language model returned invalid structured output."
+        ) from exc
+
+    try:
+        structured = _StructuredAnswer.model_validate(payload)
+    except ValidationError as exc:
+        raise LLMResponseError(
+            "The language model returned an invalid answer structure."
+        ) from exc
+
+    if not structured.answer.strip():
+        raise LLMResponseError("The language model returned an empty answer.")
+
+    ordered = sorted(set(structured.source_numbers))
+    if any(number < 1 or number > len(sources) for number in ordered):
         raise LLMResponseError("The language model cited an unknown source.")
 
-    # Keep only cited passages and make answer numbers match the public list.
-    ordered = sorted(cited)
-    numbering = {old: new for new, old in enumerate(ordered, start=1)}
-    answer = CITATION_PATTERN.sub(
-        lambda match: "".join(f"[{numbering[int(n)]}]" for n in match[1].split(",")),
-        answer,
+    if not ordered:
+        if structured.answer == INSUFFICIENT_CONTEXT_ANSWER:
+            return ChatResponse(answer=INSUFFICIENT_CONTEXT_ANSWER, sources=[])
+        raise LLMResponseError("The language model omitted supporting sources.")
+
+    citations = "".join(f"[{number}]" for number in ordered)
+    return ChatResponse(
+        answer=f"{structured.answer.strip()} {citations}",
+        sources=[sources[number - 1] for number in ordered],
     )
-    return ChatResponse(answer=answer, sources=[sources[n - 1] for n in ordered])
 
 
 async def answer_question(
@@ -135,7 +155,7 @@ async def answer_question(
 ) -> ChatResponse:
     """Retrieve context, generate an answer, and return validated sources.
 
-    Empty retrieval returns immediately without invoking the LLM. Retrieval,
+    Empty or insufficient retrieval returns without invoking the LLM. Retrieval,
     validation, and LLM exceptions propagate to the API layer. Supply a fresh
     session with no pending writes or active transaction. The optional trace
     is for local diagnostics; private passage text is never logged by default.
@@ -152,14 +172,21 @@ async def answer_question(
     if trace is not None:
         trace["retrieved_chunks"] = retrieved_chunks
 
-    if not retrieved_chunks:
+    sufficient_evidence = bool(retrieved_chunks) and has_sufficient_evidence(
+        retrieved_chunks, max_cosine_distance=get_settings().rag_max_cosine_distance,
+    )
+    if trace is not None:
+        trace["sufficient_evidence"] = sufficient_evidence
+
+    if not sufficient_evidence:
         response = ChatResponse(answer=INSUFFICIENT_CONTEXT_ANSWER, sources=[])
         if trace is not None:
             trace["messages"] = []
             trace["response"] = response.model_dump(mode="json")
         return response
 
-    prompt = build_rag_prompt(request.question, retrieved_chunks)
+    selected_chunks = retrieved_chunks[:MAX_LLM_CONTEXT_CHUNKS]
+    prompt = build_rag_prompt(request.question, selected_chunks)
 
     # Validate source metadata before sending any passages to the LLM.
     sources = [
@@ -169,7 +196,7 @@ async def answer_question(
             "filename": chunk.get("filename"),
             "page_number": chunk.get("page_number"),
         })
-        for chunk in retrieved_chunks
+        for chunk in selected_chunks
     ]
 
     if trace is not None:

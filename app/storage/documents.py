@@ -1,11 +1,12 @@
-"""Database operations for document deduplication and vector search."""
+"""Database operations for document deduplication and hybrid search."""
 
 import math
+import re
 from collections.abc import Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
-from sqlalchemy import delete, func, insert, select, update
+from sqlalchemy import delete, func, insert, select, union_all, update
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
 
@@ -17,6 +18,70 @@ from app.storage.models import (
     Document,
     DocumentChunk,
 )
+
+RRF_K = 60
+
+
+def _lexical_query(query: str):
+    """Match any question term; PostgreSQL handles English stems/stop words.
+
+    Quoted word tokens cannot inject web-search operators. The whole query is
+    passed as a bound SQL parameter, never interpolated into SQL text.
+    """
+    terms = re.findall(r"\w+", query)
+    return func.websearch_to_tsquery(
+        "english", " OR ".join(f'"{term}"' for term in terms),
+    )
+
+
+def _rrf_scores(vector_candidates, lexical_candidates):
+    """Sum reciprocal one-based ranks, retaining candidates from either list."""
+    candidates = union_all(
+        select(vector_candidates.c.chunk_id, vector_candidates.c.rank),
+        select(lexical_candidates.c.chunk_id, lexical_candidates.c.rank),
+    ).subquery("candidates")
+    return (
+        select(
+            candidates.c.chunk_id,
+            func.sum(1.0 / (RRF_K + candidates.c.rank)).label("rrf_score"),
+        )
+        .group_by(candidates.c.chunk_id)
+        .subquery("fused")
+    )
+
+
+def _hybrid_search(statement, distance, query: str, top_k: int):
+    """Build both candidate lists and fuse ranks in one database snapshot."""
+    candidate_k = min(max(top_k * 3, 10), 50)
+    vector_order = (distance.asc(), DocumentChunk.id.asc())
+    vector_candidates = (
+        statement.with_only_columns(
+            DocumentChunk.id.label("chunk_id"),
+            func.row_number().over(order_by=vector_order).label("rank"),
+        )
+        .order_by(*vector_order).limit(candidate_k).subquery("semantic")
+    )
+    text_vector = func.to_tsvector("english", DocumentChunk.content)
+    text_query = _lexical_query(query)
+    lexical_order = (func.ts_rank(text_vector, text_query).desc(), DocumentChunk.id.asc())
+    lexical_candidates = (
+        statement.with_only_columns(
+            DocumentChunk.id.label("chunk_id"),
+            func.row_number().over(order_by=lexical_order).label("rank"),
+        )
+        .where(text_vector.bool_op("@@")(text_query))
+        .order_by(*lexical_order).limit(candidate_k).subquery("lexical")
+    )
+    fused = _rrf_scores(vector_candidates, lexical_candidates)
+    return (
+        statement.join(fused, DocumentChunk.id == fused.c.chunk_id)
+        .order_by(fused.c.rrf_score.desc(), DocumentChunk.id.asc())
+        .limit(top_k)
+        .add_columns(
+            func.tsvector_to_array(func.to_tsvector("english", query)).label("query_lexemes"),
+            func.tsvector_to_array(text_vector).label("content_lexemes"),
+        )
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -50,6 +115,10 @@ class StoredChunkResult:
     chunk_index: int
     content: str
     cosine_distance: float
+    # Internal evidence metadata; public API schemas keep their existing fields.
+    # Exclude metadata from equality so vector/hybrid diagnostics stay comparable.
+    query_lexemes: tuple[str, ...] = field(default=(), compare=False, repr=False)
+    matched_lexemes: tuple[str, ...] = field(default=(), compare=False, repr=False)
 
 
 async def find_document_by_hash(
@@ -204,13 +273,20 @@ async def search_similar_chunks(
     top_k: int = 5,
     *,
     document_ids: Sequence[UUID] | None = None,
+    query: str | None = None,
 ) -> list[StoredChunkResult]:
-    """Return nearest compatible chunks within the selected ready documents."""
+    """Return up to top_k compatible ready chunks, with original cosine distances.
+
+    Supplying query enables hybrid RRF ranking. Omitting it preserves the exact
+    vector-only storage operation for existing callers and diagnostics.
+    """
 
     if type(top_k) is not int or not 1 <= top_k <= 20:
         raise ValueError("top_k must be an integer between 1 and 20.")
 
     selected_documents = validate_document_ids(document_ids)
+    if query is not None and (not isinstance(query, str) or not query.strip()):
+        raise ValueError("Query must be nonblank text when supplied.")
 
     if len(query_vector) != EMBEDDING_DIMENSIONS:
         raise ValueError("Query vector has incorrect dimensions.")
@@ -250,14 +326,17 @@ async def search_similar_chunks(
             DocumentChunk.embedding_space == EMBEDDING_SPACE,
             DocumentChunk.embedding.is_not(None),
         )
-        .order_by(distance.asc(), DocumentChunk.id.asc())
-        .limit(top_k)
     )
 
     if selected_documents is not None:
         statement = statement.where(
             DocumentChunk.document_id.in_(selected_documents)
         )
+
+    if query is None:
+        statement = statement.order_by(distance.asc(), DocumentChunk.id.asc()).limit(top_k)
+    else:
+        statement = _hybrid_search(statement, distance, query, top_k)
 
     if isinstance(database, AsyncSession):
         # The caller owns the session and its transaction. Retrieval must not
@@ -291,6 +370,11 @@ async def search_similar_chunks(
                 chunk_index=row["chunk_index"],
                 content=row["content"],
                 cosine_distance=max(0.0, min(2.0, raw_distance)),
+                query_lexemes=tuple(row.get("query_lexemes", ())),
+                matched_lexemes=tuple(sorted(
+                    set(row.get("query_lexemes", ()))
+                    & set(row.get("content_lexemes", ()))
+                )),
             )
         )
 

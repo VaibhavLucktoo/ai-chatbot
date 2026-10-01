@@ -1,23 +1,25 @@
 import asyncio
+import json
 import math
 import os
 import unittest
+from dataclasses import asdict
 from unittest.mock import AsyncMock, MagicMock, patch
 from uuid import UUID, uuid4
 
 from pydantic import ValidationError
-from sqlalchemy import delete, insert, text, update
+from sqlalchemy import Integer, Uuid, column, delete, insert, select, text, update, values
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.schema import CreateSchema, DropSchema
 
-from app.core.config import get_settings
+from app.core.config import Settings, get_settings
 from app.providers.embeddings import get_embedding_provider
 from app.schemas.chat import ChatRequest
 from app.schemas.documents import DocumentSearchRequest
-from app.services.retrieval import RetrievalProviderError, RetrievalResult, retrieve_chunks
+from app.services.retrieval import RetrievalProviderError, RetrievalResult, has_sufficient_evidence, retrieve_chunks
 from app.storage.db import Database
-from app.storage.documents import StoredChunkResult, search_similar_chunks
+from app.storage.documents import StoredChunkResult, _lexical_query, _rrf_scores, search_similar_chunks
 from app.storage.models import Base, Document, DocumentChunk, EMBEDDING_SPACE
 from tests.helpers import AsyncTestCase, StubEmbeddings, api_client, async_test, make_pdf
 
@@ -28,6 +30,61 @@ def vector(first=1.0, second=0.0):
 
 def stored_chunk():
     return StoredChunkResult(uuid4(), uuid4(), 'source.pdf', 2, 3, 'Source text', 0.25)
+
+
+class EvidenceGateTests(unittest.TestCase):
+    def candidate(self, distance, matched=(), terms=('confidenti', 'inform')):
+        return dict(cosine_distance=distance, query_lexemes=terms, matched_lexemes=matched)
+
+    def test_strong_semantic_match_anywhere_in_set_passes(self):
+        chunks = [self.candidate(0.8), self.candidate(0.3), self.candidate(0.7)]
+        self.assertTrue(has_sufficient_evidence(chunks, max_cosine_distance=0.45))
+        self.assertEqual([c['cosine_distance'] for c in chunks], [0.8, 0.3, 0.7])
+
+    def test_weak_semantic_with_meaningful_lexical_match_passes(self):
+        self.assertTrue(has_sufficient_evidence(
+            [self.candidate(0.6, ('arab', 'support', 'enabl'), ('happen', 'arab', 'support', 'enabl'))],
+            max_cosine_distance=0.45,
+        ))
+
+    def test_repeated_generic_term_does_not_pass_multi_term_question(self):
+        self.assertFalse(has_sufficient_evidence(
+            [self.candidate(0.51, ('inform',)), self.candidate(0.54, ('inform',))],
+            max_cosine_distance=0.45,
+        ))
+
+    def test_lexical_support_can_span_multiple_chunks(self):
+        chunks = [self.candidate(0.6, ('confidenti',)), self.candidate(0.7, ('inform',))]
+        self.assertTrue(has_sufficient_evidence(chunks, max_cosine_distance=0.45))
+
+    def test_single_term_query_and_empty_query_terms(self):
+        self.assertTrue(has_sufficient_evidence(
+            [self.candidate(0.6, ('confidenti',), ('confidenti',))], max_cosine_distance=0.45,
+        ))
+        self.assertFalse(has_sufficient_evidence(
+            [self.candidate(0.6, (), ())], max_cosine_distance=0.45,
+        ))
+        self.assertFalse(has_sufficient_evidence([], max_cosine_distance=0.45))
+
+    def test_threshold_boundary_and_invalid_distances(self):
+        chunk = self.candidate(0.45)
+        self.assertTrue(has_sufficient_evidence([chunk], max_cosine_distance=0.45))
+        self.assertFalse(has_sufficient_evidence([chunk], max_cosine_distance=0.44))
+        for distance in (float('nan'), float('inf'), -0.1, None):
+            with self.subTest(distance=distance):
+                self.assertFalse(has_sufficient_evidence(
+                    [self.candidate(distance)], max_cosine_distance=0.45,
+                ))
+
+    def test_threshold_loads_from_existing_settings_and_rejects_invalid_values(self):
+        for value in ('0.3', '0.6', '-1', '2.1', 'nan', 'inf'):
+            with self.subTest(value=value), patch.dict(os.environ, {'RAG_MAX_COSINE_DISTANCE': value}):
+                kwargs = dict(_env_file=None, postgres_db='test', postgres_user='test', postgres_password='test')
+                if value in ('0.3', '0.6'):
+                    self.assertEqual(Settings(**kwargs).rag_max_cosine_distance, float(value))
+                else:
+                    with self.assertRaises(ValidationError):
+                        Settings(**kwargs)
 
 
 class SearchSchemaTests(unittest.TestCase):
@@ -70,7 +127,7 @@ class RetrievalServiceTests(AsyncTestCase):
             with patch('app.services.retrieval.search_similar_chunks', new_callable=AsyncMock, return_value=results) as search:
                 result = await retrieve_chunks(database, provider, '  Question  ')
         embed.assert_awaited_once_with('Question')
-        search.assert_awaited_once_with(database=database, query_vector=vector(), top_k=5, document_ids=None)
+        search.assert_awaited_once_with(database=database, query_vector=vector(), top_k=5, document_ids=None, query='Question')
         self.assertEqual(result, RetrievalResult('Question', 5, results))
 
     @async_test
@@ -80,7 +137,7 @@ class RetrievalServiceTests(AsyncTestCase):
         with patch('app.services.retrieval.search_similar_chunks', new_callable=AsyncMock, return_value=[]) as search:
             await retrieve_chunks(database, StubEmbeddings(), 'Question', document_ids=[document_id])
         search.assert_awaited_once_with(
-            database=database, query_vector=vector(), top_k=5, document_ids=(document_id,),
+            database=database, query_vector=vector(), top_k=5, document_ids=(document_id,), query='Question',
         )
 
     @async_test
@@ -335,7 +392,7 @@ class RetrievalDatabaseTests(AsyncTestCase):
                 self.assertFalse(session.in_transaction())
                 self.assertEqual(self.database._engine.pool.checkedout(), 0)
                 self.assertIn("Passage 1", prompt)
-                return "Passage 1 [1]"
+                return json.dumps({'answer': 'Passage 1', 'source_numbers': [1]})
 
             with (
                 patch('app.services.rag.get_embedding_provider', return_value=StubEmbeddings()),
@@ -352,7 +409,7 @@ class RetrievalDatabaseTests(AsyncTestCase):
                 # This incomplete object would fail if retrieval autoflushed it.
                 pending_document = Document(filename='unsaved.pdf')
                 session.add(pending_document)
-                results = await search_similar_chunks(session, vector(), top_k=2)
+                results = await search_similar_chunks(session, vector(), top_k=2, query='Passage')
                 self.assertEqual([item.chunk_id.int for item in results], [1, 2])
                 self.assertIn(pending_document, session.new)
                 self.assertTrue(session.autoflush)
@@ -375,6 +432,149 @@ class RetrievalDatabaseTests(AsyncTestCase):
         async with self.database.transaction() as connection:
             await connection.execute(update(Document).values(status='failed'))
         self.assertEqual(await search_similar_chunks(self.database, vector()), [])
+        self.assertEqual(await search_similar_chunks(self.database, vector(), query='Passage'), [])
+
+    @async_test
+    async def test_lexical_no_matches_preserves_vector_order_and_distances(self):
+        expected = await search_similar_chunks(self.database, vector())
+        for query in ('xylophonicallyabsent', 'the and is', '?! -- "'):
+            with self.subTest(query=query):
+                actual = await search_similar_chunks(self.database, vector(), query=query)
+                self.assertEqual(actual, expected)
+
+    @async_test
+    async def test_hybrid_filters_both_lists_to_selected_ready_compatible_documents(self):
+        # All fixtures have a lexical match, including pending/failed/legacy rows.
+        results = await search_similar_chunks(self.database, vector(), top_k=20, query='Passage')
+        self.assertEqual([c.chunk_id.int for c in results], [1, 2, 3, 4, 5])
+        selected = results[-1].document_id
+        results = await search_similar_chunks(
+            self.database, vector(), top_k=1, query='Passage', document_ids=[selected],
+        )
+        self.assertEqual([c.chunk_id.int for c in results], [5])
+        self.assertEqual(await search_similar_chunks(
+            self.database, vector(), query='Passage', document_ids=[uuid4()],
+        ), [])
+
+    @async_test
+    async def test_natural_language_lexical_signal_promotes_relevant_rule(self):
+        async with self.database.transaction() as connection:
+            for number, content in (
+                (1, 'Arabic FAQ and translations.'),
+                (2, 'Ticket names in Arabic.'),
+                (3, 'Language settings.'),
+                (4, 'Event Title (Arabic). Mandatory if Arabic support is enabled.'),
+                (5, 'Other display settings.'),
+            ):
+                await connection.execute(update(DocumentChunk).where(
+                    DocumentChunk.id == UUID(int=number),
+                ).values(content=content))
+            query = _lexical_query('What happens if Arabic support is enabled?')
+            lexemes = await connection.scalar(select(query))
+            self.assertIn('|', lexemes)
+            # The relevant chunk lacks "happens" but matches the OR query.
+        baseline = await search_similar_chunks(self.database, vector())
+        actual = await search_similar_chunks(
+            self.database, vector(), query='What happens if Arabic support is enabled?',
+        )
+        self.assertEqual(baseline[3].chunk_id.int, 4)
+        self.assertLess([c.chunk_id.int for c in actual].index(4), 3)
+        distances = {c.chunk_id: c.cosine_distance for c in baseline}
+        self.assertTrue(all(c.cosine_distance == distances[c.chunk_id] for c in actual))
+        relevant = next(c for c in actual if c.chunk_id.int == 4)
+        self.assertTrue({'arab', 'support', 'enabl'}.issubset(relevant.matched_lexemes))
+        self.assertIn('happen', relevant.query_lexemes)
+        self.assertNotIn('happen', relevant.matched_lexemes)
+
+    @async_test
+    async def test_evidence_gate_never_uses_unselected_document(self):
+        from app.services.rag import answer_question, INSUFFICIENT_CONTEXT_ANSWER
+
+        async with self.database.transaction() as connection:
+            await connection.execute(update(DocumentChunk).where(
+                DocumentChunk.id == UUID(int=1),
+            ).values(content='Confidential Information means proprietary business records.'))
+            await connection.execute(update(DocumentChunk).where(
+                DocumentChunk.id == UUID(int=5),
+            ).values(content='Event information and display settings.'))
+            selected = await connection.scalar(select(DocumentChunk.document_id).where(
+                DocumentChunk.id == UUID(int=5),
+            ))
+        candidates = await retrieve_chunks(
+            self.database, StubEmbeddings(), 'What is Confidential Information?',
+            document_ids=[selected],
+        )
+        self.assertEqual(len(candidates.chunks), 1)
+        self.assertEqual(candidates.chunks[0].matched_lexemes, ('inform',))
+        self.assertFalse(has_sufficient_evidence(
+            [asdict(c) for c in candidates.chunks], max_cosine_distance=0.45,
+        ))
+        async with self.database.session() as session:
+            with (
+                patch('app.services.rag.get_embedding_provider', return_value=StubEmbeddings()),
+                patch('app.services.rag.generate_llm_response') as generate,
+            ):
+                response = await answer_question(session, ChatRequest(
+                    question='What is Confidential Information?', document_ids=[selected],
+                ))
+                generate.assert_not_awaited()
+                self.assertFalse(session.in_transaction())
+                self.assertEqual(self.database._engine.pool.checkedout(), 0)
+        self.assertEqual(response.answer, INSUFFICIENT_CONTEXT_ANSWER)
+        self.assertEqual(response.sources, [])
+
+    @async_test
+    async def test_lexical_candidate_outside_vector_pool_and_public_limits(self):
+        async with self.database.transaction() as connection:
+            await connection.execute(delete(Document))
+            doc_id = uuid4()
+            await connection.execute(insert(Document).values(
+                id=doc_id, filename='hybrid.pdf', content_sha256=uuid4().hex * 2,
+                page_count=1, status='ready',
+            ))
+            await connection.execute(insert(DocumentChunk), [
+                dict(id=UUID(int=n), document_id=doc_id, page_number=1, chunk_index=n-1,
+                     content='quasar' if n == 60 else 'General information',
+                     embedding_space=EMBEDDING_SPACE, embedding=vector())
+                for n in range(1, 61)
+            ])
+        for top_k in (1, 5, 20):
+            with self.subTest(top_k=top_k):
+                results = await search_similar_chunks(
+                    self.database, vector(), top_k=top_k, query='quasar',
+                )
+                self.assertEqual(len(results), top_k)
+                self.assertEqual(len({c.chunk_id for c in results}), top_k)
+                if top_k > 1:
+                    # Rank 1 in the lexical list ties vector rank 1, then UUID wins.
+                    self.assertEqual([c.chunk_id.int for c in results[:2]], [1, 60])
+                    self.assertEqual(results[1].cosine_distance, 0.0)
+
+    @async_test
+    async def test_rrf_ranks_ties_and_empty_list_fallbacks(self):
+        def candidates(name, ids):
+            # Typed VALUES allow testing either empty strategy independently.
+            data = [(UUID(int=n), rank) for rank, n in enumerate(ids, start=1)]
+            rows = values(column('chunk_id', Uuid), column('rank', Integer), name=name).data(
+                data or [(UUID(int=0), 0)],
+            )
+            statement = select(rows.c.chunk_id, rows.c.rank)
+            return statement.where(rows.c.rank > 0).subquery()
+
+        cases = (([1, 2, 3], [2, 1, 4], [1, 2, 3, 4]),
+                 ([2, 1], [], [2, 1]), ([], [3, 1], [3, 1]), ([], [], []))
+        async with self.database.transaction() as connection:
+            for semantic, lexical, expected in cases:
+                with self.subTest(semantic=semantic, lexical=lexical):
+                    fused = _rrf_scores(candidates('semantic', semantic), candidates('lexical', lexical))
+                    rows = (await connection.execute(select(fused).order_by(
+                        fused.c.rrf_score.desc(), fused.c.chunk_id.asc(),
+                    ))).all()
+                    self.assertEqual([r.chunk_id.int for r in rows], expected)
+                    for row in rows:
+                        score = sum(1 / (60 + ids.index(row.chunk_id.int) + 1)
+                                    for ids in (semantic, lexical) if row.chunk_id.int in ids)
+                        self.assertAlmostEqual(row.rrf_score, score)
 
     @unittest.skipUnless(os.environ.get('RUN_MODEL_TESTS') == '1', 'Set RUN_MODEL_TESTS=1 for real FastEmbed')
     @async_test

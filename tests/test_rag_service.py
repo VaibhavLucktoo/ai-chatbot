@@ -2,6 +2,7 @@
 
 import asyncio
 from dataclasses import asdict
+from types import SimpleNamespace
 import json
 import unittest
 from unittest.mock import AsyncMock, Mock, patch
@@ -24,6 +25,12 @@ def stored_chunk(filename="source.pdf", content="PostgreSQL stores the vectors."
 
 
 class PromptTests(unittest.TestCase):
+    def test_prompt_requires_json_and_python_owned_citations(self):
+        self.assertIn('ONLY valid JSON', rag.RAG_SYSTEM_PROMPT)
+        self.assertIn('"source_numbers": [1]', rag.RAG_SYSTEM_PROMPT)
+        self.assertIn('Do not put inline citations', rag.RAG_SYSTEM_PROMPT)
+        self.assertIn('"source_numbers": []', rag.RAG_SYSTEM_PROMPT)
+
     def test_prompt_preserves_metadata_text_order_and_question(self):
         chunks = [asdict(stored_chunk()), asdict(stored_chunk("second.pdf", "Second passage."))]
         prompt = rag.build_rag_prompt("  Where are vectors stored?  ", chunks)
@@ -72,7 +79,197 @@ class PromptTests(unittest.TestCase):
         self.assertIn("passages):\n[]", prompt)
 
 
+class StructuredAnswerTests(unittest.TestCase):
+    def setUp(self):
+        self.sources = [
+            ChatSource(document_id=uuid4(), chunk_id=uuid4(), filename='source.pdf', page_number=n)
+            for n in range(1, 6)
+        ]
+
+    def validate(self, answer, numbers):
+        return rag.validate_answer(
+            json.dumps({'answer': answer, 'source_numbers': numbers}), self.sources,
+        )
+
+    def test_valid_answer_gets_python_citation(self):
+        response = self.validate('The General section is the first step.', [1])
+        self.assertEqual(response.answer, 'The General section is the first step. [1]')
+        self.assertEqual(response.sources, [self.sources[0]])
+
+    def test_multiple_sources_keep_original_passage_numbers(self):
+        response = self.validate('Supported answer.', [1, 3])
+        self.assertEqual(response.answer, 'Supported answer. [1][3]')
+        self.assertEqual(response.sources, [self.sources[0], self.sources[2]])
+
+    def test_sources_are_deduplicated_and_sorted(self):
+        response = self.validate('Supported answer.', [3, 1, 3])
+        self.assertEqual(response.answer, 'Supported answer. [1][3]')
+        self.assertEqual(response.sources, [self.sources[0], self.sources[2]])
+
+    def test_unknown_sources_are_rejected(self):
+        for number in (-1, 0, 6, 99):
+            with self.subTest(number=number), self.assertRaisesRegex(LLMResponseError, 'cited an unknown source'):
+                self.validate('Supported answer.', [number])
+        with self.assertRaisesRegex(LLMResponseError, 'cited an unknown source'):
+            rag.validate_answer(json.dumps({'answer': 'Answer', 'source_numbers': [1]}), [])
+
+    def test_invalid_json_is_not_repaired(self):
+        for output in ('This is not JSON', '```json\n{"answer": "Answer", "source_numbers": [1]}\n```',
+                       '{"answer": "Answer", "source_numbers": [1],}',
+                       '{"answer": "Answer", "source_numbers": [1]} trailing text'):
+            with self.subTest(output=output), self.assertRaisesRegex(LLMResponseError, 'returned invalid structured output'):
+                rag.validate_answer(output, self.sources)
+
+    def test_empty_and_nonstring_responses_are_rejected(self):
+        for output in (None, 123, {}, '', ' \n\t '):
+            with self.subTest(output=output), self.assertRaises(LLMResponseError):
+                rag.validate_answer(output, self.sources)
+
+    def test_invalid_schema_is_rejected_without_coercion(self):
+        payloads = [None, [], 'Answer', {}, {'source_numbers': [1]},
+                    {'answer': 1, 'source_numbers': [1]}, {'answer': '', 'source_numbers': [1]},
+                    {'answer': ' \n\t ', 'source_numbers': [1]},
+                    {'answer': 'Answer', 'source_numbers': [1], 'extra': 'unexpected'}]
+        payloads.extend({'answer': 'Answer', 'source_numbers': numbers}
+                        for numbers in (None, 1, '1', [True], [False], ['1'], [1.0], [1.5]))
+        for payload in payloads:
+            with self.subTest(payload=payload), self.assertRaises(LLMResponseError):
+                rag.validate_answer(json.dumps(payload), self.sources)
+
+    def test_empty_sources_allow_only_exact_fallback(self):
+        response = self.validate(rag.INSUFFICIENT_CONTEXT_ANSWER, [])
+        self.assertEqual(response.answer, rag.INSUFFICIENT_CONTEXT_ANSWER)
+        self.assertEqual(response.sources, [])
+        for answer in ('Normal answer.', rag.INSUFFICIENT_CONTEXT_ANSWER.upper(),
+                       ' ' + rag.INSUFFICIENT_CONTEXT_ANSWER, rag.INSUFFICIENT_CONTEXT_ANSWER + ' [1]'):
+            with self.subTest(answer=answer), self.assertRaisesRegex(LLMResponseError, 'omitted supporting sources'):
+                self.validate(answer, [])
+
+    def test_omitted_sources_use_empty_list_default(self):
+        response = rag.validate_answer(json.dumps({'answer': rag.INSUFFICIENT_CONTEXT_ANSWER}), self.sources)
+        self.assertEqual(response.sources, [])
+        with self.assertRaisesRegex(LLMResponseError, 'omitted supporting sources'):
+            rag.validate_answer(json.dumps({'answer': 'Normal answer.'}), self.sources)
+
+
 class RAGTests(unittest.IsolatedAsyncioTestCase):
+    async def test_unsupported_evidence_skips_prompt_and_llm_and_retains_trace(self):
+        chunks = [{**asdict(stored_chunk()), 'cosine_distance': 0.52,
+                   'query_lexemes': ('confidenti', 'inform'), 'matched_lexemes': ('inform',)}]
+        trace = {}
+        async with AsyncSession() as session:
+            with (
+                patch.object(rag, 'search_similar_chunks', return_value=chunks),
+                patch.object(rag, 'get_settings', return_value=SimpleNamespace(rag_max_cosine_distance=0.45)),
+                patch.object(rag, 'build_rag_prompt') as build,
+                patch.object(rag, 'generate_llm_response') as generate,
+            ):
+                response = await rag.answer_question(
+                    session, ChatRequest(question='What is Confidential Information?'), trace=trace,
+                )
+            self.assertFalse(session.in_transaction())
+        build.assert_not_called()
+        generate.assert_not_awaited()
+        self.assertEqual(response.answer, rag.INSUFFICIENT_CONTEXT_ANSWER)
+        self.assertEqual(response.sources, [])
+        self.assertEqual(trace['retrieved_chunks'], chunks)
+        self.assertFalse(trace['sufficient_evidence'])
+        self.assertEqual(trace['messages'], [])
+        self.assertIsNone(trace['raw_answer'])
+
+    async def test_configured_threshold_controls_llm_invocation(self):
+        chunks = [{**asdict(stored_chunk()), 'cosine_distance': 0.4}]
+        for cutoff, expected_call in ((0.3, False), (0.5, True)):
+            with (
+                self.subTest(cutoff=cutoff),
+                patch.object(rag, 'get_settings', return_value=SimpleNamespace(rag_max_cosine_distance=cutoff)),
+                patch.object(rag, 'search_similar_chunks', return_value=chunks),
+                patch.object(rag, 'generate_llm_response', return_value=json.dumps({
+                    'answer': 'Supported answer.', 'source_numbers': [1],
+                })) as generate,
+            ):
+                await rag.answer_question(AsyncMock(spec=AsyncSession), ChatRequest(question='Where?'))
+                self.assertEqual(generate.await_count, int(expected_call))
+
+    async def test_lexical_evidence_selects_top_two_candidates_in_order(self):
+        chunks = [{**asdict(stored_chunk()), 'cosine_distance': 0.6,
+                   'query_lexemes': ('mandatori', 'field', 'general'), 'matched_lexemes': terms}
+                  for terms in ((), ('mandatori',), ('field',))]
+        with (
+            patch.object(rag, 'search_similar_chunks', return_value=chunks) as search,
+            patch.object(rag, 'generate_llm_response', return_value=json.dumps({
+                'answer': 'Supported across pages.', 'source_numbers': [2],
+            })) as generate,
+        ):
+            response = await rag.answer_question(
+                AsyncMock(spec=AsyncSession), ChatRequest(question='Mandatory fields in General?', top_k=3),
+            )
+        self.assertEqual(search.await_args.kwargs['top_k'], 3)
+        prompt = generate.await_args.args[0]
+        selected = chunks[:2]
+        self.assertEqual(prompt, rag.build_rag_prompt('Mandatory fields in General?', selected))
+        self.assertEqual([s.chunk_id for s in response.sources], [c['chunk_id'] for c in selected[1:]])
+
+    async def test_five_candidates_send_only_two_and_regenerate_source_numbers(self):
+        chunks = [
+            {**asdict(stored_chunk(f"source-{index}.pdf", f"Passage {index}.")),
+             'cosine_distance': 0.2}
+            for index in range(1, 6)
+        ]
+        answer = json.dumps({'answer': 'Supported answer.', 'source_numbers': [1, 2]})
+        with (
+            patch.object(rag, "search_similar_chunks", return_value=chunks),
+            patch.object(rag, "generate_llm_response", return_value=answer) as generate,
+        ):
+            response = await rag.answer_question(
+                AsyncMock(spec=AsyncSession), ChatRequest(question="Question?", top_k=5),
+            )
+
+        prompt = generate.await_args.args[0]
+        context = json.loads(prompt.split("CONTEXT (JSON array of document passages):\n", 1)[1].split(
+            "\n\nQUESTION (JSON string):\n", 1,
+        )[0])
+        self.assertEqual(len(context), 2)
+        self.assertEqual([item["source_number"] for item in context], [1, 2])
+        self.assertEqual(
+            [source.chunk_id for source in response.sources],
+            [chunks[0]["chunk_id"], chunks[1]["chunk_id"]],
+        )
+
+    async def test_two_and_one_candidates_send_all_available_context(self):
+        for count in (2, 1):
+            chunks = [
+                {**asdict(stored_chunk(f"source-{index}.pdf")), 'cosine_distance': 0.2}
+                for index in range(count)
+            ]
+            with (
+                self.subTest(count=count),
+                patch.object(rag, "search_similar_chunks", return_value=chunks),
+                patch.object(rag, "generate_llm_response", return_value=json.dumps({
+                    'answer': 'Supported answer.', 'source_numbers': [1],
+                })) as generate,
+            ):
+                await rag.answer_question(
+                    AsyncMock(spec=AsyncSession), ChatRequest(question="Question?", top_k=count),
+                )
+                context = json.loads(generate.await_args.args[0].split(
+                    "CONTEXT (JSON array of document passages):\n", 1,
+                )[1].split("\n\nQUESTION (JSON string):\n", 1)[0])
+                self.assertEqual(len(context), count)
+
+    async def test_no_relevant_candidates_skip_llm(self):
+        chunks = [{**asdict(stored_chunk()), 'cosine_distance': 0.8}]
+        with (
+            patch.object(rag, "search_similar_chunks", return_value=chunks),
+            patch.object(rag, "generate_llm_response") as generate,
+        ):
+            response = await rag.answer_question(
+                AsyncMock(spec=AsyncSession), ChatRequest(question="Question?"),
+            )
+        generate.assert_not_awaited()
+        self.assertEqual(response.answer, rag.INSUFFICIENT_CONTEXT_ANSWER)
+        self.assertEqual(response.sources, [])
+
     async def test_read_transaction_ends_before_generation_and_trace_retains_raw_answer(self):
         chunks = [asdict(stored_chunk()), asdict(stored_chunk("other.pdf"))]
         trace = {}
@@ -84,16 +281,16 @@ class RAGTests(unittest.IsolatedAsyncioTestCase):
             async def generate(prompt, *, system_prompt, trace=None):
                 self.assertFalse(session.in_transaction())
                 self.assertEqual(system_prompt, rag.RAG_SYSTEM_PROMPT)
-                return "Stored in PostgreSQL. [2]"
+                return json.dumps({'answer': 'Stored in PostgreSQL.', 'source_numbers': [2]})
 
             with (
                 patch.object(rag, "search_similar_chunks", side_effect=search),
                 patch.object(rag, "generate_llm_response", side_effect=generate),
             ):
                 response = await rag.answer_question(session, ChatRequest(question="Where?"), trace=trace)
-        self.assertEqual(response.answer, "Stored in PostgreSQL. [1]")
+        self.assertEqual(response.answer, "Stored in PostgreSQL. [2]")
         self.assertEqual([s.filename for s in response.sources], ["other.pdf"])
-        self.assertEqual(trace["raw_answer"], "Stored in PostgreSQL. [2]")
+        self.assertEqual(json.loads(trace["raw_answer"]), {'answer': 'Stored in PostgreSQL.', 'source_numbers': [2]})
         self.assertEqual(trace["retrieved_chunks"], chunks)
         self.assertEqual(trace["response"], response.model_dump(mode="json"))
         self.assertEqual([m["role"] for m in trace["messages"]], ["system", "user"])
@@ -119,18 +316,20 @@ class RAGTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(retrieve.await_args.kwargs["document_ids"], [document_id])
 
     async def test_nonempty_insufficient_context_returns_no_sources(self):
-        for answer in (rag.INSUFFICIENT_CONTEXT_ANSWER, rag.INSUFFICIENT_CONTEXT_ANSWER + " [1]"):
-            with (
-                self.subTest(answer=answer),
-                patch.object(rag, "search_similar_chunks", return_value=[asdict(stored_chunk())]),
-                patch.object(rag, "generate_llm_response", return_value=answer),
-            ):
-                response = await rag.answer_question(AsyncMock(spec=AsyncSession), ChatRequest(question="Leave?"))
-            self.assertEqual(response.answer, rag.INSUFFICIENT_CONTEXT_ANSWER)
-            self.assertEqual(response.sources, [])
+        answer = json.dumps({'answer': rag.INSUFFICIENT_CONTEXT_ANSWER, 'source_numbers': []})
+        with (
+            patch.object(rag, "search_similar_chunks", return_value=[asdict(stored_chunk())]),
+            patch.object(rag, "generate_llm_response", return_value=answer),
+        ):
+            response = await rag.answer_question(AsyncMock(spec=AsyncSession), ChatRequest(question="Leave?"))
+        self.assertEqual(response.answer, rag.INSUFFICIENT_CONTEXT_ANSWER)
+        self.assertEqual(response.sources, [])
 
-    async def test_invalid_citations_fail_but_trace_keeps_the_model_output(self):
-        for answer in ("An unsupported answer.", "Answer [0]", "Answer [2]", "Answer [1-2]"):
+    async def test_invalid_structured_answers_fail_but_trace_keeps_the_model_output(self):
+        for answer in ('An unsupported answer.', *[
+            json.dumps({'answer': 'Answer', 'source_numbers': numbers})
+            for numbers in ([], [0], [2], ['1-2'])
+        ]):
             trace = {}
             with (
                 self.subTest(answer=answer),
@@ -148,16 +347,18 @@ class RAGTests(unittest.IsolatedAsyncioTestCase):
             asdict(stored_chunk("policy.pdf", "Employees on probation are not entitled to leave.")),
             asdict(stored_chunk("policy.pdf", "Manager-approved leave extends the probation period.")),
         ]
-        answer = "The policy restricts leave [1]. A separate clause says approved leave extends probation [2]."
+        answer = "The policy restricts leave. A separate clause says approved leave extends probation."
         with (
             patch.object(rag, "search_similar_chunks", return_value=chunks),
-            patch.object(rag, "generate_llm_response", return_value=answer) as generate,
+            patch.object(rag, "generate_llm_response", return_value=json.dumps({
+                'answer': answer, 'source_numbers': [1, 2],
+            })) as generate,
         ):
             response = await rag.answer_question(AsyncMock(spec=AsyncSession), ChatRequest(question="Can I take leave during probation?"))
         for chunk in chunks:
             self.assertIn(chunk["content"], generate.await_args.args[0])
         self.assertIn("describe both", generate.await_args.kwargs["system_prompt"])
-        self.assertEqual(response.answer, answer)
+        self.assertEqual(response.answer, answer + ' [1][2]')
         self.assertEqual(len(response.sources), 2)
 
     async def test_empty_retrieval_skips_prompt_and_llm(self):
@@ -184,7 +385,9 @@ class RAGTests(unittest.IsolatedAsyncioTestCase):
         db = AsyncMock(spec=AsyncSession)
         with (
             patch.object(rag, "search_similar_chunks", return_value=chunks) as search,
-            patch.object(rag, "generate_llm_response", return_value="In PostgreSQL. [1]") as generate,
+            patch.object(rag, "generate_llm_response", return_value=json.dumps({
+                'answer': 'In PostgreSQL.', 'source_numbers': [1],
+            })) as generate,
         ):
             response = await rag.answer_question(db, request)
         search.assert_awaited_once_with(db=db, question=request.question, top_k=2, document_ids=None)

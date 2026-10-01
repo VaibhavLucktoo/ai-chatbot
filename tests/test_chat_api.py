@@ -1,6 +1,7 @@
 """Chat endpoint behavior without a live database or LLM server."""
 
 import asyncio
+import json
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 from types import SimpleNamespace
@@ -128,7 +129,9 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
         chunk = StoredChunkResult(uuid4(), uuid4(), "report.pdf", 3, 0, "Vectors are in PostgreSQL.", 0.1)
         with (
             patch("app.services.rag.search_similar_chunks", return_value=[asdict(chunk)]),
-            patch("app.services.rag.generate_llm_response", return_value="In PostgreSQL. [1]") as generate,
+            patch("app.services.rag.generate_llm_response", return_value=json.dumps({
+                'answer': 'In PostgreSQL.', 'source_numbers': [1],
+            })) as generate,
         ):
             async with self.client() as client:
                 response = await client.post("/v1/chat", json={"question": "Where are vectors stored?"})
@@ -153,7 +156,9 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
         chunk = StoredChunkResult(uuid4(), uuid4(), "policy.pdf", 11, 0, "Policy text.", 0.1)
         with (
             patch("app.services.rag.search_similar_chunks", return_value=[asdict(chunk)]),
-            patch("app.services.rag.generate_llm_response", return_value="Unsupported claim [99]"),
+            patch("app.services.rag.generate_llm_response", return_value=json.dumps({
+                'answer': 'Unsupported claim', 'source_numbers': [99],
+            })),
         ):
             async with self.client() as client:
                 response = await client.post("/v1/chat", json={"question": "Policy?"})
@@ -164,7 +169,9 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
         chunk = StoredChunkResult(uuid4(), uuid4(), "manual.pdf", 1, 0, "Unrelated text.", 0.8)
         with (
             patch("app.services.rag.search_similar_chunks", return_value=[asdict(chunk)]),
-            patch("app.services.rag.generate_llm_response", return_value=INSUFFICIENT_CONTEXT_ANSWER),
+            patch("app.services.rag.generate_llm_response", return_value=json.dumps({
+                'answer': INSUFFICIENT_CONTEXT_ANSWER, 'source_numbers': [],
+            })),
         ):
             async with self.client() as client:
                 response = await client.post("/v1/chat", json={"question": "Policy?"})

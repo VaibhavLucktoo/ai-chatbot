@@ -37,6 +37,8 @@ class Settings(BaseSettings):
     embedding_dimensions: int = Field(default=384, ge=1)
     embedding_threads: int = Field(default=2, ge=1, le=32)
     embedding_cache_dir: Path = PROJECT_ROOT / ".cache" / "fastembed"
+    # MVP evidence heuristic, calibrated initially against local document queries.
+    rag_max_cosine_distance: float = Field(default=0.45, ge=0, le=2, allow_inf_nan=False)
 
 
 @lru_cache

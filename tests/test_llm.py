@@ -58,7 +58,7 @@ class LLMTests(unittest.IsolatedAsyncioTestCase):
                 "model": "llama3.2:1b-instruct-q4_K_M",
                 "messages": [{"role": "user", "content": prompt}],
                 "temperature": 0,
-                "max_tokens": 1024,
+                "max_tokens": 300,
                 "stream": False,
             })
             self.assertEqual(request.extensions["timeout"], {
@@ -96,7 +96,7 @@ class LLMTests(unittest.IsolatedAsyncioTestCase):
                 await llm.generate_llm_response('Question', trace=trace)
         self.assertEqual(trace['llm_response'], raw)
         self.assertEqual(trace['llm_http_status'], 200)
-        self.assertEqual(trace['generation']['max_tokens'], 1024)
+        self.assertEqual(trace['generation']['max_tokens'], 300)
         self.assertNotIn('private-token', json.dumps(trace))
 
     async def test_provider_prefix_model_and_authorization(self):

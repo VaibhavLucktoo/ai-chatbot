@@ -4,6 +4,7 @@ Run with: uv run pytest tests/test_rag.py -v
 """
 
 from collections.abc import AsyncIterator, Iterator
+import json
 from unittest.mock import AsyncMock, Mock
 from uuid import UUID
 
@@ -119,16 +120,19 @@ async def test_successful_rag_answer_returns_matching_sources(
     mock_chunks: list[StoredChunkResult],
 ) -> None:
     question = "Where are document vectors stored, and how many dimensions do they have?"
-    expected_answer = (
-        "Document vectors are stored in PostgreSQL using pgvector [1]. "
-        "Each embedding has 384 dimensions [2]."
+    answer_text = (
+        "Document vectors are stored in PostgreSQL using pgvector. "
+        "Each embedding has 384 dimensions."
     )
+    expected_answer = answer_text + ' [1][2]'
     retrieve_chunks_mock.return_value = RetrievalResult(
         query=question,
         top_k=2,
         chunks=mock_chunks,
     )
-    generate_llm_response_mock.return_value = expected_answer
+    generate_llm_response_mock.return_value = json.dumps({
+        'answer': answer_text, 'source_numbers': [1, 2],
+    })
 
     response = await client.post(
         "/v1/chat",

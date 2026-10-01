@@ -17,7 +17,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict, SettingsError
 
 CONNECT_TIMEOUT_SECONDS = 5.0
 EXECUTION_TIMEOUT_SECONDS = 30.0
-MAX_OUTPUT_TOKENS = 1024
+MAX_OUTPUT_TOKENS = 300
 
 
 class LLMError(RuntimeError):
