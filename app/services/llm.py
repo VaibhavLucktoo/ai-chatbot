@@ -1,4 +1,4 @@
-"""Async Llama generation through an OpenAI-compatible chat endpoint.
+"""Async LangChain generation through a validated OpenAI-compatible endpoint.
 
 Environment variables override values in the project's .env file:
     LLM_BASE_URL: API prefix, including /v1 (default: local Ollama).
@@ -8,16 +8,35 @@ Environment variables override values in the project's .env file:
 """
 
 import asyncio
+from contextlib import contextmanager
+from contextvars import ContextVar
 from pathlib import Path
+from time import perf_counter
 
 import httpx
+from langchain_core.messages import HumanMessage, SystemMessage
 from pydantic import Field, SecretStr, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict, SettingsError
+
+from app.providers.chat_model import CompatibleChatModel
 
 
 CONNECT_TIMEOUT_SECONDS = 5.0
 EXECUTION_TIMEOUT_SECONDS = 30.0
 MAX_OUTPUT_TOKENS = 300
+_shared_client: ContextVar[httpx.AsyncClient | None] = ContextVar("llm_client", default=None)
+_shared_slots: ContextVar[asyncio.Semaphore | None] = ContextVar("llm_slots", default=None)
+
+
+@contextmanager
+def llm_request_resources(client, slots):
+    """Bind application-owned resources without sharing request traces."""
+    client_token, slots_token = _shared_client.set(client), _shared_slots.set(slots)
+    try:
+        yield
+    finally:
+        _shared_client.reset(client_token)
+        _shared_slots.reset(slots_token)
 
 
 class LLMError(RuntimeError):
@@ -66,6 +85,11 @@ class _LLMSettings(BaseSettings):
     timeout_seconds: float = Field(
         default=EXECUTION_TIMEOUT_SECONDS, gt=0, le=600, allow_inf_nan=False,
     )
+    max_output_tokens: int | None = Field(default=None, ge=64, le=8192)
+    temperature: float = Field(default=0, ge=0, le=2, allow_inf_nan=False)
+    max_input_bytes: int = Field(default=64000, ge=2000, le=256000)
+    context_window_tokens: int = Field(default=32768, ge=4096, le=1048576,
+                                       validation_alias="RAG_CONTEXT_WINDOW_TOKENS")
 
 
 def _request_settings() -> tuple[str, str, dict[str, str], float]:
@@ -163,14 +187,14 @@ def _extract_answer(response: httpx.Response) -> str:
 async def generate_llm_response(
     prompt: str, *, system_prompt: str | None = None, trace: dict | None = None,
 ) -> str:
-    """Generate one text answer using the configured Llama provider.
+    """Generate one text answer through the LangChain chat-model interface.
 
     The connection timeout is 5 seconds. The entire HTTP operation, including
     connection setup and response reading, is bounded by LLM_TIMEOUT_SECONDS
     (30 seconds by default). Requests do not stream or retry automatically.
     Caller cancellation propagates. Trusted instructions can be supplied in a
-    separate system message. Output is capped at 1,024 tokens; truncated output
-    is rejected by the completion parser.
+    separate system message. GPT-OSS receives a 2,048-token budget including
+    reasoning; other models use MAX_OUTPUT_TOKENS. Truncated output is rejected.
 
     Raises:
         ValueError: A supplied prompt is not a nonempty string.
@@ -187,16 +211,51 @@ async def generate_llm_response(
 
     messages = []
     if system_prompt is not None:
-        messages.append({"role": "system", "content": system_prompt})
-    messages.append({"role": "user", "content": prompt})
+        messages.append(SystemMessage(content=system_prompt))
+    messages.append(HumanMessage(content=prompt))
+
+    async def transport(payload, **_options):
+        # Keep the private diagnostic dictionary out of callback invocation kwargs.
+        diagnostic = trace if trace is not None else {}
+        answer = await _generate_completion(payload, trace=diagnostic)
+        return answer, {
+            key: diagnostic[key] for key in ("llm_model", "token_usage", "finish_reason") if key in diagnostic
+        }
+
+    response = await CompatibleChatModel(transport=transport, model_name=_request_settings()[1], cache=False).ainvoke(messages)
+    return response.content
+
+
+async def _generate_completion(messages: list[dict], *, trace: dict | None = None) -> str:
+    """Validated transport used by the LangChain chat-model adapter."""
 
     endpoint, model, headers, timeout_seconds = _request_settings()
+    settings = _LLMSettings()
+    input_bytes = sum(len(item["content"].encode("utf-8")) for item in messages)
+    if input_bytes > settings.max_input_bytes:
+        raise LLMResponseError("The model input exceeds the configured size budget.")
+    payload = {
+        "model": model,
+        "messages": messages,
+        "temperature": settings.temperature,
+        "max_tokens": MAX_OUTPUT_TOKENS,
+        "stream": False,
+    }
+    if model in {"openai/gpt-oss-120b", "openai/gpt-oss-20b"}:
+        payload.update(max_tokens=2048, reasoning_effort="low")
+    if settings.max_output_tokens is not None:
+        payload["max_tokens"] = settings.max_output_tokens
+    if input_bytes + payload["max_tokens"] + 512 > settings.context_window_tokens:
+        raise LLMResponseError("The input and output budget exceed the configured model context window.")
     if trace is not None:
         trace.update(
             llm_model=model,
             generation={
-                "temperature": 0, "max_tokens": MAX_OUTPUT_TOKENS,
+                "temperature": payload["temperature"], "max_tokens": payload["max_tokens"],
                 "timeout_seconds": timeout_seconds,
+                "input_bytes": input_bytes,
+                **({"reasoning_effort": payload["reasoning_effort"]}
+                   if "reasoning_effort" in payload else {}),
             },
         )
     timeout = httpx.Timeout(
@@ -208,21 +267,23 @@ async def generate_llm_response(
 
     try:
         async with asyncio.timeout(timeout_seconds):
-            async with httpx.AsyncClient(
-                timeout=timeout,
-                headers=headers,
-                follow_redirects=False,
-            ) as client:
-                response = await client.post(
-                    endpoint,
-                    json={
-                        "model": model,
-                        "messages": messages,
-                        "temperature": 0,
-                        "max_tokens": MAX_OUTPUT_TOKENS,
-                        "stream": False,
-                    },
-                )
+            slots = _shared_slots.get()
+            queued = perf_counter()
+            if slots is not None:
+                await slots.acquire()
+            try:
+                if trace is not None:
+                    trace["generation_queue_ms"] = round((perf_counter() - queued) * 1000, 2)
+                client = _shared_client.get()
+                if client is not None:
+                    response = await client.post(endpoint, json=payload, headers=headers, timeout=timeout)
+                else:
+                    # CLI and standalone callers retain a short, owned client.
+                    async with httpx.AsyncClient(timeout=timeout, headers=headers, follow_redirects=False) as client:
+                        response = await client.post(endpoint, json=payload)
+            finally:
+                if slots is not None:
+                    slots.release()
     except (httpx.TimeoutException, TimeoutError):
         raise LLMTimeoutError("LLM request timed out.") from None
     except httpx.DecodingError:
@@ -234,6 +295,16 @@ async def generate_llm_response(
         trace["llm_http_status"] = response.status_code
         try:
             trace["llm_response"] = response.json()
+            choices = trace["llm_response"].get("choices", []) if isinstance(trace["llm_response"], dict) else []
+            if choices and isinstance(choices[0], dict):
+                trace["finish_reason"] = choices[0].get("finish_reason")
+            usage = trace["llm_response"].get("usage") if isinstance(trace["llm_response"], dict) else None
+            if isinstance(usage, dict):
+                trace["token_usage"] = {
+                    key: value for key, value in usage.items()
+                    if key in {"prompt_tokens", "completion_tokens", "total_tokens"}
+                    and type(value) is int and value >= 0
+                }
         except (ValueError, UnicodeError):
             trace["llm_response_text"] = response.text
     return _extract_answer(response)

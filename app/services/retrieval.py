@@ -1,6 +1,7 @@
 """Query embedding and document retrieval orchestration."""
 
 import math
+import asyncio
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from uuid import UUID
@@ -8,6 +9,7 @@ from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.providers.base import BaseEmbeddingProvider
+from app.core.config import get_settings
 from app.storage.db import Database
 from app.storage.documents import (
     StoredChunkResult,
@@ -89,7 +91,8 @@ async def retrieve_chunks(
         )
 
     try:
-        raw_vector = await embeddings.embed_query(normalized_query)
+        async with asyncio.timeout(get_settings().embedding_timeout_seconds):
+            raw_vector = await embeddings.embed_query(normalized_query)
         vector = [float(value) for value in raw_vector]
     except Exception as exc:
         raise RetrievalProviderError(

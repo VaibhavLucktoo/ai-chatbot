@@ -7,9 +7,11 @@ from tokenizers import Tokenizer
 from app.providers.documents import ExtractedDocument
 
 MODEL_NAME = "BAAI/bge-small-en-v1.5"
+TOKENIZER_REVISION = "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
 CHUNK_TOKENS = 350
 OVERLAP_TOKENS = 40
 MAX_ENCODED_TOKENS = 480  # Conservative margin below the model's 512 limit.
+MAX_CHUNKS_PER_DOCUMENT = 1000
 
 
 class ChunkingError(ValueError):
@@ -29,6 +31,7 @@ def _get_tokenizer() -> Tokenizer:
     tokenizer_path = hf_hub_download(
         repo_id=MODEL_NAME,
         filename="tokenizer.json",
+        revision=TOKENIZER_REVISION,
     )
     tokenizer = Tokenizer.from_file(tokenizer_path)
     # Chunk the entire page, even if the downloaded config enables truncation.
@@ -60,6 +63,10 @@ def chunk_document(document: ExtractedDocument) -> list[TextChunk]:
             ].strip()
 
             if content:
+                if len(chunks) >= MAX_CHUNKS_PER_DOCUMENT:
+                    raise ChunkingError(
+                        f"Document exceeds the {MAX_CHUNKS_PER_DOCUMENT}-chunk limit."
+                    )
                 encoded_length = len(
                     tokenizer.encode(
                         content,

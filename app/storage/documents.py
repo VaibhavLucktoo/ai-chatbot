@@ -4,9 +4,10 @@ import math
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass, field
+from datetime import timedelta
 from uuid import UUID, uuid4
 
-from sqlalchemy import delete, func, insert, select, union_all, update
+from sqlalchemy import delete, func, insert, select, union_all, update, or_, literal_column
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncConnection, AsyncSession
 
@@ -57,11 +58,16 @@ def _hybrid_search(statement, distance, query: str, top_k: int):
     vector_candidates = (
         statement.with_only_columns(
             DocumentChunk.id.label("chunk_id"),
-            func.row_number().over(order_by=vector_order).label("rank"),
+            distance,
         )
-        .order_by(*vector_order).limit(candidate_k).subquery("semantic")
+        .order_by(*vector_order).limit(candidate_k).subquery("semantic_limited")
     )
-    text_vector = func.to_tsvector("english", DocumentChunk.content)
+    vector_candidates = select(
+        vector_candidates.c.chunk_id,
+        func.row_number().over(order_by=(vector_candidates.c.cosine_distance,
+                                       vector_candidates.c.chunk_id)).label("rank"),
+    ).subquery("semantic")
+    text_vector = func.to_tsvector(literal_column("'english'::regconfig"), DocumentChunk.content)
     text_query = _lexical_query(query)
     lexical_order = (func.ts_rank(text_vector, text_query).desc(), DocumentChunk.id.asc())
     lexical_candidates = (
@@ -93,6 +99,7 @@ class ExistingDocument:
     page_count: int
     chunk_count: int
     status: str
+    lease_active: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,6 +109,7 @@ class ClaimedDocument:
     id: UUID
     filename: str
     already_existed: bool
+    attempt_id: UUID
 
 
 @dataclass(frozen=True, slots=True)
@@ -131,6 +139,14 @@ async def find_document_by_hash(
         return await _find_document(connection, content_sha256)
 
 
+async def retain_existing_source(database: Database, digest: str, data: bytes):
+    """Backfill an immutable legacy source without claiming new provenance."""
+    async with database.transaction() as connection:
+        await connection.execute(update(Document).where(
+            Document.content_sha256 == digest, Document.status == "ready", Document.original_pdf.is_(None),
+        ).values(original_pdf=data))
+
+
 async def _find_document(
     connection: AsyncConnection,
     content_sha256: str,
@@ -141,6 +157,7 @@ async def _find_document(
             Document.filename,
             Document.page_count,
             Document.status,
+            (Document.lease_expires_at > func.now()).label("lease_active"),
             func.count(DocumentChunk.id).label("chunk_count"),
         )
         .outerjoin(
@@ -153,6 +170,7 @@ async def _find_document(
             Document.filename,
             Document.page_count,
             Document.status,
+            Document.lease_expires_at,
         )
     )
 
@@ -167,6 +185,7 @@ async def _find_document(
         page_count=row["page_count"],
         chunk_count=int(row["chunk_count"]),
         status=row["status"],
+        lease_active=bool(row["lease_active"]),
     )
 
 
@@ -176,8 +195,13 @@ async def claim_document(
     filename: str,
     content_sha256: str,
     page_count: int,
+    attempt_id: UUID | None = None,
+    lease_seconds: int = 120,
+    original_pdf: bytes | None = None,
+    processing_metadata: dict | None = None,
 ) -> ClaimedDocument | ExistingDocument:
     """Allow only one request to create or retry a given PDF."""
+    attempt_id = attempt_id or uuid4()
     async with database.transaction() as connection:
         created = (
             await connection.execute(
@@ -188,6 +212,11 @@ async def claim_document(
                     content_sha256=content_sha256,
                     page_count=page_count,
                     status="pending",
+                    attempt_id=attempt_id,
+                    lease_expires_at=func.now() + timedelta(seconds=lease_seconds),
+                    original_pdf=original_pdf,
+                    processing_metadata=processing_metadata,
+                    ingestion_attempts=1,
                 )
                 .on_conflict_do_nothing(
                     index_elements=[Document.content_sha256],
@@ -197,7 +226,7 @@ async def claim_document(
         ).one_or_none()
 
         if created is not None:
-            return ClaimedDocument(created.id, created.filename, False)
+            return ClaimedDocument(created.id, created.filename, False, attempt_id)
 
         # PostgreSQL rechecks this condition under its row lock.
         retried = (
@@ -205,9 +234,16 @@ async def claim_document(
                 update(Document)
                 .where(
                     Document.content_sha256 == content_sha256,
-                    Document.status == "failed",
+                    or_(Document.status == "failed", (
+                        (Document.status == "pending") & or_(
+                            Document.lease_expires_at.is_(None), Document.lease_expires_at <= func.now(),
+                        )
+                    )),
                 )
-                .values(status="pending")
+                .values(status="pending", attempt_id=attempt_id, page_count=page_count,
+                        original_pdf=original_pdf, processing_metadata=processing_metadata,
+                        ingestion_attempts=Document.ingestion_attempts + 1,
+                        lease_expires_at=func.now() + timedelta(seconds=lease_seconds))
                 .returning(Document.id, Document.filename)
             )
         ).one_or_none()
@@ -218,7 +254,7 @@ async def claim_document(
                     DocumentChunk.document_id == retried.id,
                 )
             )
-            return ClaimedDocument(retried.id, retried.filename, True)
+            return ClaimedDocument(retried.id, retried.filename, True, attempt_id)
 
         existing = await _find_document(connection, content_sha256)
         if existing is None:
@@ -230,6 +266,7 @@ async def complete_document(
     database: Database,
     document_id: UUID,
     records: list[dict[str, object]],
+    *, attempt_id: UUID,
 ) -> None:
     """Commit every chunk and the ready status in one transaction."""
     if not records:
@@ -238,8 +275,9 @@ async def complete_document(
     async with database.transaction() as connection:
         result = await connection.execute(
             update(Document)
-            .where(Document.id == document_id, Document.status == "pending")
-            .values(status="ready")
+            .where(Document.id == document_id, Document.status == "pending",
+                   Document.attempt_id == attempt_id, Document.lease_expires_at > func.now())
+            .values(status="ready", lease_expires_at=None, attempt_id=None)
         )
         if result.rowcount != 1:
             raise RuntimeError("The document is no longer pending.")
@@ -251,13 +289,13 @@ async def complete_document(
             )
 
 
-async def fail_document(database: Database, document_id: UUID) -> None:
+async def fail_document(database: Database, document_id: UUID, *, attempt_id: UUID) -> None:
     """Clear partial chunks and make a pending document retryable."""
     async with database.transaction() as connection:
         result = await connection.execute(
             update(Document)
-            .where(Document.id == document_id, Document.status == "pending")
-            .values(status="failed")
+            .where(Document.id == document_id, Document.status == "pending", Document.attempt_id == attempt_id)
+            .values(status="failed", lease_expires_at=None, attempt_id=None)
         )
         if result.rowcount == 1:
             await connection.execute(
@@ -265,6 +303,32 @@ async def fail_document(database: Database, document_id: UUID) -> None:
                     DocumentChunk.document_id == document_id,
                 )
             )
+
+
+async def renew_document_lease(database: Database, document_id: UUID, attempt_id: UUID, lease_seconds: int):
+    async with database.transaction() as connection:
+        result = await connection.execute(update(Document).where(
+            Document.id == document_id, Document.status == "pending", Document.attempt_id == attempt_id,
+            Document.lease_expires_at > func.now(),
+        ).values(lease_expires_at=func.now() + timedelta(seconds=lease_seconds)))
+        if result.rowcount != 1:
+            raise RuntimeError("Ingestion ownership expired or changed.")
+
+
+async def abandon_document_claim(database: Database, digest: str, attempt_id: UUID):
+    """Resolve a cancelled claim whose committed ID was not returned."""
+    async with database.transaction() as connection:
+        await connection.execute(update(Document).where(
+            Document.content_sha256 == digest, Document.status == "pending", Document.attempt_id == attempt_id,
+        ).values(status="failed", lease_expires_at=None, attempt_id=None))
+
+
+async def release_document_claim(database: Database, digest: str, attempt_id: UUID):
+    """Leave cancelled durable work pending and immediately recoverable."""
+    async with database.transaction() as connection:
+        await connection.execute(update(Document).where(
+            Document.content_sha256 == digest, Document.status == "pending", Document.attempt_id == attempt_id,
+        ).values(lease_expires_at=func.now()))
 
 
 async def search_similar_chunks(
@@ -322,7 +386,7 @@ async def search_similar_chunks(
             Document.id == DocumentChunk.document_id,
         )
         .where(
-            Document.status == "ready",
+            Document.status == "ready", Document.active.is_(True),
             DocumentChunk.embedding_space == EMBEDDING_SPACE,
             DocumentChunk.embedding.is_not(None),
         )

@@ -165,6 +165,47 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.status_code, 502)
         self.assertNotIn("Unsupported claim", response.text)
 
+    async def test_real_rag_renumbers_second_source_and_preserves_metadata(self):
+        chunks = [
+            StoredChunkResult(uuid4(), uuid4(), filename, page, 0, "Policy text.", 0.1)
+            for filename, page in (("first.pdf", 3), ("second.pdf", 7))
+        ]
+        with (
+            patch("app.services.rag.search_similar_chunks", return_value=[asdict(chunk) for chunk in chunks]),
+            patch("app.services.rag.generate_llm_response", return_value=json.dumps({
+                'answer': 'Supported answer.', 'source_numbers': [2, 2],
+            })),
+        ):
+            async with self.client() as client:
+                response = await client.post("/v1/chat", json={"question": "Policy?"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json(), {
+            "answer": "Supported answer. [1]",
+            "sources": [{
+                "document_id": str(chunks[1].document_id), "chunk_id": str(chunks[1].chunk_id),
+                "filename": "second.pdf", "page_number": 7,
+            }],
+        })
+
+    async def test_real_rag_validation_failures_remain_http_502(self):
+        chunk = StoredChunkResult(uuid4(), uuid4(), "policy.pdf", 11, 0, "Policy text.", 0.1)
+        payloads = (
+            {'answer': INSUFFICIENT_CONTEXT_ANSWER},
+            {'answer': INSUFFICIENT_CONTEXT_ANSWER, 'source_numbers': [1]},
+            {'answer': 'Unsupported claim', 'source_numbers': []},
+            {'answer': 'Model citation [1]', 'source_numbers': [1]},
+        )
+        async with self.client() as client:
+            for payload in payloads:
+                with (
+                    self.subTest(payload=payload),
+                    patch("app.services.rag.search_similar_chunks", return_value=[asdict(chunk)]),
+                    patch("app.services.rag.generate_llm_response", return_value=json.dumps(payload)),
+                ):
+                    response = await client.post("/v1/chat", json={"question": "Policy?"})
+                self.assertEqual(response.status_code, 502)
+                self.assertNotIn(payload['answer'], response.text)
+
     async def test_nonempty_context_fallback_has_no_sources(self):
         chunk = StoredChunkResult(uuid4(), uuid4(), "manual.pdf", 1, 0, "Unrelated text.", 0.8)
         with (
@@ -266,4 +307,8 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
         for code in ("200", "422", "429", "500", "502", "503", "504"):
             self.assertIn(code, operation["responses"])
         self.assertEqual(operation["requestBody"]["content"]["application/json"]["schema"]["$ref"], "#/components/schemas/ChatRequest")
-        self.assertEqual(operation["responses"]["200"]["content"]["application/json"]["schema"]["$ref"], "#/components/schemas/ChatResponse")
+        self.assertEqual(
+            operation["responses"]["200"]["content"]["application/json"]["schema"]["anyOf"],
+            [{"$ref": "#/components/schemas/ChatResponse"},
+             {"$ref": "#/components/schemas/ClarificationResponse"}],
+        )

@@ -94,6 +94,10 @@ def api_client(database=None):
     application = FastAPI()
     application.state.database = database
     application.include_router(router, prefix='/v1')
+    from app.api.v1.jobs import router as jobs_router
+    from app.api.v1.document_lifecycle import router as lifecycle_router
+    application.include_router(jobs_router, prefix='/v1')
+    application.include_router(lifecycle_router, prefix='/v1')
     return httpx.AsyncClient(
         transport=httpx.ASGITransport(app=application), base_url='http://test',
     )

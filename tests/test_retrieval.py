@@ -33,6 +33,21 @@ def stored_chunk():
 
 
 class EvidenceGateTests(unittest.TestCase):
+    def test_context_limit_defaults_and_environment_validation(self):
+        kwargs = dict(_env_file=None, postgres_db='test', postgres_user='test', postgres_password='test')
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertEqual(Settings(**kwargs).rag_max_context_chunks, 5)
+        for value in ('1', '5', '20', '0', '-1', '21', '2.5', 'true', 'invalid'):
+            with self.subTest(value=value), patch.dict(os.environ, {'RAG_MAX_CONTEXT_CHUNKS': value}):
+                if value in ('1', '5', '20'):
+                    self.assertEqual(Settings(**kwargs).rag_max_context_chunks, int(value))
+                else:
+                    with self.assertRaises(ValidationError):
+                        Settings(**kwargs)
+        for value in (0, 21, True, False, 2.0, 2.5, None):
+            with self.subTest(value=value), self.assertRaises(ValidationError):
+                Settings(**kwargs, rag_max_context_chunks=value)
+
     def candidate(self, distance, matched=(), terms=('confidenti', 'inform')):
         return dict(cosine_distance=distance, query_lexemes=terms, matched_lexemes=matched)
 
@@ -92,7 +107,9 @@ class SearchSchemaTests(unittest.TestCase):
         request = DocumentSearchRequest(query='  What is pgvector?  ')
         self.assertEqual(request.query, 'What is pgvector?')
         self.assertEqual(request.top_k, 5)
-        self.assertEqual(DocumentSearchRequest(query='a' * 600).query, 'a' * 600)
+        self.assertEqual(DocumentSearchRequest(query='a' * 500).query, 'a' * 500)
+        with self.assertRaises(ValidationError):
+            DocumentSearchRequest(query='a' * 501)
 
     def test_rejects_invalid_requests(self):
         for body in ({'query': ''}, {'query': ' \n\t '}, {'query': 123},

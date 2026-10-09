@@ -19,7 +19,7 @@ async def readiness(
 ) -> ReadinessResponse:
     database = cast(Database, request.app.state.database)
 
-    if not await database.is_ready():
+    if not await database.is_ready(check_schema=True) or not getattr(request.app.state, "embedding_ready", False):
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
         return ReadinessResponse(status="not_ready")
 

@@ -25,6 +25,7 @@ READINESS_QUERY = text(
 
 class Database:
     def __init__(self, settings: Settings) -> None:
+        self.settings = settings
         # URL.create handles special characters in passwords safely.
         url = URL.create(
             drivername="postgresql+psycopg",
@@ -69,13 +70,23 @@ class Database:
         ) as session:
             yield session
 
-    async def is_ready(self) -> bool:
+    async def is_ready(self, *, check_schema: bool = False) -> bool:
         """Check database access and the required vector extension."""
         try:
             async with asyncio.timeout(self._health_timeout):
                 async with self._engine.connect() as connection:
                     result = await connection.scalar(READINESS_QUERY)
-                    return result is True
+                    if result is not True:
+                        return False
+                    if check_schema:
+                        # A bounded, zero-row query also verifies new schema columns.
+                        from app.storage.models import Document, DocumentChunk
+                        from sqlalchemy import select
+                        await connection.execute(select(Document.id, Document.attempt_id, Document.lease_expires_at,
+                                                        Document.original_pdf, Document.processing_metadata, Document.active,
+                                                        Document.ingestion_attempts).limit(0))
+                        await connection.execute(select(DocumentChunk.id, DocumentChunk.embedding).limit(0))
+                    return True
 
         except (SQLAlchemyError, TimeoutError, OSError) as exc:
             # Avoid logging connection strings, credentials, or SQL inputs.

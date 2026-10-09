@@ -1,6 +1,6 @@
 """Pydantic V2 schemas for the RAG chat API."""
 
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
@@ -18,11 +18,27 @@ QuestionText = Annotated[
     ),
 ]
 
-
 class StrictSchema(BaseModel):
     """Reject undeclared fields."""
 
     model_config = ConfigDict(extra="forbid")
+
+
+class DocumentChoice(StrictSchema):
+    """Display a filename while retaining its unambiguous selection ID."""
+
+    document_id: UUID
+    filename: str
+
+
+class ClarificationResponse(StrictSchema):
+    """Ask the client to select a document and resend the original request."""
+
+    status: Literal["clarification_required"] = "clarification_required"
+    question: str
+    original_question: str
+    top_k: int
+    documents: list[DocumentChoice]
 
 
 class ChatRequest(StrictSchema):

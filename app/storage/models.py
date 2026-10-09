@@ -7,11 +7,16 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Integer,
+    LargeBinary,
+    JSON,
+    Boolean,
+    Index,
     MetaData,
     String,
     Text,
     UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
@@ -54,11 +59,19 @@ class Document(Base):
         DateTime(timezone=True),
         server_default=func.now(),
     )
+    attempt_id: Mapped[UUID | None] = mapped_column(nullable=True)
+    lease_expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    original_pdf: Mapped[bytes | None] = mapped_column(LargeBinary, nullable=True)
+    processing_metadata: Mapped[dict | None] = mapped_column(JSON, nullable=True)
+    active: Mapped[bool] = mapped_column(Boolean, server_default="true")
+    ingestion_attempts: Mapped[int] = mapped_column(Integer, server_default="0")
 
 
 class DocumentChunk(Base):
     __tablename__ = "document_chunks"
     __table_args__ = (
+        Index("ix_document_chunks_content_english",
+              text("to_tsvector('english'::regconfig, content)"), postgresql_using="gin"),
         UniqueConstraint(
             "document_id",
             "chunk_index",

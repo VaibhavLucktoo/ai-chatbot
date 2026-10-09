@@ -9,7 +9,7 @@ from pydantic import BaseModel
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.schemas.chat import ChatRequest, ChatResponse
+from app.schemas.chat import ChatRequest, ChatResponse, ClarificationResponse
 from app.services.llm import (
     LLMConnectionError,
     LLMError,
@@ -55,12 +55,12 @@ async def get_db_session(request: Request) -> AsyncIterator[AsyncSession]:
 
 @router.post(
     "/chat",
-    response_model=ChatResponse,
+    response_model=ChatResponse | ClarificationResponse,
     status_code=status.HTTP_200_OK,
     summary="Answer a question using uploaded documents",
     responses={
         200: {
-            "description": "Answer with sources, or an insufficient-context fallback.",
+            "description": "Answer with sources, an insufficient-context fallback, or document selection.",
         },
         422: {
             "description": "Request body failed validation.",
@@ -90,7 +90,7 @@ async def get_db_session(request: Request) -> AsyncIterator[AsyncSession]:
 async def chat(
     request: ChatRequest,
     db: AsyncSession = Depends(get_db_session, scope="function"),
-) -> ChatResponse:
+) -> ChatResponse | ClarificationResponse:
     """Retrieve passages and generate an answer with document references.
 
     FastAPI validates the JSON body before invoking this function. Function
@@ -98,8 +98,15 @@ async def chat(
     its read transaction before model generation, releasing the pooled connection.
     Caller cancellation propagates; logs omit prompts and provider details.
     """
+    return await run_chat(db, request)
+
+
+async def run_chat(db: AsyncSession, request: ChatRequest, *, trace: dict | None = None):
+    """Share the public error mapping with the local diagnostic console."""
     try:
-        return await answer_question(db, request)
+        if trace is None:
+            return await answer_question(db, request)
+        return await answer_question(db, request, trace=trace)
     except RetrievalProviderError as exc:
         logger.error("Chat retrieval failed (%s)", type(exc).__name__)
         raise HTTPException(

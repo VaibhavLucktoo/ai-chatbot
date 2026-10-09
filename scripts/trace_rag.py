@@ -6,6 +6,7 @@ from datetime import datetime, timezone
 import json
 from pathlib import Path
 import sys
+import os
 from uuid import UUID
 
 if __package__ in (None, ""):
@@ -69,7 +70,7 @@ def main() -> None:
     try:
         output.parent.mkdir(parents=True, exist_ok=True)
         # Reserve the file before model execution and never overwrite a trace.
-        with output.open("x", encoding="utf-8") as target:
+        with os.fdopen(os.open(output, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600), "w", encoding="utf-8") as target:
             with asyncio.Runner(loop_factory=create_event_loop) as runner:
                 trace = runner.run(trace_question(request))
             json.dump(trace, target, indent=2, ensure_ascii=False, default=str)

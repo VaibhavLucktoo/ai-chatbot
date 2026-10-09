@@ -5,7 +5,8 @@ import unittest
 from unittest.mock import patch
 from uuid import uuid4
 
-from sqlalchemy import event, func, select
+from sqlalchemy import event, func, select, update
+from datetime import timedelta
 from sqlalchemy.exc import OperationalError
 from sqlalchemy.schema import CreateSchema, DropSchema
 
@@ -24,6 +25,82 @@ from tests.helpers import AsyncTestCase, StubEmbeddings, api_client, async_test,
 
 @unittest.skipUnless(os.environ.get('RUN_DB_TESTS') == '1', 'Set RUN_DB_TESTS=1 for PostgreSQL checks')
 class IngestionDatabaseTests(AsyncTestCase):
+    @async_test
+    async def test_reupload_backfills_legacy_source_without_reindexing(self):
+        data = make_pdf('Legacy source backfill')
+        async with api_client(self.database) as client:
+            first = await self.upload(client, data)
+            async with self.database.transaction() as connection:
+                await connection.execute(update(Document).where(Document.content_sha256 == pdf_sha256(data)).values(
+                    original_pdf=None, processing_metadata=None))
+            with patch('app.services.ingestion.extract_pdf_isolated', side_effect=AssertionError('Duplicate reparsed')):
+                duplicate = await self.upload(client, data)
+        self.assertEqual(duplicate.status_code, 200)
+        self.assertEqual(first.json()['document_id'], duplicate.json()['document_id'])
+        async with self.database.transaction() as connection:
+            row = (await connection.execute(select(Document.original_pdf, Document.processing_metadata).where(
+                Document.content_sha256 == pdf_sha256(data)))).one()
+        self.assertEqual(row.original_pdf, data)
+        self.assertIsNone(row.processing_metadata)
+
+    @async_test
+    async def test_durable_job_recovers_source_and_can_be_retired_and_deleted(self):
+        from app.services.recovery import recover_once
+        from app.storage.documents import search_similar_chunks
+        data = make_pdf('Durable original source')
+        async with api_client(self.database) as client:
+            submitted = await client.post('/v1/documents/jobs', files={'file': ('durable.pdf', data, 'application/pdf')})
+            self.assertEqual(submitted.status_code, 202, submitted.text)
+            job = submitted.json()
+            async with self.database.transaction() as connection:
+                retained = await connection.scalar(select(Document.original_pdf).where(Document.content_sha256 == pdf_sha256(data)))
+            self.assertEqual(retained, data)
+            with patch('app.services.recovery.get_embedding_provider', return_value=self.embeddings):
+                self.assertTrue(await recover_once(self.database))
+            status = await client.get(submitted.headers['location'])
+            self.assertEqual(status.json()['status'], 'ready')
+            saved = await self.document(data)
+            chunks = await search_similar_chunks(self.database, [1.0] + [0.0] * 383, document_ids=[saved.id])
+            self.assertTrue(chunks)
+            retired = await client.patch(f'/v1/documents/{saved.id}/activation', json={'active': False})
+            self.assertEqual(retired.status_code, 204)
+            self.assertEqual(await search_similar_chunks(self.database, [1.0] + [0.0] * 383, document_ids=[saved.id]), [])
+            erased = await client.delete(f'/v1/documents/{saved.id}')
+            self.assertEqual(erased.status_code, 204)
+            self.assertIsNone(await self.document(data))
+
+    @async_test
+    async def test_invalid_queued_pdf_fails_without_retry_loop(self):
+        from app.services.recovery import recover_once
+        data = b'%PDF-1.7\ninvalid\n%%EOF\n'
+        async with api_client(self.database) as client:
+            response = await client.post('/v1/documents/jobs', files={'file': ('bad.pdf', data, 'application/pdf')})
+            self.assertEqual(response.status_code, 202)
+        with patch('app.services.recovery.get_embedding_provider', return_value=self.embeddings):
+            self.assertTrue(await recover_once(self.database))
+            self.assertFalse(await recover_once(self.database))
+        self.assertEqual((await self.document(data)).status, 'failed')
+
+    @async_test
+    async def test_expired_owner_cannot_publish_or_fail_new_attempt(self):
+        from app.storage.documents import complete_document, renew_document_lease
+        data = make_pdf('Ownership fencing')
+        first = await claim_document(self.database, filename='test.pdf', content_sha256=pdf_sha256(data),
+                                     page_count=1, original_pdf=data)
+        async with self.database.transaction() as connection:
+            await connection.execute(update(Document).where(Document.id == first.id).values(
+                lease_expires_at=func.now() - timedelta(seconds=1)))
+        with self.assertRaises(RuntimeError):
+            await renew_document_lease(self.database, first.id, first.attempt_id, 120)
+        second = await claim_document(self.database, filename='test.pdf', content_sha256=pdf_sha256(data),
+                                      page_count=1, original_pdf=data)
+        self.assertNotEqual(first.attempt_id, second.attempt_id)
+        with self.assertRaises(RuntimeError):
+            await complete_document(self.database, first.id, [{}], attempt_id=first.attempt_id)
+        await fail_document(self.database, first.id, attempt_id=first.attempt_id)
+        saved = await self.document(data)
+        self.assertEqual((saved.status, saved.lease_active), ('pending', True))
+
     def setUp(self):
         super().setUp()
         self.database = Database(get_settings())
@@ -82,7 +159,7 @@ class IngestionDatabaseTests(AsyncTestCase):
                 first = await self.upload(client, data)
                 self.assertEqual(first.status_code, 201, first.text)
                 # A ready duplicate must not parse, tokenize, or embed again.
-                with patch('app.services.ingestion.extract_pdf', side_effect=AssertionError('duplicate parsed')):
+                with patch('app.services.ingestion.extract_pdf_isolated', side_effect=AssertionError('duplicate parsed')):
                     duplicate = await self.upload(client, data, 'renamed.pdf')
         self.assertEqual(duplicate.status_code, 200, duplicate.text)
         self.assertEqual(first.json()['document_id'], duplicate.json()['document_id'])
@@ -135,7 +212,7 @@ class IngestionDatabaseTests(AsyncTestCase):
             self.assertEqual(len(claimed), 1)
             self.assertEqual(claimed[0].already_existed, attempt == 1)
             self.assertEqual(len({result.id for result in results}), 1)
-            await fail_document(self.database, claimed[0].id)
+            await fail_document(self.database, claimed[0].id, attempt_id=claimed[0].attempt_id)
 
     @async_test
     async def test_pending_duplicate_returns_conflict_then_ready_duplicate_succeeds(self):
@@ -165,7 +242,7 @@ class IngestionDatabaseTests(AsyncTestCase):
         self.assertEqual(first.json()['document_id'], duplicate.json()['document_id'])
 
     @async_test
-    async def test_cancelled_ingestion_is_failed_and_retryable(self):
+    async def test_cancelled_ingestion_is_pending_and_recoverable(self):
         data = make_pdf('Cancelled upload')
         started = asyncio.Event()
 
@@ -185,7 +262,7 @@ class IngestionDatabaseTests(AsyncTestCase):
                 with self.assertRaises(asyncio.CancelledError):
                     await task
         failed = await self.document(data)
-        self.assertEqual((failed.status, failed.chunk_count), ('failed', 0))
+        self.assertEqual((failed.status, failed.chunk_count, failed.lease_active), ('pending', 0, False))
         result = await ingest_pdf(database=self.database, embeddings=self.embeddings, filename='test.pdf', data=data)
         self.assertEqual(result.document_id, failed.id)
         self.assertEqual(result.status, 'ready')

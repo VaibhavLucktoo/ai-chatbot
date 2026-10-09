@@ -5,6 +5,17 @@ page-aware extraction, token-aware chunking, FastEmbed embeddings, PostgreSQL
 persistence, duplicate detection, and retries. Vector retrieval and the RAG chat
 endpoint return answers with document and page references.
 
+Chat orchestration uses an asynchronous LangGraph workflow for retrieval,
+document clarification, evidence checks, generation, and citation validation.
+See [the workflow guide](docs/langgraph-workflow.md) for its branches and runtime behavior.
+
+Generation uses a custom `langchain-core` chat model in
+`app/providers/chat_model.py`, invoked with `ainvoke()` by `app/services/llm.py`.
+It retains the existing OpenAI-compatible HTTP transport, `LLM_*` configuration,
+timeouts, cancellation, response checks, and local diagnostic traces. This
+adapter supports async text generation; tools and provider streaming are not
+implemented. Retrieval and citation validation remain application services.
+
 ## Local setup
 
 Requirements: Python 3.12 or newer, uv, and Docker Desktop running Linux containers.
@@ -100,11 +111,12 @@ uv run alembic current
 ```
 
 Wait for the database to show as healthy before applying migrations. The expected
-current revision is `7f7483ec3680 (head)`.
+current revision is `c52f31faa4ec (head)`.
 
 The initialization script enables pgvector when a fresh database volume is
 created. An existing volume must already have the `vector` extension enabled.
-API startup checks the connection and extension; it does not apply migrations.
+API startup checks the connection, extension, schema and pinned embedding warmup;
+it does not apply migrations.
 
 ### 3. Start and check the API
 
@@ -123,8 +135,9 @@ Both endpoints should return HTTP 200, with readiness reporting `ready`.
 Interactive API documentation is available at <http://127.0.0.1:8000/docs>.
 Use `run.py` on Windows so Psycopg gets a compatible event loop.
 
-The embedding provider loads `BAAI/bge-small-en-v1.5` on first use and caches model
-files in `.cache/fastembed`. Health endpoints do not load or verify the model.
+The embedding provider warms `BAAI/bge-small-en-v1.5` at startup and caches pinned
+model files in `.cache/fastembed`. Readiness requires successful warmup; health
+does not contact the LLM.
 
 ## Upload a PDF
 
@@ -173,12 +186,17 @@ The upload response contains `document_id`, `filename`, `page_count`,
 - Valid PDFs are claimed as `pending`. Tokenization and inference run outside
   database transactions. Success commits all chunks and `ready` together;
   processing failures become `failed` with no chunks. Failed uploads can retry.
-- SHA-256 identifies identical file bytes, including concurrent uploads. The
-  original PDF bytes are not retained; metadata, text, and embeddings are stored.
-- Cancellation during processing attempts to mark the document `failed`. A hard
-  process kill or a database outage during cleanup can leave a `pending` record.
-  Once no worker owns that upload, an operator must mark it `failed` before
-  retrying. Automatic job recovery is not part of this synchronous upload service.
+- SHA-256 identifies identical file bytes, including concurrent uploads. Original
+  PDF bytes and processing revisions are retained with the claim.
+- Cancelled or crashed attempts become recoverable after their fenced lease
+  expires. A background worker resumes retained pending sources, with at most
+  three automatic attempts. Processing failures require explicit retry.
+- `POST /v1/documents/jobs` accepts durable uploads with HTTP 202; poll
+  `GET /v1/documents/jobs/{document_id}` for completion. The existing upload
+  endpoint keeps its synchronous contract.
+- Parsing runs in a process with a time and memory ceiling. See
+  [operations](docs/operations.md) for recovery, retirement/deletion, backups,
+  supported local deployment, trace retention, and release checks.
 
 ## Automated checks
 
@@ -247,7 +265,9 @@ when comparing their results.
 
 Chat releases its retrieval transaction before contacting the language model.
 Grounding rules are sent as a system message. Generation uses temperature zero
-and a 1,024-token output limit; incomplete output is rejected. These controls
+and a 300-token default output limit (2,048 for the two GPT-OSS special cases);
+`LLM_MAX_OUTPUT_TOKENS` overrides it. Incomplete output is rejected. Input bytes,
+output tokens and framing must fit the configured context window. These controls
 do not guarantee factual accuracy, particularly with the small 1B model.
 
 Successful answers return only cited sources. Citation numbers are renumbered
