@@ -288,7 +288,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Establish authenticated identity; enforce allowed tenant/document scope in every list, claim, search, and source lookup. Scope hash uniqueness to the correct ownership model. Test forged IDs and cross-tenant searches. Database row-level security can provide an additional boundary if designed and tested.
 
-**Evidence:** [main.py:31](../app/main.py), [router.py:8](../app/api/v1/router.py), [models.py:35](../app/storage/models.py), [storage/documents.py:324](../app/storage/documents.py), [rag.py:218](../app/services/rag.py), [api/documents.py:222](../app/api/v1/documents.py).
+**Evidence:** [main.py:31](../Backend/app/main.py), [router.py:8](../Backend/app/api/v1/router.py), [models.py:35](../Backend/app/storage/models.py), [storage/documents.py:324](../Backend/app/storage/documents.py), [rag.py:218](../Backend/app/services/rag.py), [api/documents.py:222](../Backend/app/api/v1/documents.py).
 
 ### R02 — P1: The 10 MiB check happens after multipart reception
 
@@ -298,7 +298,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Bound total streamed request bytes, part counts, and upload duration before form parsing, at a verified ingress/ASGI boundary. A Content-Length check alone is insufficient for streaming requests.
 
-**Evidence:** [api/documents.py:44](../app/api/v1/documents.py), [main.py:31](../app/main.py); installed FastAPI `routing.py:428–431` and Starlette `formparsers.py:184–191,228–239`. This is specific to the inspected dependency versions.
+**Evidence:** [api/documents.py:44](../Backend/app/api/v1/documents.py), [main.py:31](../Backend/app/main.py); installed FastAPI `routing.py:428–431` and Starlette `formparsers.py:184–191,228–239`. This is specific to the inspected dependency versions.
 
 ### R03 — P1: Ingestion is request-bound and parsing lacks a hard resource boundary
 
@@ -308,7 +308,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Retain source bytes, return 202 with a durable job ID, and process in bounded workers with isolated parsing memory/time limits. Stop chunk production when its configured ceiling is reached.
 
-**Evidence:** [api/documents.py:143](../app/api/v1/documents.py), [ingestion.py:82](../app/services/ingestion.py), [documents.py:75](../app/providers/documents.py), [ingestion.py:92](../app/services/ingestion.py).
+**Evidence:** [api/documents.py:143](../Backend/app/api/v1/documents.py), [ingestion.py:82](../Backend/app/services/ingestion.py), [documents.py:75](../Backend/app/providers/documents.py), [ingestion.py:92](../Backend/app/services/ingestion.py).
 
 ### R04 — P1: Pending ingestion can become permanent
 
@@ -318,7 +318,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Add durable attempts, lease expiration, heartbeat, and reconciliation. Completion/failure must verify the current attempt token; otherwise a delayed worker may publish after a replacement worker has reclaimed ownership.
 
-**Evidence:** [ingestion.py:69](../app/services/ingestion.py), [ingestion.py:83](../app/services/ingestion.py), [ingestion.py:133](../app/services/ingestion.py), [storage/documents.py:173](../app/storage/documents.py), [models.py:45](../app/storage/models.py).
+**Evidence:** [ingestion.py:69](../Backend/app/services/ingestion.py), [ingestion.py:83](../Backend/app/services/ingestion.py), [ingestion.py:133](../Backend/app/services/ingestion.py), [storage/documents.py:173](../Backend/app/storage/documents.py), [models.py:45](../Backend/app/storage/models.py).
 
 ### R05 — P1: Uploads and queries compete for serialized embeddings
 
@@ -328,7 +328,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Separate ingestion capacity from query embedding capacity; bound admission before submitting executor tasks. Measure queue wait separately from inference. Add embedding-stage deadlines and cancellation-aware queue handling.
 
-**Evidence:** [embeddings.py:7](../app/providers/embeddings.py), [fastembed_provider.py:42](../app/providers/fastembed_provider.py), [fastembed_provider.py:66](../app/providers/fastembed_provider.py), [ingestion.py:82](../app/services/ingestion.py).
+**Evidence:** [embeddings.py:7](../Backend/app/providers/embeddings.py), [fastembed_provider.py:42](../Backend/app/providers/fastembed_provider.py), [fastembed_provider.py:66](../Backend/app/providers/fastembed_provider.py), [ingestion.py:82](../Backend/app/services/ingestion.py).
 
 ### R06 — P1: Retrieval has no dedicated search indexes
 
@@ -338,7 +338,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Capture EXPLAIN plans at representative corpus sizes. Design a stored/indexed text-search representation; evaluate cosine HNSW against exact search with real filters and recall measurements. pgvector's exact search is a valid baseline; approximate indexes trade recall for speed, and filtered recall requires verification. [pgvector indexing and filtering](https://github.com/pgvector/pgvector#indexing).
 
-**Evidence:** [migration:24](../migrations/versions/7f7483ec3680_create_documents_and_document_chunks.py), [storage/documents.py:53](../app/storage/documents.py), [storage/documents.py:305](../app/storage/documents.py).
+**Evidence:** [migration:24](../Backend/migrations/versions/7f7483ec3680_create_documents_and_document_chunks.py), [storage/documents.py:53](../Backend/app/storage/documents.py), [storage/documents.py:305](../Backend/app/storage/documents.py).
 
 ### R07 — P1: Passage count does not bound generation tokens
 
@@ -348,7 +348,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Configure model capabilities and enforce: system tokens + question + metadata + selected passage tokens + output reserve + safety margin <= context window. Select/truncate passages with preserved provenance. Make output budget explicit and evaluate completeness.
 
-**Evidence:** [rag.py:32](../app/services/rag.py), [rag.py:70](../app/services/rag.py), [llm.py:23](../app/services/llm.py), [llm.py:204](../app/services/llm.py).
+**Evidence:** [rag.py:32](../Backend/app/services/rag.py), [rag.py:70](../Backend/app/services/rag.py), [llm.py:23](../Backend/app/services/llm.py), [llm.py:204](../Backend/app/services/llm.py).
 
 ### R08 — P1: Generation capacity and connections are unmanaged across requests
 
@@ -358,7 +358,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Manage one appropriately scoped async client in lifespan, configure pool limits, and bound in-flight calls. Consider capped retries only for transient failures and within one total deadline; honor provider retry signals. Never blindly retry invalid answers or assume replay has no cost.
 
-**Evidence:** [llm.py:234](../app/services/llm.py), [main.py:13](../app/main.py), [api/chat.py:127](../app/api/v1/chat.py).
+**Evidence:** [llm.py:234](../Backend/app/services/llm.py), [main.py:13](../Backend/app/main.py), [api/chat.py:127](../Backend/app/api/v1/chat.py).
 
 ### R09 — P1: Quality validation checks references, not claim support
 
@@ -368,7 +368,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Add labeled retrieval/answer evaluations; measure claim support and citation support separately. Calibrate thresholds on positives and hard negatives. Provider-supported JSON schemas can reduce formatting failures, but cannot establish truth.
 
-**Evidence:** [retrieval.py:37](../app/services/retrieval.py), [rag.py:133](../app/services/rag.py), [prompts/rag.py:8](../app/prompts/rag.py).
+**Evidence:** [retrieval.py:37](../Backend/app/services/retrieval.py), [rag.py:133](../Backend/app/services/rag.py), [prompts/rag.py:8](../Backend/app/prompts/rag.py).
 
 ### R10 — P1: Quality and operational gates are incomplete
 
@@ -378,7 +378,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Add a versioned fixture corpus, expected facts and relevant passages, dedicated integration CI, and release evaluation. Include killed-worker recovery, concurrent upload/chat, large corpus, and malicious-document cases. Set release thresholds from the product's risk and workload.
 
-**Evidence:** [questions.json:1](../evaluation/questions.json), [test_policy_live.py:39](../tests/test_policy_live.py), [test_ingestion.py:25](../tests/test_ingestion.py), [test_retrieval.py](../tests/test_retrieval.py).
+**Evidence:** [questions.json:1](../Backend/evaluation/questions.json), [test_policy_live.py:39](../Backend/tests/test_policy_live.py), [test_ingestion.py:25](../Backend/tests/test_ingestion.py), [test_retrieval.py](../Backend/tests/test_retrieval.py).
 
 ### R11 — P1: Sources and document/index generations are not managed
 
@@ -388,7 +388,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Store immutable source objects and processing/index generation metadata. Build replacement indexes separately and switch active generation atomically. Existing stored chunk text can be re-embedded, but it is not a substitute for original-source reprocessing.
 
-**Evidence:** [models.py:35](../app/storage/models.py), [ingestion.py:124](../app/services/ingestion.py), [storage/documents.py:325](../app/storage/documents.py).
+**Evidence:** [models.py:35](../Backend/app/storage/models.py), [ingestion.py:124](../Backend/app/services/ingestion.py), [storage/documents.py:325](../Backend/app/storage/documents.py).
 
 ### R12 — P1: Readiness and deployment do not establish usable RAG
 
@@ -398,7 +398,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Build a locked, tested API image; separate migration privileges from runtime privileges. Verify schema revision and local embedding warmup. Use a separate bounded provider diagnostic rather than billing the LLM on every readiness probe. Demonstrate DB/source restore and controlled rollout.
 
-**Evidence:** [db.py:19](../app/storage/db.py), [main.py:13](../app/main.py), [config.py:21](../app/core/config.py), [Dockerfile](../Dockerfile), [compose.yaml](../compose.yaml), [run.py:18](../run.py).
+**Evidence:** [db.py:19](../Backend/app/storage/db.py), [main.py:13](../Backend/app/main.py), [config.py:21](../Backend/app/core/config.py), [Dockerfile](../Backend/Dockerfile), [compose.yaml](../Backend/compose.yaml), [run.py:18](../Backend/run.py).
 
 ### R13 — P2: Model identity and telemetry lose useful information
 
@@ -406,7 +406,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Retain verified model and usage metadata; record request ID, index/prompt version, queue time, retrieval time, generation time, errors, and token counts without logging passage text by default. Keep unsupported usage as unavailable, not an invented estimate. LangChain exposes standard model interfaces, but the application must map the metadata it needs. [LangChain model documentation](https://docs.langchain.com/oss/python/langchain/models).
 
-**Evidence:** [chat_model.py:53](../app/providers/chat_model.py), [llm.py:213](../app/services/llm.py), [rag.py:206](../app/services/rag.py).
+**Evidence:** [chat_model.py:53](../Backend/app/providers/chat_model.py), [llm.py:213](../Backend/app/services/llm.py), [rag.py:206](../Backend/app/services/rag.py).
 
 ### R14 — P2: One document-selection path holds a DB connection during embedding
 
@@ -414,7 +414,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Resolve authorized document selection in one short transaction, compute the embedding outside it, then use a separate short retrieval transaction. Recheck active/allowed document state at retrieval. Do not describe all chat requests as already holding a connection during embedding.
 
-**Evidence:** [rag.py:216](../app/services/rag.py), [retrieval.py:92](../app/services/retrieval.py), [config.py:28](../app/core/config.py). SQLAlchemy documents the per-task session/transaction model. [SQLAlchemy asyncio guidance](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html).
+**Evidence:** [rag.py:216](../Backend/app/services/rag.py), [retrieval.py:92](../Backend/app/services/retrieval.py), [config.py:28](../Backend/app/core/config.py). SQLAlchemy documents the per-task session/transaction model. [SQLAlchemy asyncio guidance](https://docs.sqlalchemy.org/en/20/orm/extensions/asyncio.html).
 
 ### R15 — P2: API resource contracts are uneven
 
@@ -422,7 +422,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Apply explicit body/query limits and paginate authorized document selection. Distinguish nonexistent, unauthorized, pending, and unsupported documents through a deliberate public error contract that avoids leaking private existence.
 
-**Evidence:** [schemas/chat.py:13](../app/schemas/chat.py), [schemas/documents.py:162](../app/schemas/documents.py), [rag.py:218](../app/services/rag.py).
+**Evidence:** [schemas/chat.py:13](../Backend/app/schemas/chat.py), [schemas/documents.py:162](../Backend/app/schemas/documents.py), [rag.py:218](../Backend/app/services/rag.py).
 
 ### R16 — P2: Summary, multilingual, OCR, and layout coverage are limited
 
@@ -432,7 +432,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Publish the actual supported document/language scope. Return page extraction diagnostics. Add full-document summary routing, section/neighbor retrieval, layout extraction, or OCR only when that scope requires them. Evaluate each added pathway; larger top_k alone does not prove completeness.
 
-**Evidence:** [rag.py:178](../app/services/rag.py), [chunking.py:40](../app/services/chunking.py), [documents.py:75](../app/providers/documents.py), [storage/documents.py:25](../app/storage/documents.py), [document-selection.md](document-selection.md).
+**Evidence:** [rag.py:178](../Backend/app/services/rag.py), [chunking.py:40](../Backend/app/services/chunking.py), [documents.py:75](../Backend/app/providers/documents.py), [storage/documents.py:25](../Backend/app/storage/documents.py), [document-selection.md](document-selection.md).
 
 ### R17 — P2: Processing is not fully reproducible from versions alone
 
@@ -440,7 +440,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Pin approved model/tokenizer assets; record checksums and extraction/chunking/prompt/index versions. Preload assets during deployment. Keep an explicit reindex path when the embedding contract changes.
 
-**Evidence:** [chunking.py:26](../app/services/chunking.py), [fastembed_provider.py:68](../app/providers/fastembed_provider.py), [models.py:18](../app/storage/models.py).
+**Evidence:** [chunking.py:26](../Backend/app/services/chunking.py), [fastembed_provider.py:68](../Backend/app/providers/fastembed_provider.py), [models.py:18](../Backend/app/storage/models.py).
 
 ### R18 — P2: Diagnostics need a data-retention policy
 
@@ -448,7 +448,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Decide permitted providers/data residency, trace access and expiration, encryption requirements, and deletion behavior. Review LangChain/LangGraph callback or tracing configuration before enabling external telemetry. Do not assume a redacted log exception makes an entire trace nonsensitive.
 
-**Evidence:** [trace_rag.py:23](../scripts/trace_rag.py), [trace_rag.py:68](../scripts/trace_rag.py), [rag.py:290](../app/services/rag.py), [llm.py:240](../app/services/llm.py), [.gitignore:12](../.gitignore).
+**Evidence:** [trace_rag.py:23](../Backend/scripts/trace_rag.py), [trace_rag.py:68](../Backend/scripts/trace_rag.py), [rag.py:290](../Backend/app/services/rag.py), [llm.py:240](../Backend/app/services/llm.py), [.gitignore:12](../.gitignore).
 
 ### R19 — P2: Documentation and settings disagree
 
@@ -456,7 +456,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** After approved code/config decisions, align documentation and example settings. Keep provider capability settings in a documented configuration contract. Remove or explain unused placeholders rather than claiming they are implemented layers.
 
-**Evidence:** [README.md:260](../README.md), [.env.example:28](../.env.example), [llm.py:204](../app/services/llm.py), [config.py:21](../app/core/config.py).
+**Evidence:** [README.md:260](../README.md), [.env.example:28](../Backend/.env.example), [llm.py:204](../Backend/app/services/llm.py), [config.py:21](../Backend/app/core/config.py).
 
 ### R20 — P2: Literal bracketed numbers can be mistaken for citations
 
@@ -466,7 +466,7 @@ The cited lines refer to the inspected working tree. Links open source files; li
 
 **Proposal:** Define whether literal bracketed data is allowed. If it is needed, use a structured claim/citation contract or narrower citation conventions rather than rejecting every numeric bracket expression. Add regression cases for the chosen behavior.
 
-**Evidence:** [rag.py:156](../app/services/rag.py).
+**Evidence:** [rag.py:156](../Backend/app/services/rag.py).
 
 ## 7. Behaviors worth retaining
 
@@ -588,50 +588,50 @@ The current three cases are smoke checks, not this benchmark. Include tables, sc
 
 | File | Responsibility | Review result |
 |---|---|---|
-| [app/main.py](../app/main.py) | DB lifespan and API construction | DB cleanup exists; no auth, admission, shared HTTP lifecycle, or production behavior. R01/R08/R12. |
-| [app/core/config.py](../app/core/config.py) | Cached app/DB/embedding/RAG settings | Validated timeouts/pool/secret fields; fixed embedding contract; APP_ENV has no behavioral effect. |
-| [app/api/v1/router.py](../app/api/v1/router.py) | Mount routes | Clear versioned route grouping; no global access dependency. R01. |
-| [app/api/v1/health.py](../app/api/v1/health.py) | Liveness response | Appropriate lightweight liveness; not a model/database guarantee. |
-| [app/api/v1/readiness.py](../app/api/v1/readiness.py) | DB readiness | Bounded DB check; incomplete schema/model readiness. R12. |
-| [app/api/v1/documents.py](../app/api/v1/documents.py) | Upload and search | Good input/error translation; request-bound ingestion and post-parse size check. R01–R03/R15. |
-| [app/api/v1/chat.py](../app/api/v1/chat.py) | Session dependency and chat errors | Function-scoped session and mapped LLM errors; no authorization/admission; storage failures use 500 while search uses 503. |
-| [app/schemas/chat.py](../app/schemas/chat.py) | Chat/source/clarification contracts | Strict fields and bounded question/top_k; valid references are not verified support. |
-| [app/schemas/documents.py](../app/schemas/documents.py) | Upload/batch/search validation | Filename, page/batch/index guards; no search-query maximum; some metadata schemas are not API lifecycle endpoints. R15. |
-| [app/schemas/health.py](../app/schemas/health.py) | Liveness schema | Small typed response; no material source-level issue. |
-| [app/schemas/readiness.py](../app/schemas/readiness.py) | Readiness schema | Two states; no per-component degradation detail. |
-| [app/providers/base.py](../app/providers/base.py) | Embedding contract | Query/document methods and explicit dimensions/space make compatibility checks possible. |
-| [app/providers/embeddings.py](../app/providers/embeddings.py) | Cached provider factory | Only FastEmbed/BGE-small supported; not an arbitrary-model selection mechanism. |
-| [app/providers/fastembed_provider.py](../app/providers/fastembed_provider.py) | Local embedding adapter | Correct vector checks; lock/cold-start/deadline concerns. R05/R17. |
-| [app/providers/documents.py](../app/providers/documents.py) | PDF validation/extraction | Page numbering/null normalization/rejections; no OCR/layout/process resource ceiling. R03/R16. |
-| [app/providers/chat_model.py](../app/providers/chat_model.py) | LangChain BaseChatModel adapter | Async text-only; rejects tools/assistant inputs/options; no native structured-output/tool/streaming implementation; drops provider metadata. R13. |
-| [app/services/document_hash.py](../app/services/document_hash.py) | Exact-byte SHA-256 | Suitable duplicate identity; not semantic deduplication or index versioning. |
-| [app/services/chunking.py](../app/services/chunking.py) | Token windows and provenance | Original-text slicing and overlap; hardcoded asset revision/structure limits. R07/R16/R17. |
-| [app/services/ingestion.py](../app/services/ingestion.py) | Lifecycle orchestration | Normal atomic publication and cleanup; stranded pending and all-record memory retention. R03–R05/R11. |
-| [app/services/retrieval.py](../app/services/retrieval.py) | Query embedding and evidence gate | Validated vectors/provider; heuristic requires calibration; no embedding-stage deadline. R05/R09. |
-| [app/services/rag.py](../app/services/rag.py) | LangGraph orchestration | Stateless isolation and fallback branches; token budget, selection scope, summary coverage, and one transaction edge. |
-| [app/services/llm.py](../app/services/llm.py) | Settings, HTTP generation, output transport checks | Detailed error/cancellation checks; hardcoded output settings, transient clients, no global call budget. R07/R08/R13. |
-| [app/prompts/rag.py](../app/prompts/rag.py) | Trusted rules/fallback | Explicit population/condition/citation rules; instructions cannot guarantee compliance. R09. |
-| [app/storage/db.py](../app/storage/db.py) | Pool/session/transaction wrappers | Pre-ping, timeouts, parameter hiding, disposal; readiness only checks vector extension. R12/R14. |
-| [app/storage/models.py](../app/storage/models.py) | DB data contracts | Useful constraints/cascade; missing tenancy/job/source/version lifecycle. R01/R04/R11. |
-| [app/storage/documents.py](../app/storage/documents.py) | Claims, publication, hybrid SQL | Normal concurrency/transaction rules are explicit; search indexing/recovery/access limits. R01/R04/R06. |
-| [run.py](../run.py) | Local Uvicorn/event-loop launcher | Handles Windows Psycopg loop requirement; loopback single-server development launch, not deployment specification. |
+| [app/main.py](../Backend/app/main.py) | DB lifespan and API construction | DB cleanup exists; no auth, admission, shared HTTP lifecycle, or production behavior. R01/R08/R12. |
+| [app/core/config.py](../Backend/app/core/config.py) | Cached app/DB/embedding/RAG settings | Validated timeouts/pool/secret fields; fixed embedding contract; APP_ENV has no behavioral effect. |
+| [app/api/v1/router.py](../Backend/app/api/v1/router.py) | Mount routes | Clear versioned route grouping; no global access dependency. R01. |
+| [app/api/v1/health.py](../Backend/app/api/v1/health.py) | Liveness response | Appropriate lightweight liveness; not a model/database guarantee. |
+| [app/api/v1/readiness.py](../Backend/app/api/v1/readiness.py) | DB readiness | Bounded DB check; incomplete schema/model readiness. R12. |
+| [app/api/v1/documents.py](../Backend/app/api/v1/documents.py) | Upload and search | Good input/error translation; request-bound ingestion and post-parse size check. R01–R03/R15. |
+| [app/api/v1/chat.py](../Backend/app/api/v1/chat.py) | Session dependency and chat errors | Function-scoped session and mapped LLM errors; no authorization/admission; storage failures use 500 while search uses 503. |
+| [app/schemas/chat.py](../Backend/app/schemas/chat.py) | Chat/source/clarification contracts | Strict fields and bounded question/top_k; valid references are not verified support. |
+| [app/schemas/documents.py](../Backend/app/schemas/documents.py) | Upload/batch/search validation | Filename, page/batch/index guards; no search-query maximum; some metadata schemas are not API lifecycle endpoints. R15. |
+| [app/schemas/health.py](../Backend/app/schemas/health.py) | Liveness schema | Small typed response; no material source-level issue. |
+| [app/schemas/readiness.py](../Backend/app/schemas/readiness.py) | Readiness schema | Two states; no per-component degradation detail. |
+| [app/providers/base.py](../Backend/app/providers/base.py) | Embedding contract | Query/document methods and explicit dimensions/space make compatibility checks possible. |
+| [app/providers/embeddings.py](../Backend/app/providers/embeddings.py) | Cached provider factory | Only FastEmbed/BGE-small supported; not an arbitrary-model selection mechanism. |
+| [app/providers/fastembed_provider.py](../Backend/app/providers/fastembed_provider.py) | Local embedding adapter | Correct vector checks; lock/cold-start/deadline concerns. R05/R17. |
+| [app/providers/documents.py](../Backend/app/providers/documents.py) | PDF validation/extraction | Page numbering/null normalization/rejections; no OCR/layout/process resource ceiling. R03/R16. |
+| [app/providers/chat_model.py](../Backend/app/providers/chat_model.py) | LangChain BaseChatModel adapter | Async text-only; rejects tools/assistant inputs/options; no native structured-output/tool/streaming implementation; drops provider metadata. R13. |
+| [app/services/document_hash.py](../Backend/app/services/document_hash.py) | Exact-byte SHA-256 | Suitable duplicate identity; not semantic deduplication or index versioning. |
+| [app/services/chunking.py](../Backend/app/services/chunking.py) | Token windows and provenance | Original-text slicing and overlap; hardcoded asset revision/structure limits. R07/R16/R17. |
+| [app/services/ingestion.py](../Backend/app/services/ingestion.py) | Lifecycle orchestration | Normal atomic publication and cleanup; stranded pending and all-record memory retention. R03–R05/R11. |
+| [app/services/retrieval.py](../Backend/app/services/retrieval.py) | Query embedding and evidence gate | Validated vectors/provider; heuristic requires calibration; no embedding-stage deadline. R05/R09. |
+| [app/services/rag.py](../Backend/app/services/rag.py) | LangGraph orchestration | Stateless isolation and fallback branches; token budget, selection scope, summary coverage, and one transaction edge. |
+| [app/services/llm.py](../Backend/app/services/llm.py) | Settings, HTTP generation, output transport checks | Detailed error/cancellation checks; hardcoded output settings, transient clients, no global call budget. R07/R08/R13. |
+| [app/prompts/rag.py](../Backend/app/prompts/rag.py) | Trusted rules/fallback | Explicit population/condition/citation rules; instructions cannot guarantee compliance. R09. |
+| [app/storage/db.py](../Backend/app/storage/db.py) | Pool/session/transaction wrappers | Pre-ping, timeouts, parameter hiding, disposal; readiness only checks vector extension. R12/R14. |
+| [app/storage/models.py](../Backend/app/storage/models.py) | DB data contracts | Useful constraints/cascade; missing tenancy/job/source/version lifecycle. R01/R04/R11. |
+| [app/storage/documents.py](../Backend/app/storage/documents.py) | Claims, publication, hybrid SQL | Normal concurrency/transaction rules are explicit; search indexing/recovery/access limits. R01/R04/R06. |
+| [run.py](../Backend/run.py) | Local Uvicorn/event-loop launcher | Handles Windows Psycopg loop requirement; loopback single-server development launch, not deployment specification. |
 | Empty placeholders and package initializers | No active behavior | providers/models.py, services/chat.py, storage/vector_store.py and empty app package initializers reviewed as empty; no missing implementation inferred from names alone. |
 
 ### Scripts, evaluation, migrations, and configuration
 
 | File | Review result |
 |---|---|
-| [scripts/ingest.py](../scripts/ingest.py) | Uses shared ingestion service and capped reads; no separate job/recovery system. |
-| [scripts/trace_rag.py](../scripts/trace_rag.py) | Preserves failure evidence; private source data needs retention/access controls. R18. |
-| [evaluation/questions.json](../evaluation/questions.json) | Three cases and manual review criteria; insufficient quality gate. R10. |
-| [migrations/env.py](../migrations/env.py) | Model metadata, vector type rendering, bounded lock wait, cleanup; migration uses configured DB account. |
-| [initial migration](../migrations/versions/7f7483ec3680_create_documents_and_document_chunks.py) | Models and initial schema align; no search indexes, tenancy, leases, or versions. |
-| [migrations/script.py.mako](../migrations/script.py.mako), [migrations/README](../migrations/README), [alembic.ini](../alembic.ini) | Standard migration scaffolding/config; no production release orchestration. |
-| [infra/postgres/init/001-vector.sql](../infra/postgres/init/001-vector.sql) | Creates vector extension for fresh initialized database; not application schema migrations. |
-| [compose.yaml](../compose.yaml) | Local DB volume, loopback port, health check; no API/worker/backup stack. |
-| [Dockerfile](../Dockerfile) | Empty, therefore no application image definition. |
-| [pyproject.toml](../pyproject.toml), [uv.lock](../uv.lock), [.python-version](../.python-version) | Package/runtime declarations and resolved dependencies; locked deployment needs actual CI/build verification. |
-| [.env.example](../.env.example) | Documents local defaults; production setting and timeout/output docs need alignment. R19. Actual .env secrets were excluded. |
+| [scripts/ingest.py](../Backend/scripts/ingest.py) | Uses shared ingestion service and capped reads; no separate job/recovery system. |
+| [scripts/trace_rag.py](../Backend/scripts/trace_rag.py) | Preserves failure evidence; private source data needs retention/access controls. R18. |
+| [evaluation/questions.json](../Backend/evaluation/questions.json) | Three cases and manual review criteria; insufficient quality gate. R10. |
+| [migrations/env.py](../Backend/migrations/env.py) | Model metadata, vector type rendering, bounded lock wait, cleanup; migration uses configured DB account. |
+| [initial migration](../Backend/migrations/versions/7f7483ec3680_create_documents_and_document_chunks.py) | Models and initial schema align; no search indexes, tenancy, leases, or versions. |
+| [migrations/script.py.mako](../Backend/migrations/script.py.mako), [migrations/README](../Backend/migrations/README), [alembic.ini](../Backend/alembic.ini) | Standard migration scaffolding/config; no production release orchestration. |
+| [infra/postgres/init/001-vector.sql](../Backend/infra/postgres/init/001-vector.sql) | Creates vector extension for fresh initialized database; not application schema migrations. |
+| [compose.yaml](../Backend/compose.yaml) | Local DB volume, loopback port, health check; no API/worker/backup stack. |
+| [Dockerfile](../Backend/Dockerfile) | Empty, therefore no application image definition. |
+| [pyproject.toml](../Backend/pyproject.toml), [uv.lock](../Backend/uv.lock), [.python-version](../.python-version) | Package/runtime declarations and resolved dependencies; locked deployment needs actual CI/build verification. |
+| [.env.example](../Backend/.env.example) | Documents local defaults; production setting and timeout/output docs need alignment. R19. Actual .env secrets were excluded. |
 | [.gitignore](../.gitignore) | Excludes secrets/cache/data paths; ignores do not enforce permissions or retention. |
 | [README.md](../README.md) | Documents several limitations openly; output/timeout statements disagree with code. |
 | [docs/document-selection.md](document-selection.md) | Accurate stateless resend flow and summary limitation; client implementation absent. |
@@ -642,20 +642,20 @@ The current three cases are smoke checks, not this benchmark. Include tables, sc
 
 | File | Coverage present in code | Gap or boundary |
 |---|---|---|
-| [tests/helpers.py](../tests/helpers.py) | Generated PDFs, tokenizer/model stubs, selector loop | Fixtures do not represent complex production layouts. |
-| [test_documents.py](../tests/test_documents.py) | PDF/schema/chunk/upload/CLI validation | No measured malicious-PDF memory/time isolation. |
-| [test_ingestion.py](../tests/test_ingestion.py) | DB claims, retries, duplicate handling, cancellation, rollback, batching | DB tests opt-in; no killed-worker lease recovery or claim-commit cancellation test. |
-| [test_retrieval.py](../tests/test_retrieval.py) | Evidence rules, vector validation, API and DB ranking/filter cases | No corpus recall benchmark, ANN/filter plan verification, or tenant tests. |
-| [test_rag_service.py](../tests/test_rag_service.py) | Prompt/context/answer rules, service failures, transaction behavior | Mostly deterministic/mock contracts, not semantic answer quality. |
-| [test_rag.py](../tests/test_rag.py) | Mocked API-to-service success, fallback, timeout | No real LLM correctness measurement. |
-| [test_rag_graph.py](../tests/test_rag_graph.py) | Concurrent state/session isolation and fallback branch | Not mixed-workload capacity testing. |
-| [test_chat_api.py](../tests/test_chat_api.py) | Request validation, sessions, error status mapping | No authentication/tenant admission contract exists to test. |
-| [test_document_clarification.py](../tests/test_document_clarification.py) | Zero/one/multiple documents and client response | No large-corpus pagination/access boundary. |
-| [test_llm.py](../tests/test_llm.py) | Transport/config/timeouts/cancellation/malformed outputs | Mock provider; not live provider compatibility or quota behavior. |
-| [test_langchain_chat_model.py](../tests/test_langchain_chat_model.py) | Runnable parser/callbacks, trace isolation, propagated errors | Does not test unsupported native capabilities as production features. |
-| [test_trace_rag.py](../tests/test_trace_rag.py) | Failed-answer evidence and exception redaction | No trace retention/access policy verification. |
-| [test_policy_live.py](../tests/test_policy_live.py) | Opt-in live page/fallback/phrase checks | Only three cases; manual criteria are not scored. |
-| [tests/__init__.py](../tests/__init__.py) | Test package marker | No executable application behavior. |
+| [tests/helpers.py](../Backend/tests/helpers.py) | Generated PDFs, tokenizer/model stubs, selector loop | Fixtures do not represent complex production layouts. |
+| [test_documents.py](../Backend/tests/test_documents.py) | PDF/schema/chunk/upload/CLI validation | No measured malicious-PDF memory/time isolation. |
+| [test_ingestion.py](../Backend/tests/test_ingestion.py) | DB claims, retries, duplicate handling, cancellation, rollback, batching | DB tests opt-in; no killed-worker lease recovery or claim-commit cancellation test. |
+| [test_retrieval.py](../Backend/tests/test_retrieval.py) | Evidence rules, vector validation, API and DB ranking/filter cases | No corpus recall benchmark, ANN/filter plan verification, or tenant tests. |
+| [test_rag_service.py](../Backend/tests/test_rag_service.py) | Prompt/context/answer rules, service failures, transaction behavior | Mostly deterministic/mock contracts, not semantic answer quality. |
+| [test_rag.py](../Backend/tests/test_rag.py) | Mocked API-to-service success, fallback, timeout | No real LLM correctness measurement. |
+| [test_rag_graph.py](../Backend/tests/test_rag_graph.py) | Concurrent state/session isolation and fallback branch | Not mixed-workload capacity testing. |
+| [test_chat_api.py](../Backend/tests/test_chat_api.py) | Request validation, sessions, error status mapping | No authentication/tenant admission contract exists to test. |
+| [test_document_clarification.py](../Backend/tests/test_document_clarification.py) | Zero/one/multiple documents and client response | No large-corpus pagination/access boundary. |
+| [test_llm.py](../Backend/tests/test_llm.py) | Transport/config/timeouts/cancellation/malformed outputs | Mock provider; not live provider compatibility or quota behavior. |
+| [test_langchain_chat_model.py](../Backend/tests/test_langchain_chat_model.py) | Runnable parser/callbacks, trace isolation, propagated errors | Does not test unsupported native capabilities as production features. |
+| [test_trace_rag.py](../Backend/tests/test_trace_rag.py) | Failed-answer evidence and exception redaction | No trace retention/access policy verification. |
+| [test_policy_live.py](../Backend/tests/test_policy_live.py) | Opt-in live page/fallback/phrase checks | Only three cases; manual criteria are not scored. |
+| [tests/__init__.py](../Backend/tests/__init__.py) | Test package marker | No executable application behavior. |
 
 ## 11. Approval-ready work sequence
 

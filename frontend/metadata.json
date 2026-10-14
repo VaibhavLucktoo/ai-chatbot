@@ -1,0 +1,7 @@
+{
+  "name": "FastAPI PDF RAG Dashboard",
+  "description": "Enterprise frontend and administration console for FastAPI PDF RAG chatbot with PostgreSQL/pgvector, FastEmbed, and LangGraph.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

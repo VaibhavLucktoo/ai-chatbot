@@ -1,0 +1,163 @@
+{
+  "pdf": "C:\\Users\\Vaibhav\\Desktop\\ai-chatbot\\output\\pdf\\rag-production-review-2026-10-09.pdf",
+  "pages": 25,
+  "source_headings_verified": 43,
+  "all_findings_present": true,
+  "page_summaries": [
+    {
+      "page": 1,
+      "characters": 770,
+      "outside_page_characters": 0,
+      "first_line": "Static review - proposals require approval"
+    },
+    {
+      "page": 2,
+      "characters": 651,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 3,
+      "characters": 2681,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 4,
+      "characters": 2783,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 5,
+      "characters": 877,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 6,
+      "characters": 1611,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 7,
+      "characters": 1355,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 8,
+      "characters": 2022,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 9,
+      "characters": 1163,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 10,
+      "characters": 1819,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 11,
+      "characters": 3637,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 12,
+      "characters": 3597,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 13,
+      "characters": 3510,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 14,
+      "characters": 3692,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 15,
+      "characters": 2119,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 16,
+      "characters": 2049,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 17,
+      "characters": 1108,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 18,
+      "characters": 862,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 19,
+      "characters": 2104,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 20,
+      "characters": 1456,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 21,
+      "characters": 2339,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 22,
+      "characters": 2015,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 23,
+      "characters": 1960,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 24,
+      "characters": 1910,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    },
+    {
+      "page": 25,
+      "characters": 1604,
+      "outside_page_characters": 0,
+      "first_line": "AI CHATBOT  /  RAG REVIEW"
+    }
+  ],
+  "contact_sheets": [
+    "C:\\Users\\Vaibhav\\Desktop\\ai-chatbot\\tmp\\pdfs\\review_conversion\\rendered\\contact-01.png",
+    "C:\\Users\\Vaibhav\\Desktop\\ai-chatbot\\tmp\\pdfs\\review_conversion\\rendered\\contact-02.png",
+    "C:\\Users\\Vaibhav\\Desktop\\ai-chatbot\\tmp\\pdfs\\review_conversion\\rendered\\contact-03.png"
+  ]
+}
