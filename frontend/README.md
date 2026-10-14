@@ -69,8 +69,11 @@ Historical activity before metrics were enabled is not backfilled. Accuracy and
 remaining provider quota are shown as unavailable rather than fabricated.
 See [analytics implementation and limits](../docs/model-analytics-2026-10-12.md).
 
-Existing AI Studio admin, mock, configuration, and widget files are retained.
-They are not mounted by the active App. Advanced admin and external embedding
-will be integrated later, after their backend contracts and security are defined.
-The standalone public widget is still a legacy prototype and must not be embedded
-on external websites. No existing source file was deleted during integration.
+Website widget now manages per-assistant settings, approved website origins,
+request budgets, live preview and copyable script/iframe embeds. The hosted chat
+uses private visitor sessions, real assistant retrieval, clarification and citations.
+See [widget setup, deployment and limits](../docs/website-widget.md). A separate
+public gateway exposes widget routes only; localhost is for local testing.
+Existing AI Studio admin, mock and older embed configurators remain unmounted.
+The legacy public rag-widget.js prototype is retired; generate new code from
+Website widget. widget-demo.html provides an independent sample host.

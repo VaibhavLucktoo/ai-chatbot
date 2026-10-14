@@ -29,6 +29,14 @@ class Settings(BaseSettings):
 
     app_name: str = Field(default="AI Chatbot", min_length=1)
     app_env: Literal["development", "test", "production"] = "development"
+    widget_public_enabled: bool = False
+    widget_public_origin: str = "http://127.0.0.1:8000"
+
+    @field_validator("widget_public_origin")
+    @classmethod
+    def validate_widget_origin(cls, value):
+        from app.schemas.widgets import website_origin
+        return website_origin(value)
 
     db_host: str = Field(default="127.0.0.1", min_length=1)
     db_port: int = Field(default=5433, ge=1, le=65535)

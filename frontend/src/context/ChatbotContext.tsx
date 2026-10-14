@@ -4,7 +4,7 @@ import {forgetChatSession, loadChatSession, newChatSession, saveChatSession} fro
 import type {BackendHealth, ChatRequest, ConversationMessage, DocumentInfo, DocumentJob, DocumentPage} from '../types/backend';
 import type {Assistant} from '../types/assistants';
 
-type Tab = 'chat' | 'documents' | 'status' | 'analytics' | 'assistants' | 'models';
+type Tab = 'chat' | 'documents' | 'status' | 'analytics' | 'assistants' | 'models' | 'widget';
 interface ChatbotState {
   tab: Tab; setTab: (tab: Tab) => void;
   theme: 'light' | 'dark'; toggleTheme: () => void;

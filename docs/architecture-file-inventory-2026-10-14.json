@@ -1,0 +1,5932 @@
+{
+  "scope": "First-party application, tests, migrations, scripts, deployment/config examples and documentation. Dependencies/lockfiles inventoried; no CVE claim. No private env, secrets, caches, PDFs or generated vendor sources.",
+  "files": [
+    {
+      "path": ".github/workflows/checks.yml",
+      "lines": 37,
+      "sha256": "a6b0ce25064b3142c638dfd64f2cce9b949647e64f38018750c27b297a99d958"
+    },
+    {
+      "path": ".gitignore",
+      "lines": 12,
+      "sha256": "fc177c8cdbdfaa7794b81a1e99a9c8b98cdc22c3aba5dd0dd9e080b7ac1a07e5"
+    },
+    {
+      "path": "Backend/.dockerignore",
+      "lines": 10,
+      "sha256": "fdaa202d9e45f6e0e839bb79a4d8a230caeb5c3cc2db4a9cf1f473143787f12d"
+    },
+    {
+      "path": "Backend/.env.example",
+      "lines": 76,
+      "sha256": "54abef692ab878250fde84fef142871c7ec4fd3dd893af9d9ebe8e2394d0d942"
+    },
+    {
+      "path": "Backend/alembic.ini",
+      "lines": 149,
+      "sha256": "d88662b86a0a0a86676a48ab94f80d23c97e6b2269ca3888f54ad7ad0d4b6c25"
+    },
+    {
+      "path": "Backend/app/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/admin/app.js",
+      "lines": 311,
+      "sha256": "e9145df788ad0ec61514d730b900e39bc99eaa5f9e69567183e7163d81fddb6a"
+    },
+    {
+      "path": "Backend/app/admin/index.html",
+      "lines": 57,
+      "sha256": "d5f9031c40bcf9c74864999ec79549d75aad5f68b7b1ea24a2e6d46a33ff5338"
+    },
+    {
+      "path": "Backend/app/admin/styles.css",
+      "lines": 5,
+      "sha256": "eb678fb5dfce358a98e1b1b733b450c965b31d6703cb1ec87d867e04af7f88c4"
+    },
+    {
+      "path": "Backend/app/api/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/admin.py",
+      "lines": 81,
+      "sha256": "6f507190ca6de39560e46dc3674a883f6cad96b2b5b0949212ca4f9e88ed8ffc",
+      "symbols": [
+        {
+          "name": "diagnostics",
+          "line": 21,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "admin_status",
+          "line": 34,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "admin_documents",
+          "line": 46,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "admin_chat",
+          "line": 69,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "HTTPException"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/assistants.py",
+      "lines": 208,
+      "sha256": "ca917223024be27e5921f1810a491423785dd587f806a126ed21990ff3b85ddd",
+      "symbols": [
+        {
+          "name": "ConfigurationRoute",
+          "line": 31,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "providers",
+          "line": 82,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "connections",
+          "line": 87,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "create_connection",
+          "line": 92,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "update_connection",
+          "line": 97,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "remove_connection",
+          "line": 106,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "discover_models",
+          "line": 111,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "unsaved_models",
+          "line": 138,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "saved_models",
+          "line": 143,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_connection",
+          "line": 149,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "admin_assistants",
+          "line": 164,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "create_assistant",
+          "line": 169,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "update_assistant",
+          "line": 174,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "remove_assistant",
+          "line": 183,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "available_assistants",
+          "line": 189,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "assistant_documents",
+          "line": 194,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "get_route_handler",
+          "line": 32,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "safe_handler",
+          "line": 35,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_connection"
+      ],
+      "except_types": [
+        "(SQLAlchemyError, TimeoutError, OSError)",
+        "(ValueError, KeyError, TypeError)",
+        "(httpx.TimeoutException, TimeoutError)",
+        "AssistantAccessError",
+        "AssistantConfigurationError",
+        "AssistantConflict",
+        "AssistantNotFound",
+        "CredentialError",
+        "IntegrityError",
+        "LLMConnectionError",
+        "LLMRateLimitError",
+        "LLMResponseError",
+        "LLMTimeoutError",
+        "RequestValidationError",
+        "httpx.RequestError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/chat.py",
+      "lines": 215,
+      "sha256": "2f840d93f6e85826ce5a7f12ef81339d89c5bb99d5e0809113ae6333ca9599d2",
+      "symbols": [
+        {
+          "name": "ChatErrorResponse",
+          "line": 34,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "get_db_session",
+          "line": 40,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "chat",
+          "line": 98,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "run_chat",
+          "line": 116,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(SQLAlchemyError, TimeoutError, OSError)",
+        "AssistantAccessError",
+        "AssistantNotFound",
+        "ConversationAccessError",
+        "ConversationBusyError",
+        "CredentialError",
+        "Exception",
+        "HTTPException",
+        "LLMConnectionError",
+        "LLMError",
+        "LLMRateLimitError",
+        "LLMTimeoutError",
+        "RetrievalProviderError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/document_catalog.py",
+      "lines": 99,
+      "sha256": "05bbbf6d232503066e82fbaa1f555bf7574dae15f67a06fbdb4a013655dbc3fc",
+      "symbols": [
+        {
+          "name": "metadata_query",
+          "line": 17,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "list_documents",
+          "line": 29,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "get_document",
+          "line": 54,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "download_source",
+          "line": 67,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "get_source_chunk",
+          "line": 85,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(SQLAlchemyError, TimeoutError)"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/document_lifecycle.py",
+      "lines": 42,
+      "sha256": "0e2bf233bd767402f921a7345e43a9d051c0c32d7f0003cedb3f027712da0293",
+      "symbols": [
+        {
+          "name": "DocumentActivation",
+          "line": 14,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "activate_document",
+          "line": 20,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "delete_document",
+          "line": 34,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "SQLAlchemyError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/documents.py",
+      "lines": 274,
+      "sha256": "eaca057bc48683b846472ba387d12a42d69f262ab41de0d2e6489c4e23a85076",
+      "symbols": [
+        {
+          "name": "read_limited_pdf",
+          "line": 44,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "validate_pdf_envelope",
+          "line": 73,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "upload_document",
+          "line": 103,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "search_documents",
+          "line": 203,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(IngestionProcessingError, SQLAlchemyError, TimeoutError)",
+        "(PDFExtractionError, ChunkingError)",
+        "(SQLAlchemyError, TimeoutError)",
+        "(ValueError, RuntimeError)",
+        "Exception",
+        "PDFExtractionError",
+        "PDFTooLargeError",
+        "RetrievalProviderError",
+        "ValidationError",
+        "ValueError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/health.py",
+      "lines": 11,
+      "sha256": "5c65baa7e6c814ee4054a9798613b0053bc7d13b6258cf36a6db9060101f8d2f",
+      "symbols": [
+        {
+          "name": "health",
+          "line": 7,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/jobs.py",
+      "lines": 76,
+      "sha256": "5b41c81c4f0d2dc0603401d5c9c2ff02614a61a8d5d9064f7a8e691b8165d21c",
+      "symbols": [
+        {
+          "name": "DocumentJobResponse",
+          "line": 18,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "submit_job",
+          "line": 25,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "job_status",
+          "line": 66,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "SQLAlchemyError",
+        "ValidationError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/metrics.py",
+      "lines": 77,
+      "sha256": "092e2e7099e893622bea166e7ad0a27776a8f21b021aad4530ff0b2180b519c1",
+      "symbols": [
+        {
+          "name": "AnalyticsResponse",
+          "line": 16,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "admin_session",
+          "line": 39,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "admin_metrics",
+          "line": 49,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(SQLAlchemyError, TimeoutError, OSError)"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/readiness.py",
+      "lines": 26,
+      "sha256": "4e8a71a08d09df415191039184d83df1d2b275ffee65fb0a9428be6255eacd1f",
+      "symbols": [
+        {
+          "name": "readiness",
+          "line": 16,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/router.py",
+      "lines": 28,
+      "sha256": "e7b8435bfb743f8abe818b3b54cc29f8a446b03d6ef7d37fec25ca559208ef3c",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/api/v1/widgets.py",
+      "lines": 86,
+      "sha256": "9389c2c295b5b278f936b7dc6a67efffbe7d6700bae25acb306b070bedf110df",
+      "symbols": [
+        {
+          "name": "get_widget",
+          "line": 25,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "save_widget",
+          "line": 30,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "render_widget",
+          "line": 35,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "widget_asset",
+          "line": 54,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "start",
+          "line": 63,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "widget_chat",
+          "line": 68,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "passage",
+          "line": 82,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "ValueError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/core/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/core/config.py",
+      "lines": 100,
+      "sha256": "2527f61175d2eaa926d0804cd5e89092776d56e1dfbcaca61e2b9eb7fb1d49b7",
+      "symbols": [
+        {
+          "name": "ModelPrice",
+          "line": 15,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "Settings",
+          "line": 21,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "get_settings",
+          "line": 99,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "validate_widget_origin",
+          "line": 37,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "validate_context_chunk_limit",
+          "line": 91,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": [
+        {
+          "function": "validate_widget_origin",
+          "line": 37
+        },
+        {
+          "function": "validate_context_chunk_limit",
+          "line": 91
+        }
+      ]
+    },
+    {
+      "path": "Backend/app/core/lifespan.py",
+      "lines": 47,
+      "sha256": "12b2b9f90faf19c1278c590d803253333f3970a35b5939624e157205f9c539d2",
+      "symbols": [
+        {
+          "name": "lifespan",
+          "line": 17,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/core/local_access.py",
+      "lines": 31,
+      "sha256": "29eaab3ac264d59af0ec44d2f753c51ecd23959de2e4852f2012b6c96d8b62ed",
+      "symbols": [
+        {
+          "name": "is_local_scope",
+          "line": 11,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "require_admin_token",
+          "line": 21,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(ValueError, UnicodeError)",
+        "UnicodeError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/core/middleware.py",
+      "lines": 133,
+      "sha256": "cb5a494cdbdef0dbdf570c629dcfba5b5f6ee6b3580090165649c5694af9b4d8",
+      "symbols": [
+        {
+          "name": "LocalWorkspaceMiddleware",
+          "line": 20,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "__init__",
+          "line": 21,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "widget_route",
+          "line": 31,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "__call__",
+          "line": 39,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_handle",
+          "line": 51,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "bounded_receive",
+          "line": 90,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "decorated_send",
+          "line": 104,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "measured_send",
+          "line": 44,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "TimeoutError",
+        "ValueError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/main.py",
+      "lines": 44,
+      "sha256": "3c29a841b8817cc152224c0e8dfe8388d6c43a65b7b8b06f270f7da5b05fdcf9",
+      "symbols": [
+        {
+          "name": "create_app",
+          "line": 17,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "index",
+          "line": 34,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "admin_page",
+          "line": 38,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/prompts/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/prompts/conversation.py",
+      "lines": 22,
+      "sha256": "128e4f8626d0e8f97b96021d03b5f9e46d4e8d7e83e29658bb9bd60b752a6373",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/prompts/rag.py",
+      "lines": 42,
+      "sha256": "9be9ac0ce4e06dcf39fcbbd84b855eb7ac9eb32265d55e317a1f147fa5c1d414",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/base.py",
+      "lines": 28,
+      "sha256": "b8a32c2f4c1116c00f1350678615728d250b04a3184c69941a12e67cb267a11e",
+      "symbols": [
+        {
+          "name": "BaseEmbeddingProvider",
+          "line": 7,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "space_id",
+          "line": 10,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "dimensions",
+          "line": 16,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "embed_documents",
+          "line": 20,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "embed_query",
+          "line": 27,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/chat_model.py",
+      "lines": 64,
+      "sha256": "1e87b287aa2532f057069c3db31f2a56a11c4771568ac33dbfee90bffcf541de",
+      "symbols": [
+        {
+          "name": "CompatibleChatModel",
+          "line": 13,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_identifying_params",
+          "line": 25,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_llm_type",
+          "line": 29,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_generate",
+          "line": 32,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_agenerate",
+          "line": 35,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/documents.py",
+      "lines": 112,
+      "sha256": "e1a8381c8f995419215bb8720828b64e8ea9546f3c1455a88fa72adfd605ed9a",
+      "symbols": [
+        {
+          "name": "PDFExtractionError",
+          "line": 14,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "PDFTooLargeError",
+          "line": 18,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ExtractedPage",
+          "line": 23,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ExtractedDocument",
+          "line": 29,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "validate_pdf_bytes",
+          "line": 34,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "extract_pdf",
+          "line": 49,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(PyPdfError, OSError, ValueError, TypeError, KeyError, IndexError, AttributeError, ArithmeticError, RecursionError, NotImplementedError)",
+        "PDFExtractionError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/embeddings.py",
+      "lines": 30,
+      "sha256": "7de3923aa8ae489b062f967ca19fd7e5e2db95bdd7372bc1e3031a9f63668b9d",
+      "symbols": [
+        {
+          "name": "get_embedding_provider",
+          "line": 8,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/fastembed_provider.py",
+      "lines": 131,
+      "sha256": "0bdeae35fe90d98a4bb2e12bb61b5245ec5b3700f9f5d02ccefe4f34a6c74054",
+      "symbols": [
+        {
+          "name": "FastEmbedProvider",
+          "line": 15,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "__init__",
+          "line": 21,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "dimensions",
+          "line": 35,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "space_id",
+          "line": 39,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "embed_documents",
+          "line": 42,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "embed_query",
+          "line": 51,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_submit",
+          "line": 55,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "close",
+          "line": 73,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_embed",
+          "line": 76,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "finished",
+          "line": 65,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "BaseException",
+        "LocalEntryNotFoundError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/models.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/pdf_process.py",
+      "lines": 92,
+      "sha256": "24e32816dc4071956ab0ef15b026a028e26482ab2ce56287feafeb0ffdd072bf",
+      "symbols": [
+        {
+          "name": "_windows_memory_limit",
+          "line": 9,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_parse_child",
+          "line": 47,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "extract_pdf_isolated",
+          "line": 63,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "BasicLimits",
+          "line": 14,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "IoCounters",
+          "line": 21,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ExtendedLimits",
+          "line": 25,
+          "kind": "ClassDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(TimeoutError, EOFError)",
+        "BaseException"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/providers/registry.py",
+      "lines": 37,
+      "sha256": "8a5f40c772e6834322e66c30944681e2cb5b8da918f73ea21368ad7c2ee9d5ed",
+      "symbols": [
+        {
+          "name": "ProviderPreset",
+          "line": 12,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ProviderModelSettings",
+          "line": 24,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "provider_settings",
+          "line": 36,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/schemas/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/schemas/assistants.py",
+      "lines": 117,
+      "sha256": "99a6ab176e8113946a3588a6c4aa502a5367dc8d5fa1fc3fdbf8df55316d4b4a",
+      "symbols": [
+        {
+          "name": "ConfigurationSchema",
+          "line": 16,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "validate_key",
+          "line": 20,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ConnectionCreate",
+          "line": 27,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ConnectionUpdate",
+          "line": 35,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ConnectionResponse",
+          "line": 46,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ModelDiscovery",
+          "line": 56,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "GenerationSettings",
+          "line": 63,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ConnectionTest",
+          "line": 77,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "AssistantWrite",
+          "line": 94,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "AssistantResponse",
+          "line": 107,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "check_optional_key",
+          "line": 42,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "usable_context",
+          "line": 71,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "credentials",
+          "line": 83,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "unique_documents",
+          "line": 103,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": [
+        {
+          "function": "check_optional_key",
+          "line": 42
+        },
+        {
+          "function": "usable_context",
+          "line": 71
+        },
+        {
+          "function": "credentials",
+          "line": 83
+        },
+        {
+          "function": "unique_documents",
+          "line": 103
+        }
+      ]
+    },
+    {
+      "path": "Backend/app/schemas/chat.py",
+      "lines": 68,
+      "sha256": "4195c12d0b507dd83dd87ff1dfa25ced979d709da76ec0199bfe66d63139c9ae",
+      "symbols": [
+        {
+          "name": "StrictSchema",
+          "line": 22,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentChoice",
+          "line": 28,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ClarificationResponse",
+          "line": 35,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChatRequest",
+          "line": 45,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChatSource",
+          "line": 55,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChatResponse",
+          "line": 64,
+          "kind": "ClassDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/schemas/documents.py",
+      "lines": 221,
+      "sha256": "de8313f8d4ca4f0a75b12df12d4e16f1421fa1090938e48a4a4d2d6a48aed97d",
+      "symbols": [
+        {
+          "name": "StrictSchema",
+          "line": 38,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentUploadMetadata",
+          "line": 44,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentResponse",
+          "line": 93,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentDetail",
+          "line": 103,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentListResponse",
+          "line": 111,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChunkResponse",
+          "line": 118,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChunkInput",
+          "line": 129,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "IngestionPayload",
+          "line": 137,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentUploadResponse",
+          "line": 165,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentSearchRequest",
+          "line": 176,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentChunkResult",
+          "line": 199,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentSearchResponse",
+          "line": 215,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "validate_filename",
+          "line": 52,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "validate_chunks",
+          "line": 148,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "normalize_query",
+          "line": 185,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": [
+        {
+          "function": "validate_filename",
+          "line": 52
+        },
+        {
+          "function": "validate_chunks",
+          "line": 148
+        },
+        {
+          "function": "normalize_query",
+          "line": 185
+        }
+      ]
+    },
+    {
+      "path": "Backend/app/schemas/health.py",
+      "lines": 6,
+      "sha256": "c104f37ef697f06a3ca84a0804aa5b8fd161bb78db83db54d4066c3e638b84e2",
+      "symbols": [
+        {
+          "name": "HealthResponse",
+          "line": 4,
+          "kind": "ClassDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/schemas/readiness.py",
+      "lines": 7,
+      "sha256": "767fcb4cbc12c0c8e654513212234210f1f8a6e4b29db5e0c2b90af7e8e783d4",
+      "symbols": [
+        {
+          "name": "ReadinessResponse",
+          "line": 6,
+          "kind": "ClassDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/schemas/widgets.py",
+      "lines": 76,
+      "sha256": "6abd719cda3ed676ad49c489093527a2f33466e9261a42290b1be18a8bd0b70d",
+      "symbols": [
+        {
+          "name": "website_origin",
+          "line": 11,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "WidgetSchema",
+          "line": 35,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "WidgetWrite",
+          "line": 39,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "WidgetResponse",
+          "line": 54,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "VisitorStart",
+          "line": 63,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "VisitorChat",
+          "line": 68,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "VisitorSession",
+          "line": 73,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "origins",
+          "line": 51,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(ValueError, UnicodeError)"
+      ],
+      "validators": [
+        {
+          "function": "origins",
+          "line": 51
+        }
+      ]
+    },
+    {
+      "path": "Backend/app/services/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/assistants.py",
+      "lines": 248,
+      "sha256": "9e18e466f1bdd1d5472d2a9133ec52437557b4bae82f8087eccc119881f2afa7",
+      "symbols": [
+        {
+          "name": "AssistantNotFound",
+          "line": 23,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "AssistantAccessError",
+          "line": 27,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "AssistantConfigurationError",
+          "line": 31,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "AssistantConflict",
+          "line": 35,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "delete_connection",
+          "line": 39,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "delete_assistant",
+          "line": 55,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "stateless_assistant_turn",
+          "line": 72,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "AssistantRuntime",
+          "line": 91,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_connection_columns",
+          "line": 102,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "list_connections",
+          "line": 108,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "save_connection",
+          "line": 114,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "connection_credentials",
+          "line": 145,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "list_assistants",
+          "line": 156,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "save_assistant",
+          "line": 171,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "load_assistant_runtime",
+          "line": 202,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_read_assistant_runtime",
+          "line": 224,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "cleanup",
+          "line": 79,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "Exception",
+        "IntegrityError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/chat.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/chunking.py",
+      "lines": 99,
+      "sha256": "3e8ee7f36c4501ae609f0d3fc20e9f0feeae1fb15d64598de310b657a7096b4d",
+      "symbols": [
+        {
+          "name": "ChunkingError",
+          "line": 17,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "TextChunk",
+          "line": 22,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_get_tokenizer",
+          "line": 29,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "chunk_document",
+          "line": 43,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/configuration_cache.py",
+      "lines": 80,
+      "sha256": "2a2a869f68c56418b659a92ab82c08b3574b5b7189be4da5c43bacb9a566c918",
+      "symbols": [
+        {
+          "name": "ConfigurationCache",
+          "line": 12,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "__init__",
+          "line": 13,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "invalidate",
+          "line": 23,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "get",
+          "line": 33,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "close",
+          "line": 68,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "snapshot",
+          "line": 76,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "load",
+          "line": 48,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/conversation_intent.py",
+      "lines": 124,
+      "sha256": "f59972ad9d1bdce30e8c478b897998303fa0de9c86741e975e62e9c96856aaea",
+      "symbols": [
+        {
+          "name": "Turn",
+          "line": 17,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "conversational_reply",
+          "line": 65,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "detect_intent",
+          "line": 71,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ResolvedFollowUp",
+          "line": 100,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "resolve_follow_up",
+          "line": 114,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "coherent_result",
+          "line": 106,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(ValueError, ValidationError)"
+      ],
+      "validators": [
+        {
+          "function": "coherent_result",
+          "line": 106
+        }
+      ]
+    },
+    {
+      "path": "Backend/app/services/conversations.py",
+      "lines": 40,
+      "sha256": "5980eb2f66b5637fb00e461a90c1edf73a1f939b8d9d6101b332b2f2ac9c648f",
+      "symbols": [
+        {
+          "name": "answer_conversation",
+          "line": 14,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "BaseException",
+        "Exception"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/credential_vault.py",
+      "lines": 63,
+      "sha256": "125b15c4c7e0378decdafab16f7e7dbcedb63fd64a089557501eda110c0b2264",
+      "symbols": [
+        {
+          "name": "CredentialError",
+          "line": 14,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "CredentialVault",
+          "line": 21,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "__init__",
+          "line": 22,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_cipher",
+          "line": 26,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "encrypt",
+          "line": 47,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "decrypt",
+          "line": 53,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(InvalidToken, ValueError, KeyError, TypeError, UnicodeError)",
+        "(OSError, ValueError, UnicodeError)",
+        "FileExistsError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/document_hash.py",
+      "lines": 9,
+      "sha256": "fcc7a575624e16225677612272b9c17c8830eb90507da712eb7f8734ac52669b",
+      "symbols": [
+        {
+          "name": "pdf_sha256",
+          "line": 4,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/ingestion.py",
+      "lines": 207,
+      "sha256": "ad9cb91cfd5504a4583b85ab306c062f51eea91fe829b8664793d553de4ce278",
+      "symbols": [
+        {
+          "name": "IngestionProcessingError",
+          "line": 37,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "IngestionResult",
+          "line": 42,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_existing_result",
+          "line": 51,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ingest_pdf",
+          "line": 62,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_ingest_pdf",
+          "line": 75,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "keep_lease",
+          "line": 127,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(Exception, asyncio.CancelledError)",
+        "TimeoutError",
+        "ValidationError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/llm.py",
+      "lines": 370,
+      "sha256": "28c48afcc934c859d4277f5b1482a5e6339e81c8373c8eadd284e4eb9d82e786",
+      "symbols": [
+        {
+          "name": "assistant_model_resources",
+          "line": 37,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "effective_model_settings",
+          "line": 46,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "llm_request_resources",
+          "line": 51,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "LLMError",
+          "line": 61,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "LLMConnectionError",
+          "line": 65,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "LLMTimeoutError",
+          "line": 69,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "LLMResponseError",
+          "line": 73,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "LLMRateLimitError",
+          "line": 81,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_LLMSettings",
+          "line": 88,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_request_settings",
+          "line": 114,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_extract_answer",
+          "line": 153,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "generate_llm_response",
+          "line": 206,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_generate_completion",
+          "line": 248,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_perform_completion",
+          "line": 253,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "__init__",
+          "line": 76,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "__init__",
+          "line": 84,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "transport",
+          "line": 236,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(ValidationError, SettingsError, httpx.InvalidURL, OSError, UnicodeError)",
+        "(ValueError, UnicodeError)",
+        "(httpx.RequestError, httpx.InvalidURL)",
+        "(httpx.TimeoutException, TimeoutError)",
+        "httpx.DecodingError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/metrics.py",
+      "lines": 260,
+      "sha256": "efc03ca577e2c3a4ed4c6a9974eec6496f3ca83524f537a8ede183eb5e35a83d",
+      "symbols": [
+        {
+          "name": "safe_error",
+          "line": 24,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "safe_usage",
+          "line": 29,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "CallMeasurement",
+          "line": 37,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "RequestMeasurement",
+          "line": 56,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "current_request",
+          "line": 93,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "current_call",
+          "line": 97,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "model_stage",
+          "line": 102,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "measure_call",
+          "line": 113,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "record_graph",
+          "line": 137,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "classify_request",
+          "line": 159,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "MetricsCollector",
+          "line": 171,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "rows",
+          "line": 83,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "__init__",
+          "line": 172,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "start",
+          "line": 183,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "request",
+          "line": 187,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "snapshot",
+          "line": 208,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_write_loop",
+          "line": 219,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "close",
+          "line": 244,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "BaseException",
+        "Exception",
+        "TimeoutError",
+        "asyncio.CancelledError",
+        "asyncio.QueueFull"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/rag.py",
+      "lines": 555,
+      "sha256": "fcbcd711939adcccf26824f5bf968a1113c8ee83168142e745530b0995e56e0b",
+      "symbols": [
+        {
+          "name": "select_context_chunks",
+          "line": 45,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_StructuredAnswer",
+          "line": 56,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_PromptChunk",
+          "line": 65,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "build_rag_prompt",
+          "line": 83,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_encode_rag_prompt",
+          "line": 94,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "search_similar_chunks",
+          "line": 119,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "validate_answer",
+          "line": 153,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "needs_document_selection",
+          "line": 200,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "RAGState",
+          "line": 209,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "RAGContext",
+          "line": 225,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "_record_step",
+          "line": 232,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_route_intent",
+          "line": 237,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_resolve_follow_up",
+          "line": 259,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_retrieve",
+          "line": 291,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_select_context",
+          "line": 340,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_fallback",
+          "line": 378,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_prepare_prompt",
+          "line": 387,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_generate",
+          "line": 411,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_validate",
+          "line": 444,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_after_retrieval",
+          "line": 454,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_after_intent",
+          "line": 458,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_after_resolution",
+          "line": 464,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_after_context",
+          "line": 468,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_timed_node",
+          "line": 472,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "get_rag_graph",
+          "line": 486,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "answer_question",
+          "line": 508,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "reject_blank_text",
+          "line": 77,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "run",
+          "line": 473,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(ValueError, RuntimeError)",
+        "BaseException",
+        "NodeCancelledError",
+        "TimeoutError",
+        "ValidationError",
+        "json.JSONDecodeError"
+      ],
+      "validators": [
+        {
+          "function": "reject_blank_text",
+          "line": 77
+        }
+      ]
+    },
+    {
+      "path": "Backend/app/services/recovery.py",
+      "lines": 53,
+      "sha256": "bb10eb2c363a5a67057c6b396054140f8482752555b4adb4f707be9171bae9f8",
+      "symbols": [
+        {
+          "name": "recover_once",
+          "line": 16,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "recovery_loop",
+          "line": 46,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "Exception",
+        "PDFExtractionError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/retrieval.py",
+      "lines": 137,
+      "sha256": "6a46f5a5eb96f8a5fdc992c6116678378cfcf4c4f9181599c1e32ac8aaadc342",
+      "symbols": [
+        {
+          "name": "RetrievalProviderError",
+          "line": 22,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "RetrievalResult",
+          "line": 27,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "has_sufficient_evidence",
+          "line": 35,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "retrieve_chunks",
+          "line": 62,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "Exception"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/services/widgets.py",
+      "lines": 144,
+      "sha256": "1d1011b7d6f38939771ada4380d064cc586e8f26dc24396b0f5b7b50324cfc8c",
+      "symbols": [
+        {
+          "name": "public_origin",
+          "line": 14,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "configuration",
+          "line": 18,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "admin_widget",
+          "line": 26,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "available_widget",
+          "line": 46,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "widget_page",
+          "line": 57,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "require_website",
+          "line": 64,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "budget",
+          "line": 69,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "start_visitor",
+          "line": 84,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "visitor",
+          "line": 103,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "remember_sources",
+          "line": 125,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "visitor_passage",
+          "line": 133,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/storage/__init__.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/storage/conversations.py",
+      "lines": 110,
+      "sha256": "e397d53c6b01215ca70febfc073ecb8729968e900dc7717ea7666dfe0670a1e1",
+      "symbols": [
+        {
+          "name": "ConversationAccessError",
+          "line": 18,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ConversationBusyError",
+          "line": 22,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ConversationClaim",
+          "line": 27,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "bounded_history",
+          "line": 33,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "claim_conversation",
+          "line": 45,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "finish_conversation",
+          "line": 92,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "release_conversation",
+          "line": 106,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/storage/db.py",
+      "lines": 118,
+      "sha256": "2583c01b97820fc5f1361ee325e7db5fe453711d777d015b9ac6cd0f69084010",
+      "symbols": [
+        {
+          "name": "Database",
+          "line": 26,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "__init__",
+          "line": 27,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "transaction",
+          "line": 61,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "session",
+          "line": 67,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "is_ready",
+          "line": 76,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "close",
+          "line": 115,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(SQLAlchemyError, TimeoutError, OSError)"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/storage/documents.py",
+      "lines": 467,
+      "sha256": "ed83802c6016dc47d47c99441436dec4a68298b24f550290d1988fbb6af45dcc",
+      "symbols": [
+        {
+          "name": "_lexical_query",
+          "line": 26,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_rrf_scores",
+          "line": 38,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "_hybrid_search",
+          "line": 54,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ExistingDocument",
+          "line": 94,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ClaimedDocument",
+          "line": 106,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "StoredChunkResult",
+          "line": 116,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "find_document_by_hash",
+          "line": 132,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "retain_existing_source",
+          "line": 142,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "_find_document",
+          "line": 150,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "claim_document",
+          "line": 192,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "complete_document",
+          "line": 265,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "fail_document",
+          "line": 292,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "renew_document_lease",
+          "line": 308,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "abandon_document_claim",
+          "line": 318,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "release_document_claim",
+          "line": 326,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "search_similar_chunks",
+          "line": 334,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "validate_document_ids",
+          "line": 454,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(TypeError, ValueError, OverflowError)"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/storage/metrics.py",
+      "lines": 187,
+      "sha256": "650d84e75607add79f1ec54e55ed38fec496e7fdd966de6d853e2919ca8d0687",
+      "symbols": [
+        {
+          "name": "write_metrics",
+          "line": 8,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "count_where",
+          "line": 16,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "latency",
+          "line": 20,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "rounded",
+          "line": 26,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "call_totals",
+          "line": 30,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "serialize_call_totals",
+          "line": 42,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "read_metrics",
+          "line": 52,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/storage/models.py",
+      "lines": 253,
+      "sha256": "e56859bbb0f5d9d0038118a86314460113214ac2e1c27e07fcaf2d71cf06d7a0",
+      "symbols": [
+        {
+          "name": "Base",
+          "line": 30,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "Document",
+          "line": 42,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "DocumentChunk",
+          "line": 72,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChatConversation",
+          "line": 104,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChatMetric",
+          "line": 119,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ModelCallMetric",
+          "line": 150,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ProviderConnection",
+          "line": 172,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "Assistant",
+          "line": 188,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "AssistantDocument",
+          "line": 214,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "WebsiteWidget",
+          "line": 221,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "WidgetSession",
+          "line": 242,
+          "kind": "ClassDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/storage/vector_store.py",
+      "lines": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/app/widget/chat.js",
+      "lines": 109,
+      "sha256": "7f273086277c1f3e39fdbc1c84e4cb11f1e6fa6f2fcaf37acafefd7f28ef87d4"
+    },
+    {
+      "path": "Backend/app/widget/index.html",
+      "lines": 10,
+      "sha256": "19456cbcd5ebad6137896fda081e97d0073f7cadcaf52d91f8e1afb82abc63bf"
+    },
+    {
+      "path": "Backend/app/widget/loader.js",
+      "lines": 40,
+      "sha256": "e0b08efecda63a4fd5e60d18b381a0ecbf3139d90bf772cce07071337de51fad"
+    },
+    {
+      "path": "Backend/app/widget/style.css",
+      "lines": 1,
+      "sha256": "5a058ca51ccdca0eeac7c951e8fa09d9bcbc7d169a16a505e09e5c91496e91ed"
+    },
+    {
+      "path": "Backend/app/widget_gateway.py",
+      "lines": 25,
+      "sha256": "5fd996e16b0c5432dc6b3b279f6df4fec2116ffdac296726d848cb273fbbc5ab",
+      "symbols": [
+        {
+          "name": "create_widget_gateway",
+          "line": 10,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/compose.yaml",
+      "lines": 26,
+      "sha256": "4421ec1643d9063e3d499603e464f6dc64152f9cd92394f737281cc685f751b2"
+    },
+    {
+      "path": "Backend/Dockerfile",
+      "lines": 16,
+      "sha256": "7a14663d96b93de6bb3976db3c32a82e42dff894ec2c18c57b32e9e61a5d982a"
+    },
+    {
+      "path": "Backend/evaluation/questions.json",
+      "lines": 39,
+      "sha256": "e5d7a7f18ac97c76d308bd4ef50fcc44eef8f8f3dbaeed128c7fa738c300ae54"
+    },
+    {
+      "path": "Backend/infra/postgres/init/001-vector.sql",
+      "lines": 1,
+      "sha256": "67d664a66e215bbb24bb21fd2697d9d07025e4f75f2bcd3bc6964df457f63b82"
+    },
+    {
+      "path": "Backend/migrations/env.py",
+      "lines": 86,
+      "sha256": "0d919d547cccc50e642879fd24885b5e67b3ffd896932700680cf896557793e5",
+      "symbols": [
+        {
+          "name": "render_item",
+          "line": 28,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "run_migrations_offline",
+          "line": 43,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "run_migrations_online",
+          "line": 57,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/README",
+      "lines": 1,
+      "sha256": "31595cf53626af9ed16e15c44fa43183209cc163fbc3ebcb904b22ac436a8884"
+    },
+    {
+      "path": "Backend/migrations/script.py.mako",
+      "lines": 28,
+      "sha256": "d38920781b4d31ae1c0a71bc09f41c2ade8feab9e5a087e3f30cb4bbf0c1c9d3"
+    },
+    {
+      "path": "Backend/migrations/versions/7f7483ec3680_create_documents_and_document_chunks.py",
+      "lines": 60,
+      "sha256": "1512e2c5b64fc09e0ee8c8c84a3bbe053176ad9c9225eaff762467ea55645cfc",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 21,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 55,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/a30d19d882ca_add_ingestion_leases_and_text_index.py",
+      "lines": 22,
+      "sha256": "3ac4d73b250905a114b3628cab33ab1cc004a76725508f49321fbc145570ce22",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 12,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 19,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/a96c75bee8c0_assistant_analytics.py",
+      "lines": 30,
+      "sha256": "5dc6c4970a043b6a47039439cbc724b6cda9d5a1f210b9665a51a2700cf8cb12",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 15,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 26,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/b07e75bee9d1_website_widgets.py",
+      "lines": 40,
+      "sha256": "f0f26f759bfc85ebc962f16f1932bf08144f37a76dbf19ec2be3eac4dcf872a4",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 11,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 38,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/b41e20e993db_retain_sources.py",
+      "lines": 20,
+      "sha256": "cc0c7e05a72a17be27810c63c6b91de97654d9cbfbf9c0916887b1104ff03e3d",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 11,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 17,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/c52f31faa4ec_bound_recovery_attempts.py",
+      "lines": 16,
+      "sha256": "b0778655a83afb0cc8c5a28d652dec3ccc0e4a9debb90a2a4f3eab2ef033eaff",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 11,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 15,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/d63a42fbb5fd_add_conversation_memory.py",
+      "lines": 31,
+      "sha256": "a530f1eafd1b27f19d130d0d008132334d49e1b76f3f48cb63e0f0497ec60c5b",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 15,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 29,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/e74b53fcc6ae_add_model_analytics.py",
+      "lines": 61,
+      "sha256": "1263fd21704764bae6130f6d4049fe92a34e09f216448a04ab59dc8421a6c280",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 15,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 59,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/migrations/versions/f85d64add7bf_add_assistant_configuration.py",
+      "lines": 71,
+      "sha256": "b1a0c7957cbfada8cb0513fef029752a070203c73774568940c296bc25f7afae",
+      "symbols": [
+        {
+          "name": "upgrade",
+          "line": 12,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "downgrade",
+          "line": 67,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/pyproject.toml",
+      "lines": 30,
+      "sha256": "f1cf0f00847f2e07f48716ef5fa689bb110c0dbe6cd0aaf54dfa11d08c346931"
+    },
+    {
+      "path": "Backend/README.md",
+      "lines": 342,
+      "sha256": "d7253cfc71f1aa18f47804f2926b499a1bac7ec279b75bbcc050e2cbdc2da975"
+    },
+    {
+      "path": "Backend/run.py",
+      "lines": 42,
+      "sha256": "833935f37326e888dbe154b88271c82a8e8d1b611d2887a54b645a295ddeed54",
+      "symbols": [
+        {
+          "name": "create_event_loop",
+          "line": 9,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 19,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/scripts/clean_traces.py",
+      "lines": 32,
+      "sha256": "c990a93ef9c99b153cbc36c8d0b4fd7727c2949b769b80f691280393547c0d89",
+      "symbols": [
+        {
+          "name": "expire",
+          "line": 8,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 24,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/scripts/database_backup.py",
+      "lines": 57,
+      "sha256": "fd23b251c87dce06206d85bc386d29bf1af5aacddb65ab07e6630ebe45c73fe3",
+      "symbols": [
+        {
+          "name": "backup",
+          "line": 10,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "restore",
+          "line": 24,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 37,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(OSError, ValueError, subprocess.CalledProcessError)",
+        "BaseException"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/scripts/ingest.py",
+      "lines": 77,
+      "sha256": "01767b5b98625b2a089f552764cef4f458d22a68baea6186d3ef8c7d215b7a9c",
+      "symbols": [
+        {
+          "name": "read_pdf",
+          "line": 13,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "ingest_file",
+          "line": 21,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 53,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "(PDFExtractionError, ChunkingError, RuntimeError, OSError)",
+        "SQLAlchemyError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/scripts/recover_ingestion.py",
+      "lines": 47,
+      "sha256": "e398a6dfe04fb81b620ea79635397d60ff47fa54ad5aea0e622029a63ad7c04a",
+      "symbols": [
+        {
+          "name": "retry",
+          "line": 16,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 35,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "Exception"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/scripts/trace_rag.py",
+      "lines": 86,
+      "sha256": "482577f6e2ad4260221724107919fc14f750c001eb3f77734124c7eca6c4c436",
+      "symbols": [
+        {
+          "name": "trace_question",
+          "line": 24,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 50,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "Exception",
+        "OSError",
+        "ValidationError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/scripts/verify_local.py",
+      "lines": 72,
+      "sha256": "b0e542de3ffcbf034e39720e2717ef289d2ecbdedbaada255393ca0f24174b95",
+      "symbols": [
+        {
+          "name": "fingerprint",
+          "line": 16,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "verify",
+          "line": 32,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "main",
+          "line": 58,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [
+        "Exception"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/__init__.py",
+      "lines": 1,
+      "sha256": "1bcfc709d6a2877af46bf928b4a242bae7a059a76f5d333b2c62675ded196758",
+      "symbols": [],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/helpers.py",
+      "lines": 120,
+      "sha256": "6df01f83f3bf2740a8784794411b595e3279e5132be5039d36825782c3b2ffe8",
+      "symbols": [
+        {
+          "name": "make_pdf",
+          "line": 19,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "small_tokenizer",
+          "line": 67,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "StubEmbeddings",
+          "line": 78,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "api_client",
+          "line": 93,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "async_test",
+          "line": 108,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "AsyncTestCase",
+          "line": 115,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "__init__",
+          "line": 82,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "embed_documents",
+          "line": 85,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "embed_query",
+          "line": 89,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "run",
+          "line": 110,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 116,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_assistant_storage.py",
+      "lines": 179,
+      "sha256": "bcdbd1097f21478c50198e207b8725c1b0471c12bd3519a1f90f31e6e146fe01",
+      "symbols": [
+        {
+          "name": "AssistantStorageTests",
+          "line": 28,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "setUp",
+          "line": 29,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "prepare_database",
+          "line": 40,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "cleanup_database",
+          "line": 57,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "create_assistant",
+          "line": 66,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_encrypted_configuration_scope_updates_and_safe_responses",
+          "line": 72,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_cache_reuses_decryption_and_refreshes_cross_process_changes",
+          "line": 91,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_semantic_and_hybrid_search_keep_assistant_scope_including_empty",
+          "line": 121,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_conversation_cannot_be_reused_for_another_assistant_or_legacy_chat",
+          "line": 134,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_deletion_preserves_pdfs_blocks_referenced_connections_and_removes_history",
+          "line": 148,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_stateless_turn_blocks_deletion_without_holding_connection_and_cleans_up",
+          "line": 171,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_encrypted_configuration_scope_updates_and_safe_responses",
+        "test_cache_reuses_decryption_and_refreshes_cross_process_changes",
+        "test_semantic_and_hybrid_search_keep_assistant_scope_including_empty",
+        "test_conversation_cannot_be_reused_for_another_assistant_or_legacy_chat",
+        "test_deletion_preserves_pdfs_blocks_referenced_connections_and_removes_history",
+        "test_stateless_turn_blocks_deletion_without_holding_connection_and_cleans_up"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_assistants.py",
+      "lines": 259,
+      "sha256": "cba08849ddfb719542227e9ad837151638c28addba1668f50c2a6d64f6a46d56",
+      "symbols": [
+        {
+          "name": "vault_settings",
+          "line": 33,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "VaultTests",
+          "line": 38,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "AssistantApiTests",
+          "line": 76,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_encrypted_keys_are_bound_to_connection_and_provider_and_survive_restart",
+          "line": 39,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_configured_master_key_and_tampering",
+          "line": 58,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_configuration_rejects_unsafe_keys_and_impossible_context",
+          "line": 67,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 77,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "client",
+          "line": 95,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_configuration_requires_admin_and_validation_never_echoes_keys",
+          "line": 98,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_test_maps_failures_without_exposing_provider_body",
+          "line": 120,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_assistant_configuration_isolated_through_resolution_answer_and_review",
+          "line": 135,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_transport_uses_request_configuration_without_crossing_keys",
+          "line": 168,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_chat_telemetry_snapshots_configuration_without_credentials_or_documents",
+          "line": 183,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_unavailable_assistants_never_fall_back_to_workspace_model",
+          "line": 208,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_delete_endpoints_require_admin_and_return_empty_success_or_conflict",
+          "line": 219,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_follow_up_uses_assistant_model_and_current_document_scope",
+          "line": 238,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "session",
+          "line": 85,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "no_lease",
+          "line": 89,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "load",
+          "line": 142,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "retrieve",
+          "line": 144,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "generate",
+          "line": 149,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 170,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "resolve",
+          "line": 246,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "generate",
+          "line": 249,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "call",
+          "line": 175,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_encrypted_keys_are_bound_to_connection_and_provider_and_survive_restart",
+        "test_configured_master_key_and_tampering",
+        "test_configuration_rejects_unsafe_keys_and_impossible_context",
+        "test_configuration_requires_admin_and_validation_never_echoes_keys",
+        "test_provider_test_maps_failures_without_exposing_provider_body",
+        "test_assistant_configuration_isolated_through_resolution_answer_and_review",
+        "test_provider_transport_uses_request_configuration_without_crossing_keys",
+        "test_chat_telemetry_snapshots_configuration_without_credentials_or_documents",
+        "test_unavailable_assistants_never_fall_back_to_workspace_model",
+        "test_delete_endpoints_require_admin_and_return_empty_success_or_conflict",
+        "test_follow_up_uses_assistant_model_and_current_document_scope"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_chat_api.py",
+      "lines": 314,
+      "sha256": "de5b632bdfba45074d8b11a927fa801de8ba0235e1d9c101f33d763a70323631",
+      "symbols": [
+        {
+          "name": "ChatApiTests",
+          "line": 30,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "setUp",
+          "line": 31,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "client",
+          "line": 42,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_success_uses_injected_session_and_serializes_sources",
+          "line": 50,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_payloads_remain_http_422",
+          "line": 60,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_error_statuses_do_not_expose_private_exception_details",
+          "line": 75,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_internal_validation_errors_are_http_500",
+          "line": 99,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_http_exceptions_preserve_their_status",
+          "line": 109,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_empty_retrieval_uses_real_rag_fallback_without_llm",
+          "line": 116,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_real_rag_service_returns_generated_answer_and_sources",
+          "line": 128,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_missing_application_database_is_http_500",
+          "line": 147,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_real_rag_rejects_fabricated_citations_with_502",
+          "line": 155,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_real_rag_renumbers_second_source_and_preserves_metadata",
+          "line": 168,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_real_rag_validation_failures_remain_http_502",
+          "line": 190,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_nonempty_context_fallback_has_no_sources",
+          "line": 209,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_dependency_setup_and_cleanup_errors_are_http_500",
+          "line": 222,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_session_cleanup_precedes_response_and_runs_after_failures",
+          "line": 239,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_cancellation_propagates_and_closes_session",
+          "line": 267,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_database_session_factory_uses_existing_engine_and_closes",
+          "line": 285,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_openapi_documents_response_codes_and_request_body",
+          "line": 302,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "override_session",
+          "line": 37,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "session_context",
+          "line": 272,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "session_context",
+          "line": 245,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "observed_app",
+          "line": 252,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "observe_send",
+          "line": 253,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_success_uses_injected_session_and_serializes_sources",
+        "test_invalid_payloads_remain_http_422",
+        "test_error_statuses_do_not_expose_private_exception_details",
+        "test_internal_validation_errors_are_http_500",
+        "test_http_exceptions_preserve_their_status",
+        "test_empty_retrieval_uses_real_rag_fallback_without_llm",
+        "test_real_rag_service_returns_generated_answer_and_sources",
+        "test_missing_application_database_is_http_500",
+        "test_real_rag_rejects_fabricated_citations_with_502",
+        "test_real_rag_renumbers_second_source_and_preserves_metadata",
+        "test_real_rag_validation_failures_remain_http_502",
+        "test_nonempty_context_fallback_has_no_sources",
+        "test_dependency_setup_and_cleanup_errors_are_http_500",
+        "test_session_cleanup_precedes_response_and_runs_after_failures",
+        "test_cancellation_propagates_and_closes_session",
+        "test_database_session_factory_uses_existing_engine_and_closes",
+        "test_openapi_documents_response_codes_and_request_body"
+      ],
+      "except_types": [
+        "ValidationError"
+      ],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_configuration_cache.py",
+      "lines": 69,
+      "sha256": "5579045b509fad03fd1276b54ab0a5d4499c6358d04f28030438533937da8faf",
+      "symbols": [
+        {
+          "name": "ConfigurationCacheTests",
+          "line": 7,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_ttl_lru_and_no_negative_caching",
+          "line": 8,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_single_flight_cancellation_and_invalidation_fence",
+          "line": 32,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_disabled_cache",
+          "line": 61,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "load",
+          "line": 12,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "fail",
+          "line": 24,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "slow",
+          "line": 37,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "fresh",
+          "line": 51,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "load",
+          "line": 63,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_ttl_lru_and_no_negative_caching",
+        "test_single_flight_cancellation_and_invalidation_fence",
+        "test_disabled_cache"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_conversation.py",
+      "lines": 145,
+      "sha256": "afe7be58c8b8bb81c6408d62dfdc0b8d51b0ee2505e517b258f1a96ba6103833",
+      "symbols": [
+        {
+          "name": "previous_turn",
+          "line": 18,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "IntentTests",
+          "line": 25,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ConversationGraphTests",
+          "line": 39,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ConversationServiceTests",
+          "line": 134,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_mixed_greetings_and_unknown_topics_remain_document_questions",
+          "line": 26,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_bounded_memory_keeps_complete_recent_turns",
+          "line": 31,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_greetings_casual_messages_and_actions_skip_all_provider_work",
+          "line": 40,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_follow_up_retrieves_fresh_evidence_and_preserves_explicit_scope",
+          "line": 58,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_implicit_follow_up_inherits_previous_scope_and_can_decline_reference",
+          "line": 78,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_missing_or_ungrounded_reference_never_reuses_model_claims",
+          "line": 93,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_resolver_output_fails_closed_before_retrieval",
+          "line": 104,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_timeout_propagates_from_resolution",
+          "line": 115,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_safe_metrics_exclude_questions_history_and_sources",
+          "line": 123,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_failures_and_cancellation_release_claim_without_saving_an_answer",
+          "line": 135,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_mixed_greetings_and_unknown_topics_remain_document_questions",
+        "test_bounded_memory_keeps_complete_recent_turns",
+        "test_greetings_casual_messages_and_actions_skip_all_provider_work",
+        "test_follow_up_retrieves_fresh_evidence_and_preserves_explicit_scope",
+        "test_implicit_follow_up_inherits_previous_scope_and_can_decline_reference",
+        "test_missing_or_ungrounded_reference_never_reuses_model_claims",
+        "test_invalid_resolver_output_fails_closed_before_retrieval",
+        "test_provider_timeout_propagates_from_resolution",
+        "test_safe_metrics_exclude_questions_history_and_sources",
+        "test_failures_and_cancellation_release_claim_without_saving_an_answer"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_conversation_storage.py",
+      "lines": 166,
+      "sha256": "96c6572170aae5c5ba9f59bc8ce63465faf8e7c8a8e841afadde5ad9dd396233",
+      "symbols": [
+        {
+          "name": "ConversationStorageTests",
+          "line": 29,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "setUp",
+          "line": 30,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "prepare_database",
+          "line": 38,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "cleanup_database",
+          "line": 47,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "client",
+          "line": 56,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_session_capability_history_continuity_and_isolation",
+          "line": 63,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_concurrent_claims_and_expired_attempt_cannot_overwrite",
+          "line": 78,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_expiry_discards_old_history_and_limits_completed_turns",
+          "line": 95,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_history_survives_a_new_database_instance",
+          "line": 110,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_api_legacy_and_memory_responses_and_conflict_mapping",
+          "line": 124,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_api_grounded_follow_up_uses_persisted_scope_without_open_connection",
+          "line": 143,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "generate",
+          "line": 148,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_session_capability_history_continuity_and_isolation",
+        "test_concurrent_claims_and_expired_attempt_cannot_overwrite",
+        "test_expiry_discards_old_history_and_limits_completed_turns",
+        "test_history_survives_a_new_database_instance",
+        "test_api_legacy_and_memory_responses_and_conflict_mapping",
+        "test_api_grounded_follow_up_uses_persisted_scope_without_open_connection"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_document_clarification.py",
+      "lines": 88,
+      "sha256": "ec80c5fd2d392adbb90392b046f4dfeec6a9af25dace286b70f20a2ed30be320",
+      "symbols": [
+        {
+          "name": "DocumentClarificationTests",
+          "line": 18,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_ambiguous_question_returns_filename_choices_without_inference",
+          "line": 19,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_one_document_auto_selects_and_explicit_selection_skips_choices",
+          "line": 38,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_no_documents_requests_upload",
+          "line": 57,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_api_serializes_clarification",
+          "line": 66,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_specific_questions_keep_cross_document_search",
+          "line": 86,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "session",
+          "line": 70,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_ambiguous_question_returns_filename_choices_without_inference",
+        "test_one_document_auto_selects_and_explicit_selection_skips_choices",
+        "test_no_documents_requests_upload",
+        "test_api_serializes_clarification",
+        "test_specific_questions_keep_cross_document_search"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_documents.py",
+      "lines": 223,
+      "sha256": "fa1e14ee2df076dd0699df7b08ac1e5cb34c7d9091093c08c9316aa46a194618",
+      "symbols": [
+        {
+          "name": "ExtractionTests",
+          "line": 29,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ChunkingTests",
+          "line": 79,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "SchemaAndCliTests",
+          "line": 120,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "UploadApiTests",
+          "line": 152,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_null_padding_preserves_words_and_blank_page_positions",
+          "line": 30,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_null_only_pdf_has_no_searchable_text",
+          "line": 36,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_preserves_page_numbers_across_blank_pages",
+          "line": 40,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_rejects_invalid_empty_encrypted_and_image_only_pdfs",
+          "line": 46,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_unsupported_stream_filter_becomes_client_error",
+          "line": 59,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_parser_resource_limit_becomes_client_error",
+          "line": 64,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_file_page_and_text_limits",
+          "line": 69,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_long_page_preserves_tail_overlap_and_original_text",
+          "line": 80,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_downloaded_tokenizer_truncation_and_padding_are_disabled",
+          "line": 99,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_no_text_is_rejected",
+          "line": 114,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_unsafe_filenames_are_rejected",
+          "line": 121,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_invalid_internal_batches_are_rejected",
+          "line": 129,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_cli_module_starts",
+          "line": 135,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_cli_reads_with_a_file_size_bound",
+          "line": 143,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 153,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_upload_validation_statuses",
+          "line": 163,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_unknown_file_size_is_still_bounded",
+          "line": 184,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_new_existing_and_pending_response_contracts",
+          "line": 193,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_processing_and_database_failures_are_retryable",
+          "line": 208,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_configuration_errors_are_not_bad_pdf_errors",
+          "line": 219,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_null_padding_preserves_words_and_blank_page_positions",
+        "test_null_only_pdf_has_no_searchable_text",
+        "test_preserves_page_numbers_across_blank_pages",
+        "test_rejects_invalid_empty_encrypted_and_image_only_pdfs",
+        "test_unsupported_stream_filter_becomes_client_error",
+        "test_parser_resource_limit_becomes_client_error",
+        "test_file_page_and_text_limits",
+        "test_long_page_preserves_tail_overlap_and_original_text",
+        "test_downloaded_tokenizer_truncation_and_padding_are_disabled",
+        "test_no_text_is_rejected",
+        "test_unsafe_filenames_are_rejected",
+        "test_invalid_internal_batches_are_rejected",
+        "test_cli_module_starts",
+        "test_cli_reads_with_a_file_size_bound",
+        "test_upload_validation_statuses",
+        "test_unknown_file_size_is_still_bounded",
+        "test_new_existing_and_pending_response_contracts",
+        "test_processing_and_database_failures_are_retryable",
+        "test_provider_configuration_errors_are_not_bad_pdf_errors"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_ingestion.py",
+      "lines": 388,
+      "sha256": "04457507480ee4ffe1256ffc3313ee25850c72fb575aef5a7899aa6993ecab47",
+      "symbols": [
+        {
+          "name": "IngestionDatabaseTests",
+          "line": 27,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_document_catalog_filters_source_download_and_legacy_source",
+          "line": 29,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_reupload_backfills_legacy_source_without_reindexing",
+          "line": 67,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_durable_job_recovers_source_and_can_be_retired_and_deleted",
+          "line": 85,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_queued_pdf_fails_without_retry_loop",
+          "line": 111,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_expired_owner_cannot_publish_or_fail_new_attempt",
+          "line": 123,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 142,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "prepare_database",
+          "line": 157,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "clean_database",
+          "line": 169,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "upload",
+          "line": 178,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "document",
+          "line": 181,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_multipage_upload_and_duplicate",
+          "line": 185,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_pdf_leaves_no_document",
+          "line": 218,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_failed_embedding_can_be_retried_with_same_id",
+          "line": 226,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_simultaneous_create_and_retry_claims_have_one_owner",
+          "line": 242,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_pending_duplicate_returns_conflict_then_ready_duplicate_succeeds",
+          "line": 256,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_cancelled_ingestion_is_pending_and_recoverable",
+          "line": 283,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_bad_embeddings_never_publish_ready_documents",
+          "line": 309,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_more_than_256_chunks_and_database_rollback",
+          "line": 320,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_chunk_limit_is_explicit_and_does_not_truncate",
+          "line": 349,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_real_pdf_tokenizer_embeddings_and_persistence",
+          "line": 362,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "check_pending",
+          "line": 189,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "wait_before_embedding",
+          "line": 261,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "block",
+          "line": 287,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "fail_second_batch",
+          "line": 325,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [
+        "test_document_catalog_filters_source_download_and_legacy_source",
+        "test_reupload_backfills_legacy_source_without_reindexing",
+        "test_durable_job_recovers_source_and_can_be_retired_and_deleted",
+        "test_invalid_queued_pdf_fails_without_retry_loop",
+        "test_expired_owner_cannot_publish_or_fail_new_attempt",
+        "test_multipage_upload_and_duplicate",
+        "test_invalid_pdf_leaves_no_document",
+        "test_failed_embedding_can_be_retried_with_same_id",
+        "test_simultaneous_create_and_retry_claims_have_one_owner",
+        "test_pending_duplicate_returns_conflict_then_ready_duplicate_succeeds",
+        "test_cancelled_ingestion_is_pending_and_recoverable",
+        "test_bad_embeddings_never_publish_ready_documents",
+        "test_more_than_256_chunks_and_database_rollback",
+        "test_chunk_limit_is_explicit_and_does_not_truncate",
+        "test_real_pdf_tokenizer_embeddings_and_persistence"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_langchain_chat_model.py",
+      "lines": 71,
+      "sha256": "922066eed991bc2fbbb5f247ba0dcde0ebeeed3c28dfea26272b55bff4c827ab",
+      "symbols": [
+        {
+          "name": "LangChainChatModelTests",
+          "line": 15,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_composes_with_parser_and_emits_callbacks",
+          "line": 16,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_concurrent_invocations_keep_traces_separate",
+          "line": 39,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_errors_propagate_without_retry",
+          "line": 54,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_unsupported_inputs_do_not_call_provider",
+          "line": 60,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "Handler",
+          "line": 19,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "transport",
+          "line": 40,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "on_chat_model_start",
+          "line": 20,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "on_llm_end",
+          "line": 23,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_composes_with_parser_and_emits_callbacks",
+        "test_concurrent_invocations_keep_traces_separate",
+        "test_provider_errors_propagate_without_retry",
+        "test_unsupported_inputs_do_not_call_provider"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_llm.py",
+      "lines": 349,
+      "sha256": "aebcfa201a402b9c1a32f23b8649026a834843ef5fa4045feebae224b533002d",
+      "symbols": [
+        {
+          "name": "completion",
+          "line": 19,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "LLMTests",
+          "line": 28,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "setUp",
+          "line": 29,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "mock_provider",
+          "line": 39,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_default_ollama_request_and_timeouts",
+          "line": 49,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_gpt_oss_has_room_for_reasoning_and_final_answer",
+          "line": 73,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_system_instructions_are_separate_from_user_content",
+          "line": 88,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_opt_in_trace_keeps_raw_completion_when_parser_rejects_it",
+          "line": 105,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_prefix_model_and_authorization",
+          "line": 117,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_dotenv_and_environment_precedence",
+          "line": 137,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_configuration_fails_before_http",
+          "line": 165,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_prompt_fails_before_http",
+          "line": 193,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_system_prompt_fails_before_http",
+          "line": 200,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_http_errors_preserve_status_without_response_body",
+          "line": 207,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_http_429_raises_specific_rate_limit_error",
+          "line": 219,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_redirects_are_not_followed",
+          "line": 230,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_json_is_response_error",
+          "line": 241,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_malformed_empty_and_incomplete_completions",
+          "line": 248,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_missing_optional_finish_reason_is_accepted",
+          "line": 266,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_refusals_and_tool_requests_are_not_treated_as_answers",
+          "line": 273,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_httpx_timeouts_are_application_timeouts",
+          "line": 293,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_transport_failures_are_connection_errors",
+          "line": 304,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_decoding_failure_is_response_error",
+          "line": 314,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_execution_deadline_and_cleanup",
+          "line": 321,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_caller_cancellation_propagates_and_closes_client",
+          "line": 334,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "client_factory",
+          "line": 40,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 52,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 74,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 92,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 220,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 233,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 242,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 267,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 315,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 324,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 337,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 128,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 154,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 210,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 260,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 296,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 307,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 286,
+          "kind": "FunctionDef"
+        }
+      ],
+      "tests": [
+        "test_default_ollama_request_and_timeouts",
+        "test_gpt_oss_has_room_for_reasoning_and_final_answer",
+        "test_system_instructions_are_separate_from_user_content",
+        "test_opt_in_trace_keeps_raw_completion_when_parser_rejects_it",
+        "test_provider_prefix_model_and_authorization",
+        "test_dotenv_and_environment_precedence",
+        "test_invalid_configuration_fails_before_http",
+        "test_invalid_prompt_fails_before_http",
+        "test_invalid_system_prompt_fails_before_http",
+        "test_http_errors_preserve_status_without_response_body",
+        "test_http_429_raises_specific_rate_limit_error",
+        "test_redirects_are_not_followed",
+        "test_invalid_json_is_response_error",
+        "test_malformed_empty_and_incomplete_completions",
+        "test_missing_optional_finish_reason_is_accepted",
+        "test_refusals_and_tool_requests_are_not_treated_as_answers",
+        "test_httpx_timeouts_are_application_timeouts",
+        "test_transport_failures_are_connection_errors",
+        "test_decoding_failure_is_response_error",
+        "test_execution_deadline_and_cleanup",
+        "test_caller_cancellation_propagates_and_closes_client"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_metrics.py",
+      "lines": 190,
+      "sha256": "7587f6afe8845ea005b7140a5fc72c8dc75b2307f321bfe36bcfa6e0f38bd5d5",
+      "symbols": [
+        {
+          "name": "collector",
+          "line": 25,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "MetricsTests",
+          "line": 31,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "MetricsBoundaryTests",
+          "line": 154,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "setUp",
+          "line": 32,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_capture_usage_cost_and_latency_without_sensitive_content",
+          "line": 36,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_follow_up_answer_review_are_counted_once_each",
+          "line": 58,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_missing_malformed_usage_stays_unknown",
+          "line": 81,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_rate_limit_and_cancelled_queue_preserve_gauges",
+          "line": 92,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_simultaneous_requests_do_not_share_calls",
+          "line": 122,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_bounded_queue_and_writer_failure_do_not_fail_chat",
+          "line": 138,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "application",
+          "line": 155,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_admin_boundary_and_malformed_token",
+          "line": 163,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_rejected_invalid_chat_is_recorded_and_analytics_does_not_count_itself",
+          "line": 177,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 61,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "handler",
+          "line": 124,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "chat",
+          "line": 180,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "queued",
+          "line": 103,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "run",
+          "line": 129,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_capture_usage_cost_and_latency_without_sensitive_content",
+        "test_follow_up_answer_review_are_counted_once_each",
+        "test_missing_malformed_usage_stays_unknown",
+        "test_rate_limit_and_cancelled_queue_preserve_gauges",
+        "test_simultaneous_requests_do_not_share_calls",
+        "test_bounded_queue_and_writer_failure_do_not_fail_chat",
+        "test_admin_boundary_and_malformed_token",
+        "test_rejected_invalid_chat_is_recorded_and_analytics_does_not_count_itself"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_metrics_storage.py",
+      "lines": 148,
+      "sha256": "1c698040663a4001991a1eae7ec5798db5fbc3b91e1ec407bf6cbe5eb113e74b",
+      "symbols": [
+        {
+          "name": "MetricsStorageTests",
+          "line": 20,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "setUp",
+          "line": 21,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "prepare_database",
+          "line": 29,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "cleanup_database",
+          "line": 38,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "row",
+          "line": 47,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_empty_is_unknown_not_perfect_accuracy_or_zero_tokens",
+          "line": 52,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_aggregates_latency_partial_usage_cost_and_pagination",
+          "line": 60,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_time_window_and_new_instance_restore_history",
+          "line": 90,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_assistant_revisions_filter_calls_without_multiplying_requests",
+          "line": 101,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_protected_api_returns_real_sql_data",
+          "line": 137,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_empty_is_unknown_not_perfect_accuracy_or_zero_tokens",
+        "test_aggregates_latency_partial_usage_cost_and_pagination",
+        "test_time_window_and_new_instance_restore_history",
+        "test_assistant_revisions_filter_calls_without_multiplying_requests",
+        "test_protected_api_returns_real_sql_data"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_policy_live.py",
+      "lines": 55,
+      "sha256": "758e794aee1eed080def2b72b8f0a7902897147a7cc1d76458444a69fb438ed9",
+      "symbols": [
+        {
+          "name": "PolicyLiveTests",
+          "line": 24,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_policy_questions",
+          "line": 26,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_policy_questions"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_production_controls.py",
+      "lines": 100,
+      "sha256": "01f1ac06246a1eeb62ef569f60052760f9358d1beb91823bb88156d65e81a873",
+      "symbols": [
+        {
+          "name": "ParserIsolationTests",
+          "line": 17,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ContextBudgetTests",
+          "line": 43,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "BoundaryTests",
+          "line": 54,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_extracts_text_in_separate_process",
+          "line": 19,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_deadline_reaps_parser_process",
+          "line": 26,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_cancellation_reaps_parser_process",
+          "line": 33,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_input_and_output_must_fit_before_network_call",
+          "line": 45,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "application",
+          "line": 55,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_remote_client_and_cross_origin_are_denied",
+          "line": 68,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_chunked_body_is_bounded_without_content_length",
+          "line": 78,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_concurrent_capacity_returns_429_and_recovers",
+          "line": 88,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "echo",
+          "line": 60,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "stream",
+          "line": 79,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_extracts_text_in_separate_process",
+        "test_deadline_reaps_parser_process",
+        "test_cancellation_reaps_parser_process",
+        "test_input_and_output_must_fit_before_network_call",
+        "test_remote_client_and_cross_origin_are_denied",
+        "test_chunked_body_is_bounded_without_content_length",
+        "test_concurrent_capacity_returns_429_and_recovers"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_rag.py",
+      "lines": 240,
+      "sha256": "e16e316f7f3d62d06d9df866139215a4bf3363db4ca220b217e5ee166517e32a",
+      "symbols": [
+        {
+          "name": "anyio_backend",
+          "line": 30,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "db_session",
+          "line": 35,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "app",
+          "line": 42,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "client",
+          "line": 58,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "embedding_provider",
+          "line": 68,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "retrieve_chunks_mock",
+          "line": 76,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "generate_llm_response_mock",
+          "line": 84,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "mock_chunks",
+          "line": 91,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_successful_rag_answer_returns_matching_sources",
+          "line": 114,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_empty_retrieval_returns_fallback_without_invoking_llm",
+          "line": 174,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_llm_timeout_returns_http_504",
+          "line": 206,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "override_db_session",
+          "line": 47,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_successful_rag_answer_returns_matching_sources",
+        "test_empty_retrieval_returns_fallback_without_invoking_llm",
+        "test_llm_timeout_returns_http_504"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_rag_graph.py",
+      "lines": 58,
+      "sha256": "d7e6547997be5a8c453f0ba6c1b066617862bce86c6e588556e6257d659353d5",
+      "symbols": [
+        {
+          "name": "RAGGraphTests",
+          "line": 17,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_concurrent_answers_keep_state_and_sessions_separate",
+          "line": 18,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_empty_retrieval_takes_fallback_branch",
+          "line": 48,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "retrieve",
+          "line": 19,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "generate",
+          "line": 23,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_concurrent_answers_keep_state_and_sessions_separate",
+        "test_empty_retrieval_takes_fallback_branch"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_rag_service.py",
+      "lines": 635,
+      "sha256": "45a42ae6cd5d87705b5e6670ae3d54c944290fa2e1726b795a0aae03af95760a",
+      "symbols": [
+        {
+          "name": "stored_chunk",
+          "line": 23,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "PromptTests",
+          "line": 27,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "StructuredAnswerTests",
+          "line": 101,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "ContextSelectionTests",
+          "line": 207,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "RAGTests",
+          "line": 227,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_prompt_requires_json_and_python_owned_citations",
+          "line": 28,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_prompt_requires_rule_scope_and_supported_exception_conditions",
+          "line": 34,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_prompt_answers_question_while_rejecting_rule_overrides",
+          "line": 47,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_prompt_preserves_metadata_text_order_and_question",
+          "line": 53,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_instruction_like_context_remains_inside_json",
+          "line": 71,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_invalid_questions_and_passages_are_rejected",
+          "line": 80,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_builder_accepts_empty_context",
+          "line": 95,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 102,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "validate",
+          "line": 108,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_valid_answer_gets_python_citation",
+          "line": 113,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_single_nonfirst_source_is_renumbered",
+          "line": 118,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_multiple_nonfirst_sources_are_renumbered",
+          "line": 123,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_selected_source_metadata_is_unchanged",
+          "line": 128,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_sources_are_deduplicated_and_sorted",
+          "line": 134,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_unknown_sources_are_rejected",
+          "line": 139,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_invalid_json_is_not_repaired",
+          "line": 146,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_empty_and_nonstring_responses_are_rejected",
+          "line": 153,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_invalid_schema_is_rejected_without_coercion",
+          "line": 158,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_empty_sources_allow_only_exact_fallback",
+          "line": 170,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_whitespace_around_canonical_fallback_is_trimmed",
+          "line": 179,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_fallback_with_references_is_rejected",
+          "line": 184,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_omitted_source_numbers_are_rejected",
+          "line": 189,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_model_written_numeric_citations_are_rejected",
+          "line": 194,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_ordinary_bracketed_text_is_preserved",
+          "line": 202,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_selection_preserves_hybrid_order_and_metadata",
+          "line": 208,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_invalid_limits_are_rejected",
+          "line": 221,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_multipart_answer_review_replaces_draft_and_preserves_evidence",
+          "line": 228,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_review_failure_does_not_return_unreviewed_draft",
+          "line": 247,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_reviewed_answer_must_pass_reference_validation",
+          "line": 256,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_unsupported_evidence_skips_prompt_and_llm_and_retains_trace",
+          "line": 266,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_configured_threshold_controls_llm_invocation",
+          "line": 291,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_discarded_lexical_evidence_cannot_pass_selected_context",
+          "line": 306,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_discarded_semantic_evidence_cannot_pass_selected_context",
+          "line": 312,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "assert_gate_uses_selected_chunks",
+          "line": 317,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_default_limit_sends_all_five_candidates_in_order",
+          "line": 356,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_two_and_one_candidates_send_all_available_context",
+          "line": 391,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_no_relevant_candidates_skip_llm",
+          "line": 412,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_read_transaction_ends_before_generation_and_trace_retains_raw_answer",
+          "line": 425,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_retrieval_failure_ends_owned_transaction",
+          "line": 450,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_selected_documents_reach_retrieval",
+          "line": 457,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_nonempty_insufficient_context_returns_no_sources",
+          "line": 470,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_structured_answers_fail_but_trace_keeps_the_model_output",
+          "line": 480,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_policy_prompt_preserves_restriction_and_conditional_clause",
+          "line": 496,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_empty_retrieval_skips_prompt_and_llm",
+          "line": 517,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_answer_uses_ranked_chunks_and_validates_source_uuids",
+          "line": 537,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_source_metadata_prevents_llm_call",
+          "line": 560,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_retrieval_failures_propagate_without_invoking_llm",
+          "line": 573,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_llm_failures_and_cancellation_propagate",
+          "line": 585,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_session_retrieval_uses_shared_pipeline_without_transaction_changes",
+          "line": 597,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_search_parameters_fail_before_provider_loading",
+          "line": 624,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_factory_failures_are_retrieval_errors",
+          "line": 631,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "generate",
+          "line": 234,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "search",
+          "line": 429,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "generate",
+          "line": 433,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "execute",
+          "line": 603,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_prompt_requires_json_and_python_owned_citations",
+        "test_prompt_requires_rule_scope_and_supported_exception_conditions",
+        "test_prompt_answers_question_while_rejecting_rule_overrides",
+        "test_prompt_preserves_metadata_text_order_and_question",
+        "test_instruction_like_context_remains_inside_json",
+        "test_invalid_questions_and_passages_are_rejected",
+        "test_builder_accepts_empty_context",
+        "test_valid_answer_gets_python_citation",
+        "test_single_nonfirst_source_is_renumbered",
+        "test_multiple_nonfirst_sources_are_renumbered",
+        "test_selected_source_metadata_is_unchanged",
+        "test_sources_are_deduplicated_and_sorted",
+        "test_unknown_sources_are_rejected",
+        "test_invalid_json_is_not_repaired",
+        "test_empty_and_nonstring_responses_are_rejected",
+        "test_invalid_schema_is_rejected_without_coercion",
+        "test_empty_sources_allow_only_exact_fallback",
+        "test_whitespace_around_canonical_fallback_is_trimmed",
+        "test_fallback_with_references_is_rejected",
+        "test_omitted_source_numbers_are_rejected",
+        "test_model_written_numeric_citations_are_rejected",
+        "test_ordinary_bracketed_text_is_preserved",
+        "test_selection_preserves_hybrid_order_and_metadata",
+        "test_invalid_limits_are_rejected",
+        "test_multipart_answer_review_replaces_draft_and_preserves_evidence",
+        "test_review_failure_does_not_return_unreviewed_draft",
+        "test_reviewed_answer_must_pass_reference_validation",
+        "test_unsupported_evidence_skips_prompt_and_llm_and_retains_trace",
+        "test_configured_threshold_controls_llm_invocation",
+        "test_discarded_lexical_evidence_cannot_pass_selected_context",
+        "test_discarded_semantic_evidence_cannot_pass_selected_context",
+        "test_default_limit_sends_all_five_candidates_in_order",
+        "test_two_and_one_candidates_send_all_available_context",
+        "test_no_relevant_candidates_skip_llm",
+        "test_read_transaction_ends_before_generation_and_trace_retains_raw_answer",
+        "test_retrieval_failure_ends_owned_transaction",
+        "test_selected_documents_reach_retrieval",
+        "test_nonempty_insufficient_context_returns_no_sources",
+        "test_invalid_structured_answers_fail_but_trace_keeps_the_model_output",
+        "test_policy_prompt_preserves_restriction_and_conditional_clause",
+        "test_empty_retrieval_skips_prompt_and_llm",
+        "test_answer_uses_ranked_chunks_and_validates_source_uuids",
+        "test_invalid_source_metadata_prevents_llm_call",
+        "test_retrieval_failures_propagate_without_invoking_llm",
+        "test_llm_failures_and_cancellation_propagate",
+        "test_session_retrieval_uses_shared_pipeline_without_transaction_changes",
+        "test_invalid_search_parameters_fail_before_provider_loading",
+        "test_provider_factory_failures_are_retrieval_errors"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_retrieval.py",
+      "lines": 617,
+      "sha256": "d0c157488f5a191ced13308d705249106bd505401f5f33f8eb25df8a7469430c",
+      "symbols": [
+        {
+          "name": "vector",
+          "line": 27,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "stored_chunk",
+          "line": 31,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "EvidenceGateTests",
+          "line": 35,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "SearchSchemaTests",
+          "line": 105,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "RetrievalServiceTests",
+          "line": 137,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "SearchApiTests",
+          "line": 249,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "RetrievalDatabaseTests",
+          "line": 328,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_context_limit_defaults_and_environment_validation",
+          "line": 36,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "candidate",
+          "line": 51,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_strong_semantic_match_anywhere_in_set_passes",
+          "line": 54,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_weak_semantic_with_meaningful_lexical_match_passes",
+          "line": 59,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_repeated_generic_term_does_not_pass_multi_term_question",
+          "line": 65,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_lexical_support_can_span_multiple_chunks",
+          "line": 71,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_single_term_query_and_empty_query_terms",
+          "line": 75,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_threshold_boundary_and_invalid_distances",
+          "line": 84,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_threshold_loads_from_existing_settings_and_rejects_invalid_values",
+          "line": 94,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_defaults_and_normalization",
+          "line": 106,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_rejects_invalid_requests",
+          "line": 114,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_search_and_chat_accept_selected_document_ids",
+          "line": 122,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_search_and_chat_reject_invalid_document_selection",
+          "line": 130,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_embeds_trimmed_query_once_and_preserves_ranked_results",
+          "line": 139,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_document_selection_is_forwarded_to_storage",
+          "line": 151,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_document_filter_fails_before_embedding_or_database_access",
+          "line": 161,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_storage_applies_selection_in_sql_before_ranking_limit",
+          "line": 173,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_bad_parameters_fail_before_embedding",
+          "line": 193,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_wrong_model_space_or_dimensions_fail_before_embedding",
+          "line": 202,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_invalid_provider_vectors_are_server_failures",
+          "line": 211,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_provider_failure_is_wrapped_but_cancellation_propagates",
+          "line": 223,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_storage_error_propagates_for_http_503",
+          "line": 233,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_storage_rejects_bad_vectors_without_a_connection",
+          "line": 241,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 250,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_response_contains_sources_and_match_count",
+          "line": 257,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_empty_search_is_successful",
+          "line": 272,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_search_forwards_document_selection",
+          "line": 281,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_requested_exception_mapping",
+          "line": 292,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_schema_errors_remain_http_422",
+          "line": 306,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_factory_and_response_errors_are_http_500",
+          "line": 316,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 329,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "prepare_database",
+          "line": 337,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "cleanup_database",
+          "line": 371,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_cosine_ranking_filters_and_default_limit",
+          "line": 381,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_document_filter_excludes_nearer_chunks_from_other_uploads",
+          "line": 392,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_chat_returns_database_connection_before_model_generation",
+          "line": 404,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_async_session_search_preserves_pending_changes_and_transaction",
+          "line": 423,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_endpoint_uses_real_sql_and_reports_actual_matches",
+          "line": 438,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_no_ready_documents_returns_no_matches",
+          "line": 448,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_lexical_no_matches_preserves_vector_order_and_distances",
+          "line": 455,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_hybrid_filters_both_lists_to_selected_ready_compatible_documents",
+          "line": 463,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_natural_language_lexical_signal_promotes_relevant_rule",
+          "line": 477,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_evidence_gate_never_uses_unselected_document",
+          "line": 507,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_lexical_candidate_outside_vector_pool_and_public_limits",
+          "line": 544,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_rrf_ranks_ties_and_empty_list_fallbacks",
+          "line": 571,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_real_upload_then_query_embedding_and_search",
+          "line": 598,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "candidates",
+          "line": 572,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "generate",
+          "line": 408,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_context_limit_defaults_and_environment_validation",
+        "test_strong_semantic_match_anywhere_in_set_passes",
+        "test_weak_semantic_with_meaningful_lexical_match_passes",
+        "test_repeated_generic_term_does_not_pass_multi_term_question",
+        "test_lexical_support_can_span_multiple_chunks",
+        "test_single_term_query_and_empty_query_terms",
+        "test_threshold_boundary_and_invalid_distances",
+        "test_threshold_loads_from_existing_settings_and_rejects_invalid_values",
+        "test_defaults_and_normalization",
+        "test_rejects_invalid_requests",
+        "test_search_and_chat_accept_selected_document_ids",
+        "test_search_and_chat_reject_invalid_document_selection",
+        "test_embeds_trimmed_query_once_and_preserves_ranked_results",
+        "test_document_selection_is_forwarded_to_storage",
+        "test_invalid_document_filter_fails_before_embedding_or_database_access",
+        "test_storage_applies_selection_in_sql_before_ranking_limit",
+        "test_bad_parameters_fail_before_embedding",
+        "test_wrong_model_space_or_dimensions_fail_before_embedding",
+        "test_invalid_provider_vectors_are_server_failures",
+        "test_provider_failure_is_wrapped_but_cancellation_propagates",
+        "test_storage_error_propagates_for_http_503",
+        "test_storage_rejects_bad_vectors_without_a_connection",
+        "test_response_contains_sources_and_match_count",
+        "test_empty_search_is_successful",
+        "test_search_forwards_document_selection",
+        "test_requested_exception_mapping",
+        "test_schema_errors_remain_http_422",
+        "test_factory_and_response_errors_are_http_500",
+        "test_cosine_ranking_filters_and_default_limit",
+        "test_document_filter_excludes_nearer_chunks_from_other_uploads",
+        "test_chat_returns_database_connection_before_model_generation",
+        "test_async_session_search_preserves_pending_changes_and_transaction",
+        "test_endpoint_uses_real_sql_and_reports_actual_matches",
+        "test_no_ready_documents_returns_no_matches",
+        "test_lexical_no_matches_preserves_vector_order_and_distances",
+        "test_hybrid_filters_both_lists_to_selected_ready_compatible_documents",
+        "test_natural_language_lexical_signal_promotes_relevant_rule",
+        "test_evidence_gate_never_uses_unselected_document",
+        "test_lexical_candidate_outside_vector_pool_and_public_limits",
+        "test_rrf_ranks_ties_and_empty_list_fallbacks",
+        "test_real_upload_then_query_embedding_and_search"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_trace_rag.py",
+      "lines": 50,
+      "sha256": "ed54cf032fed73a0b8282dae3629cca8169fff4ad27e172b2951f71347b2ac24",
+      "symbols": [
+        {
+          "name": "TraceTests",
+          "line": 18,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_failed_answer_retains_passages_prompt_and_raw_output",
+          "line": 19,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_trace_redacts_exception_details",
+          "line": 46,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "session",
+          "line": 23,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_failed_answer_retains_passages_prompt_and_raw_output",
+        "test_trace_redacts_exception_details"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_widget_storage.py",
+      "lines": 191,
+      "sha256": "1e95e815b84448b89a00cb845d5fe7b686fa59f9c87e45d712c750479051a5b5",
+      "symbols": [
+        {
+          "name": "WidgetStorageTests",
+          "line": 26,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "setUp",
+          "line": 27,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "prepare",
+          "line": 35,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "cleanup_database",
+          "line": 53,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "start",
+          "line": 62,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "auth",
+          "line": 65,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_private_sessions_isolate_tokens_widgets_and_conversations",
+          "line": 69,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_disable_configuration_changes_and_expiry_revoke_sessions",
+          "line": 84,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_concurrent_budget_consumption_is_atomic_and_durable",
+          "line": 100,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_passages_need_issued_citation_and_current_document_assignment",
+          "line": 113,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_session_issuance_is_bounded_and_disabled_assistant_fails_closed",
+          "line": 130,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_complete_http_flow_persists_memory_enforces_scope_and_reads_issued_sources",
+          "line": 147,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_private_sessions_isolate_tokens_widgets_and_conversations",
+        "test_disable_configuration_changes_and_expiry_revoke_sessions",
+        "test_concurrent_budget_consumption_is_atomic_and_durable",
+        "test_passages_need_issued_citation_and_current_document_assignment",
+        "test_session_issuance_is_bounded_and_disabled_assistant_fails_closed",
+        "test_complete_http_flow_persists_memory_enforces_scope_and_reads_issued_sources"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/tests/test_widgets.py",
+      "lines": 148,
+      "sha256": "8dbc201f6e294a8cf5a13b2737ade539d96c944c1752f0710a8bb8c8fc3a23f9",
+      "symbols": [
+        {
+          "name": "WidgetValidationTests",
+          "line": 26,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "WidgetApiTests",
+          "line": 51,
+          "kind": "ClassDef"
+        },
+        {
+          "name": "test_exact_origins_reject_wildcards_paths_credentials_and_csp_injection",
+          "line": 27,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_budgets_keep_daily_counts_and_reset_minute_window",
+          "line": 37,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "setUp",
+          "line": 52,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "remote_client",
+          "line": 69,
+          "kind": "FunctionDef"
+        },
+        {
+          "name": "test_public_surface_never_exposes_admin_documents_or_workspace_chat",
+          "line": 72,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_public_disabled_and_cross_origin_posts_fail_closed",
+          "line": 83,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_iframe_response_escapes_untrusted_titles_and_sets_exact_frame_policy",
+          "line": 96,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_chat_forces_assistant_and_server_conversation_and_rejects_extra_fields",
+          "line": 109,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_admin_settings_require_local_admin_token",
+          "line": 127,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_dedicated_gateway_contains_no_admin_or_workspace_routes_even_on_loopback",
+          "line": 134,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "test_gateway_startup_requires_explicit_enablement_and_https",
+          "line": 143,
+          "kind": "AsyncFunctionDef"
+        },
+        {
+          "name": "db",
+          "line": 63,
+          "kind": "AsyncFunctionDef"
+        }
+      ],
+      "tests": [
+        "test_exact_origins_reject_wildcards_paths_credentials_and_csp_injection",
+        "test_budgets_keep_daily_counts_and_reset_minute_window",
+        "test_public_surface_never_exposes_admin_documents_or_workspace_chat",
+        "test_public_disabled_and_cross_origin_posts_fail_closed",
+        "test_iframe_response_escapes_untrusted_titles_and_sets_exact_frame_policy",
+        "test_chat_forces_assistant_and_server_conversation_and_rejects_extra_fields",
+        "test_admin_settings_require_local_admin_token",
+        "test_dedicated_gateway_contains_no_admin_or_workspace_routes_even_on_loopback",
+        "test_gateway_startup_requires_explicit_enablement_and_https"
+      ],
+      "except_types": [],
+      "validators": []
+    },
+    {
+      "path": "Backend/uv.lock",
+      "lines": 2214,
+      "sha256": "fa2dd26876d6c2f7fc90379dfaaff7168d427cbdafaf05282c79a243bd57a6b5"
+    },
+    {
+      "path": "docs/assistant-caching-analytics.md",
+      "lines": 73,
+      "sha256": "ee9a14a7b847ac9e70c1ada42c5eddd4e440ee97849fb0e1938397c80aa55472"
+    },
+    {
+      "path": "docs/assistant-configuration.md",
+      "lines": 188,
+      "sha256": "aff5070f6be15f207e7ea6ddabd887d7b88c77e03a3e303d5b74d83df778743b"
+    },
+    {
+      "path": "docs/backend-readiness-2026-10-12.md",
+      "lines": 59,
+      "sha256": "dc0e93440b3016bbc598988b304baaf5dc42ca98f59664e86b5876d0a3bfc56a"
+    },
+    {
+      "path": "docs/conversational-upgrade-2026-10-12.md",
+      "lines": 242,
+      "sha256": "94dbe6f96b406eea24362751762163fea7a3b5692af6b4deefeb0759790c5988"
+    },
+    {
+      "path": "docs/document-selection.md",
+      "lines": 48,
+      "sha256": "0e1f350c112a38cee8f2d1b807d21166af9c5b7004e040b714209cfbdbc07ba3"
+    },
+    {
+      "path": "docs/endpoint-architecture-audit-2026-10-12.md",
+      "lines": 275,
+      "sha256": "c90ff2d8eb79f3f217f3bf95388f1e1ea5aeea34fd9555546bd395affa7a5d66"
+    },
+    {
+      "path": "docs/frontend-api.md",
+      "lines": 83,
+      "sha256": "3b90c840bb6adb8680281955b36852eccbae0b77af5a6710238cef37e915d81f"
+    },
+    {
+      "path": "docs/frontend-compatibility-review-2026-10-12.md",
+      "lines": 213,
+      "sha256": "99eac2d1f853439d2c2e048d7f3a7f80b2a2c1c17e85464e1fb9897772b0ec3c"
+    },
+    {
+      "path": "docs/frontend-integration-2026-10-12.md",
+      "lines": 64,
+      "sha256": "5268528ea4fea07e91cfbc02b736d8700826cf16b984e2c8bfc9e05c9917fea7"
+    },
+    {
+      "path": "docs/langgraph-workflow.md",
+      "lines": 72,
+      "sha256": "9aba57e337802826e041ece3522aa33f36d31b8e51191214a08c1f747b63f4cd"
+    },
+    {
+      "path": "docs/model-analytics-2026-10-12.md",
+      "lines": 175,
+      "sha256": "2a054bd00c4d126085a94653d354cacf86eba679f73c788f8967a7cfe8311be5"
+    },
+    {
+      "path": "docs/operations.md",
+      "lines": 138,
+      "sha256": "b4e8c6742c6e68c30dc103daae974334f2ca9262f6aeeb60cf24a16570cdf12d"
+    },
+    {
+      "path": "docs/rag-production-review-2026-10-09.md",
+      "lines": 672,
+      "sha256": "29570dafdb4e159ccb0d562f22ba7ac5bde8925b6673d46757aeaefb4a50f1ec"
+    },
+    {
+      "path": "docs/website-widget.md",
+      "lines": 156,
+      "sha256": "0432205440074c6aa2aeeeff7c9514d7f613e5cfbcf42b0d925135f46af3b25c"
+    },
+    {
+      "path": "docs/widget-build.md",
+      "lines": 26,
+      "sha256": "0cc8347e40df9d5c66811c3679e18b98538b85b550d70c06400904b66c03d7bd"
+    },
+    {
+      "path": "frontend/.env.example",
+      "lines": 6,
+      "sha256": "63238114527e71c1f58879d3aa6813b5a2af470915e5a76927869c346b8cb576"
+    },
+    {
+      "path": "frontend/.gitignore",
+      "lines": 8,
+      "sha256": "db691f14fcf678985362a42c6aedb581e42cd6bb99962ce1b44aea460fb2a4df"
+    },
+    {
+      "path": "frontend/index.html",
+      "lines": 21,
+      "sha256": "57d03dbcc002574dee1cd86d23db1a1e266eecfaff6956d2bab213d8426d7e45"
+    },
+    {
+      "path": "frontend/metadata.json",
+      "lines": 7,
+      "sha256": "21a70dd95b27b156895ae64d21b2f607954cca159604f0d8184de5259f9e5979"
+    },
+    {
+      "path": "frontend/package-lock.json",
+      "lines": 5005,
+      "sha256": "c87c8d12f9811ea3fad322086e94cfa428d7e1dd713cfe88d540610b8b6b4020"
+    },
+    {
+      "path": "frontend/package.json",
+      "lines": 41,
+      "sha256": "beb5380237c46f99a229e286dc97d7463a5d82d032ed41d8855fd924590aa344"
+    },
+    {
+      "path": "frontend/public/rag-widget.js",
+      "lines": 1,
+      "sha256": "73da82f9aa766393b4e0f2eeacee368c1f3a6ae50d38a1dfffc9ff18711ea6ce"
+    },
+    {
+      "path": "frontend/public/widget-demo.html",
+      "lines": 6,
+      "sha256": "044eeae01749ab193acf1c3a34f8d561237ba106a18b2a07f0312665648185e3"
+    },
+    {
+      "path": "frontend/README.md",
+      "lines": 79,
+      "sha256": "74f0202ab741b7f46041a1019c514cb7fbf042044392ff53ae3f9b9d2d75bb42"
+    },
+    {
+      "path": "frontend/src/App.test.tsx",
+      "lines": 192,
+      "sha256": "a00fff2356202fbd7c59f1106f062a02a2d5e1e694abeee5192fed79f14189b5"
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "lines": 65,
+      "sha256": "bd87f670e08b9b3b478378d23a50f66ff61e298734b6246137bfc795357ebf97"
+    },
+    {
+      "path": "frontend/src/components/admin/AdminOverview.tsx",
+      "lines": 407,
+      "sha256": "31bbff37d5acc9ea218106cfd76fa786b88cd939717b7c8d422d20272a32e35d"
+    },
+    {
+      "path": "frontend/src/components/admin/AssistantSettings.test.tsx",
+      "lines": 195,
+      "sha256": "7dcd6694d37ba933af9f7f10b1c6bc695811ded8db50b1930395bd95fa52f751"
+    },
+    {
+      "path": "frontend/src/components/admin/AssistantSettings.tsx",
+      "lines": 198,
+      "sha256": "f2ce4532bd4fae3b6cb7592c66f0bb92d8f92760b5bcd1dcfc792b3b90acf096"
+    },
+    {
+      "path": "frontend/src/components/admin/BackendSettingsModal.tsx",
+      "lines": 258,
+      "sha256": "78debd3321cfc27d1ee68ca340a1ba512041d121dddeb02e12bdc044928bdffe"
+    },
+    {
+      "path": "frontend/src/components/admin/BackendStatus.tsx",
+      "lines": 32,
+      "sha256": "01e30555467aa09c297b9f6d5e85a24d566337e771327aaba9a2776d547f4044"
+    },
+    {
+      "path": "frontend/src/components/admin/ConfirmConfigurationDelete.tsx",
+      "lines": 43,
+      "sha256": "f68e9fb3938f0cbf1c8ed4b4bcbd9aa305b8bfe6ac919257b370f61578dd9f1e"
+    },
+    {
+      "path": "frontend/src/components/admin/ContractInspector.tsx",
+      "lines": 238,
+      "sha256": "b3037c88d79728f13727ffafd2e6b5c6207f7d1251ee0f523e116c577aa7e2af"
+    },
+    {
+      "path": "frontend/src/components/admin/LlmConfiguration.tsx",
+      "lines": 949,
+      "sha256": "5f029ae3943e9ae129b55ccbfe84d58d2a17da6b5cb48b34bfc8d1a6cec278e1"
+    },
+    {
+      "path": "frontend/src/components/admin/ModelAnalytics.test.tsx",
+      "lines": 93,
+      "sha256": "17638cbe9fc8a0d8fa09ac423fa25e3dc037b9267aa62a62e72d95197aab7055"
+    },
+    {
+      "path": "frontend/src/components/admin/ModelAnalytics.tsx",
+      "lines": 123,
+      "sha256": "b485d3285d2590674d0f43284d2229f13d2cdc35df9eb0a9f41b8ec5b52f9e81"
+    },
+    {
+      "path": "frontend/src/components/chat/ChatInterface.tsx",
+      "lines": 284,
+      "sha256": "d748c008860c9193724575a454ff3a1c939791aae6d7a3174f1a0a0a70e7cc26"
+    },
+    {
+      "path": "frontend/src/components/chat/ChatMessageItem.tsx",
+      "lines": 197,
+      "sha256": "89b9ed180bb2b0cdfbe665773db0bfb5daac5b01bda8da7d3cbcd4580d7f3fc1"
+    },
+    {
+      "path": "frontend/src/components/chat/ChatWidget.tsx",
+      "lines": 203,
+      "sha256": "b828795fe11972dda6ff20cc5f4a0d13e7972b1a53730c5f41d04f52f5d477c4"
+    },
+    {
+      "path": "frontend/src/components/chat/CitationViewer.tsx",
+      "lines": 106,
+      "sha256": "7bc7efd0da83cdaeaddfeaf937244dec45a88f907fde8bc69579c3717c8c35e9"
+    },
+    {
+      "path": "frontend/src/components/chat/ClarificationPicker.tsx",
+      "lines": 44,
+      "sha256": "fd9a0a2ecdfade3a24a71179e760969308268a7e584d217d1bc9451669157e97"
+    },
+    {
+      "path": "frontend/src/components/chat/ConnectedChat.tsx",
+      "lines": 103,
+      "sha256": "652932be0eac0efabdb7522bc5d62b785c4b716bbddb22befffa1c726e595b3b"
+    },
+    {
+      "path": "frontend/src/components/chat/SourcePassage.tsx",
+      "lines": 36,
+      "sha256": "ef8f8e6f5611090b30cf9b5094282c90653a88369da670d60739f13199cfcba4"
+    },
+    {
+      "path": "frontend/src/components/chat/WidgetEmbedModal.tsx",
+      "lines": 170,
+      "sha256": "3d6e842a46a58b244ef1651861c70e8e6f6bb8816637ba9ef38fee251165b375"
+    },
+    {
+      "path": "frontend/src/components/documents/ConnectedDocuments.tsx",
+      "lines": 136,
+      "sha256": "d05efdeb4d7be1e0e70c01cff10bd90d93fac47ad8881c4232fd01055d42cfef"
+    },
+    {
+      "path": "frontend/src/components/documents/DocumentManagement.tsx",
+      "lines": 256,
+      "sha256": "9b07eef041daf36fe9c6b72029256fcaa08219aab40344922490214aa4b89f95"
+    },
+    {
+      "path": "frontend/src/components/documents/DocumentUploadModal.tsx",
+      "lines": 239,
+      "sha256": "03565502d55a8a5f177c594f92ff1bcbaccba5bb43a8e7bafe7a72377cfc6357"
+    },
+    {
+      "path": "frontend/src/components/documents/VectorSearchSandbox.tsx",
+      "lines": 146,
+      "sha256": "1667f618d97d70920cc1f92cd19f37e95d2aff0fa4da58c2ddc082df51a320cd"
+    },
+    {
+      "path": "frontend/src/components/embed/AssistantWidgetPreview.tsx",
+      "lines": 79,
+      "sha256": "376a3ee054e06b6aeb78ec0b6b8c3912523d734e7d35fb625b219b113bc5daea"
+    },
+    {
+      "path": "frontend/src/components/embed/WebsiteEmbedDemo.tsx",
+      "lines": 512,
+      "sha256": "a41e6fd208583837bfe619f183593bb98138c26c462cbf2ec98829ce160f332e"
+    },
+    {
+      "path": "frontend/src/components/embed/WebsiteWidgetPanel.test.tsx",
+      "lines": 104,
+      "sha256": "0f19808188f82b44afd3335b2b0ef61f2cea69ff4013d3f16814ea072ceb2322"
+    },
+    {
+      "path": "frontend/src/components/embed/WebsiteWidgetPanel.tsx",
+      "lines": 138,
+      "sha256": "c93ec178490dcca68cf66ed41d411273bcfe4ee150c3f423ea48b9c3ec765879"
+    },
+    {
+      "path": "frontend/src/components/embed/WidgetRuntime.test.ts",
+      "lines": 92,
+      "sha256": "474b00b3c220ed2dc67b555999ff8297d95fd8f041ce9bfc996cf812b8ff0df0"
+    },
+    {
+      "path": "frontend/src/components/layout/Header.tsx",
+      "lines": 144,
+      "sha256": "787dedff925bd23a0c22e4379ab334f7c6cf2a30d323f41cf8e35eccc6a966e6"
+    },
+    {
+      "path": "frontend/src/components/layout/Sidebar.tsx",
+      "lines": 188,
+      "sha256": "a281a59bb5008b751d40b5a76feb1aa04cdc6abd8865a6caaaa33675f5fb1782"
+    },
+    {
+      "path": "frontend/src/context/AppContext.tsx",
+      "lines": 315,
+      "sha256": "d7126d3f60081e64f145419b1aac2bd9c92055271ad163222b6b942075a8211a"
+    },
+    {
+      "path": "frontend/src/context/ChatbotContext.tsx",
+      "lines": 193,
+      "sha256": "0d7f2a14b2cfb46cb70c25ed84fed619fe232b6e4e46b7652b28a40a1ac876cc"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "lines": 29,
+      "sha256": "2f9bc1f2135ff10eee637efdb9fbb87094a760b50cf065a5eb0abb806619b088"
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "lines": 5,
+      "sha256": "30d02ee59cb6576973dea4368093b2dcae692a40668f288fdbc66a114873fcd3"
+    },
+    {
+      "path": "frontend/src/services/analyticsClient.test.ts",
+      "lines": 29,
+      "sha256": "09583d60539164cf36b7436e69c828fff1dc2d0d797b0b93a01405a81c49f5c4"
+    },
+    {
+      "path": "frontend/src/services/apiClient.ts",
+      "lines": 315,
+      "sha256": "5b4bfc3e2b45bdebd6add9fccaef494643510aaa70aed8de282009516befee30"
+    },
+    {
+      "path": "frontend/src/services/backend.test.ts",
+      "lines": 59,
+      "sha256": "4d81f812d88f55b75a1b6a2431312b336be6597ffd51b12eb1a55325b662aa4f"
+    },
+    {
+      "path": "frontend/src/services/backend.ts",
+      "lines": 146,
+      "sha256": "be3b9df26b426fdfc0581d99a93a7c0bc2c786bfa26b6fdfbadf8c81285342c7"
+    },
+    {
+      "path": "frontend/src/services/chatSession.test.ts",
+      "lines": 25,
+      "sha256": "cbc8725b234e1f14ce149ba3361e88aab04dadb7b1fed362d59e9fbdacf12482"
+    },
+    {
+      "path": "frontend/src/services/chatSession.ts",
+      "lines": 34,
+      "sha256": "91738dbf9f6915c8e283ca19d855506a5ea873386495fbc5970b971535e9528a"
+    },
+    {
+      "path": "frontend/src/services/mockBackend.ts",
+      "lines": 572,
+      "sha256": "63ba04500ad9d7e775ed36cd8abeed171d5c12068ac70990ee98b05859c502cd"
+    },
+    {
+      "path": "frontend/src/test/setup.ts",
+      "lines": 11,
+      "sha256": "284b403f9dbd72f3a8dba35a635d70902028e1432c3174ec5fc1c50748e45c8c"
+    },
+    {
+      "path": "frontend/src/types/analytics.ts",
+      "lines": 50,
+      "sha256": "9bb7669a7e2fea5d06ac749a38486430c5ba91b3c99e155c727c9c457a5f1402"
+    },
+    {
+      "path": "frontend/src/types/assistants.ts",
+      "lines": 16,
+      "sha256": "a7c0ae87c98538d66e665cac1fde28eafedc31211a4b024135fcb677e637180e"
+    },
+    {
+      "path": "frontend/src/types/backend.ts",
+      "lines": 28,
+      "sha256": "a6d854a8a2797f1b14a79294c7f682ebed6004021d5e21ceaad78611d9e044b6"
+    },
+    {
+      "path": "frontend/src/types/rag.ts",
+      "lines": 195,
+      "sha256": "7d231079186cf57a03f20245d6863ac5e4afa6e409e6dd631ccb82225be17fdc"
+    },
+    {
+      "path": "frontend/src/types/widgets.ts",
+      "lines": 8,
+      "sha256": "45405c9aea64ffe4acf566604ee0d5a36c02631ac452380bf76d7cb7af7d49f7"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "lines": 27,
+      "sha256": "6624845b5855cb0c547da44d56785371aaf4f77920440f93b685484456952468"
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "lines": 33,
+      "sha256": "5b3209082ae4f7f46b05539d2782d43e05f49758f35b72409867abfc7d872dec"
+    },
+    {
+      "path": "frontend/vitest.config.ts",
+      "lines": 14,
+      "sha256": "6122c6082631a34b8c5093b2784877c3956996d78df5c9dabf3bde50895718b1"
+    },
+    {
+      "path": "MVP_REVIEW.md",
+      "lines": 149,
+      "sha256": "9cb4e71d102c4ae1192d842fbddacc523a4d05f66ea7c7346b7605a327450b13"
+    },
+    {
+      "path": "NOTES.md",
+      "lines": 224,
+      "sha256": "e5d237a1022031379b3cc84d32868a380e3977a591057a630fea76ffbfe402ea"
+    },
+    {
+      "path": "README.md",
+      "lines": 80,
+      "sha256": "b88da4b64f920c215e545287760f600b2a59a0e6b5775e64b48d29a6ddaeef3d"
+    }
+  ]
+}

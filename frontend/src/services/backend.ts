@@ -1,6 +1,7 @@
 import type {ChatRequest, ChatResult, DocumentInfo, DocumentJob, DocumentPage, Passage, Source} from '../types/backend';
 import type {ModelAnalytics} from '../types/analytics';
 import type {Assistant, AssistantWrite, GenerationSettings, ProviderConnection, ProviderName, ProviderPreset} from '../types/assistants';
+import type {WebsiteWidget, WidgetWrite} from '../types/widgets';
 
 export const MAX_PDF_BYTES = 10 * 1024 * 1024;
 export const INSUFFICIENT_CONTEXT = "I don't have enough information in the provided documents to answer this question.";
@@ -65,6 +66,9 @@ async function adminRequest<T>(path: string, options: RequestInit = {}, timeout 
   }
 }
 export const backend = {
+  widget: (assistantId: string) => adminRequest<WebsiteWidget | null>(`/v1/admin/assistants/${encodeURIComponent(assistantId)}/widget`),
+  saveWidget: (assistantId: string, payload: WidgetWrite) => adminRequest<WebsiteWidget>(
+    `/v1/admin/assistants/${encodeURIComponent(assistantId)}/widget`, {...post(payload), method: 'PUT'}),
   deleteConnection: (id: string) => adminRequest<void>(`/v1/admin/connections/${encodeURIComponent(id)}`, {method: 'DELETE'}),
   deleteAssistant: (id: string) => adminRequest<void>(`/v1/admin/assistants/${encodeURIComponent(id)}`, {method: 'DELETE'}),
   assistants: () => json<Assistant[]>('/v1/assistants'),

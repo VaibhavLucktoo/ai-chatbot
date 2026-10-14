@@ -1,63 +1,17 @@
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-import asyncio
 from pathlib import Path
 import secrets
-from contextlib import suppress
 
 from fastapi import FastAPI
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-import httpx
 
 from app.api.v1.router import api_router
 from app.core.config import get_settings
-from app.storage.db import Database
 from app.core.middleware import LocalWorkspaceMiddleware
-from app.providers.embeddings import get_embedding_provider
-from app.services.recovery import recovery_loop
-from app.services.metrics import MetricsCollector
+from app.core.lifespan import lifespan
+from app.api.v1.widgets import page_router as widget_page_router
 
 ADMIN_DIRECTORY = Path(__file__).parent / "admin"
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncIterator[None]:
-    database = Database(get_settings())
-
-    try:
-        if not await database.is_ready(check_schema=True):
-            raise RuntimeError(
-                "Database startup check failed. "
-                "Check PostgreSQL, the vector extension, and run alembic upgrade head."
-            )
-
-        app.state.database = database
-        app.state.metrics = MetricsCollector(database)
-        app.state.embedding_ready = False
-        if get_settings().embedding_warmup_on_startup:
-            async with asyncio.timeout(get_settings().embedding_timeout_seconds):
-                await get_embedding_provider().embed_query("Readiness check")
-            app.state.embedding_ready = True
-        app.state.llm_slots = asyncio.Semaphore(2)
-        async with httpx.AsyncClient(follow_redirects=False, limits=httpx.Limits(
-            max_connections=4, max_keepalive_connections=2,
-        )) as client:
-            app.state.llm_client = client
-            recovery = asyncio.create_task(recovery_loop(database), name="ingestion-recovery")
-            app.state.metrics.start()
-            try:
-                yield
-            finally:
-                recovery.cancel()
-                with suppress(asyncio.CancelledError):
-                    await recovery
-                await app.state.metrics.close()
-    finally:
-        await database.close()
-        if get_embedding_provider.cache_info().currsize:
-            get_embedding_provider().close()
-            get_embedding_provider.cache_clear()
 
 
 def create_app() -> FastAPI:
@@ -70,6 +24,7 @@ def create_app() -> FastAPI:
         lifespan=lifespan,
     )
     application.include_router(api_router, prefix="/v1")
+    application.include_router(widget_page_router)
     application.state.admin_token = secrets.token_urlsafe(32)
     application.add_middleware(LocalWorkspaceMiddleware, state=application.state,
                                max_active_requests=settings.local_max_active_requests)

@@ -216,3 +216,38 @@ class AssistantDocument(Base):
     __table_args__ = (Index("ix_assistant_documents_document_id", "document_id"),)
     assistant_id: Mapped[UUID] = mapped_column(ForeignKey("assistants.id", ondelete="CASCADE"), primary_key=True)
     document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), primary_key=True)
+
+
+class WebsiteWidget(Base):
+    __tablename__ = "website_widgets"
+    __table_args__ = (
+        CheckConstraint("revision > 0", name="positive_revision"),
+        CheckConstraint("requests_per_minute BETWEEN 1 AND 120", name="minute_limit"),
+        CheckConstraint("requests_per_day BETWEEN 1 AND 10000", name="day_limit"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    assistant_id: Mapped[UUID] = mapped_column(ForeignKey("assistants.id", ondelete="CASCADE"), unique=True)
+    enabled: Mapped[bool] = mapped_column(Boolean, server_default="false")
+    title: Mapped[str] = mapped_column(String(100))
+    greeting: Mapped[str] = mapped_column(String(500))
+    color: Mapped[str] = mapped_column(String(7))
+    position: Mapped[str] = mapped_column(String(5))
+    allowed_origins: Mapped[list] = mapped_column(JSON, server_default="[]")
+    revision: Mapped[int] = mapped_column(Integer, server_default="1")
+    requests_per_minute: Mapped[int] = mapped_column(Integer, server_default="20")
+    requests_per_day: Mapped[int] = mapped_column(Integer, server_default="500")
+    usage: Mapped[dict] = mapped_column(JSON, server_default="{}")
+
+
+class WidgetSession(Base):
+    __tablename__ = "widget_sessions"
+    __table_args__ = (Index("ix_widget_sessions_expires_at", "expires_at"), Index("ix_widget_sessions_widget_id", "widget_id"))
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    widget_id: Mapped[UUID] = mapped_column(ForeignKey("website_widgets.id", ondelete="CASCADE"))
+    token_hash: Mapped[str] = mapped_column(String(64))
+    conversation_id: Mapped[UUID] = mapped_column()
+    widget_revision: Mapped[int] = mapped_column(Integer)
+    parent_origin: Mapped[str] = mapped_column(String(300))
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    usage: Mapped[dict] = mapped_column(JSON, server_default="{}")
+    allowed_chunks: Mapped[list] = mapped_column(JSON, server_default="[]")

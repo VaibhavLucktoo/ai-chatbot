@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>__TITLE__</title><link rel="stylesheet" href="/widget-assets/style.css"><script src="/widget-assets/chat.js" defer></script></head>
+<body><div id="configuration" data-config="__CONFIG__" hidden></div>
+<main class="chat"><header><div><h1 id="title">Document Assistant</h1><p>Answers from the provided documents</p></div><button id="close" aria-label="Close chat">×</button></header>
+<div class="toolbar"><span id="status" role="status">Connecting…</span><button id="clear" type="button">New chat</button></div>
+<section id="messages" aria-label="Conversation" aria-live="polite" aria-relevant="additions text"></section>
+<form id="form"><label class="sr-only" for="question">Your question</label><textarea id="question" rows="2" maxlength="500" placeholder="Ask a question…" required disabled></textarea><button id="send" type="submit" disabled>Send</button></form>
+<footer>Check the sources behind an answer. AI can make mistakes.</footer></main></body></html>

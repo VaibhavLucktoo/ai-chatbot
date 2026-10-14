@@ -9,6 +9,7 @@ import {ConnectedDocuments} from './components/documents/ConnectedDocuments';
 import {BackendStatus} from './components/admin/BackendStatus';
 import {ModelAnalyticsPanel} from './components/admin/ModelAnalytics';
 import {AssistantSettingsPanel} from './components/admin/AssistantSettings';
+import {WebsiteWidgetPanel} from './components/embed/WebsiteWidgetPanel';
 
 const navigation = [
   {id: 'chat', label: 'Chat', icon: MessageSquare},
@@ -17,6 +18,7 @@ const navigation = [
   {id: 'analytics', label: 'Analytics', icon: BarChart3},
   {id: 'assistants', label: 'Assistants', icon: Bot},
   {id: 'models', label: 'Models', icon: Cpu},
+  {id: 'widget', label: 'Website widget', icon: MessageSquare},
 ] as const;
 
 function Workspace() {
@@ -52,6 +54,7 @@ function Workspace() {
         {tab === 'analytics' && <ModelAnalyticsPanel/>}
         {tab === 'assistants' && <AssistantSettingsPanel/>}
         {tab === 'models' && <AssistantSettingsPanel view="models"/>}
+        {tab === 'widget' && <WebsiteWidgetPanel/>}
       </main>
     </div>
   </div>;

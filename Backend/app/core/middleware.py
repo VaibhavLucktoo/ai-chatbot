@@ -3,6 +3,8 @@
 from uuid import uuid4
 import asyncio
 import logging
+import re
+from urllib.parse import urlsplit
 from time import perf_counter
 
 from fastapi import HTTPException
@@ -16,16 +18,29 @@ logger = logging.getLogger(__name__)
 
 
 class LocalWorkspaceMiddleware:
-    def __init__(self, app, *, state, max_active_requests: int):
+    def __init__(self, app, *, state, max_active_requests: int,
+                 widget_public_enabled=False, widget_public_origin="http://127.0.0.1:8000"):
         self.app, self.state = app, state
         self.max_active_requests = max_active_requests
         self.active_requests = 0
         self.active_uploads = 0
+        self.widget_public_enabled = widget_public_enabled
+        self.widget_public_origin = widget_public_origin
+
+    @staticmethod
+    def widget_route(scope):
+        path, method = scope.get("path", ""), scope.get("method")
+        identifier = r"[0-9a-fA-F-]{36}"
+        return ((method == "GET" and (re.fullmatch(r"/widget/" + identifier, path) or path in {
+            "/widget-assets/loader.js", "/widget-assets/chat.js", "/widget-assets/style.css"}))
+            or (method == "POST" and re.fullmatch(r"/v1/widget/" + identifier + r"/sessions(?:/" + identifier + r"/chat)?", path))
+            or (method == "GET" and re.fullmatch(r"/v1/widget/" + identifier + r"/sessions/" + identifier + r"/passages/" + identifier, path)))
 
     async def __call__(self, scope, receive, send):
         collector = getattr(self.state, "metrics", None)
-        if collector is not None and scope["type"] == "http" and scope.get("method") == "POST" and scope.get("path") in {"/v1/chat", "/v1/admin/chat"}:
-            with collector.request(scope["path"]) as measurement:
+        is_widget_chat = scope.get("path", "").startswith("/v1/widget/") and scope.get("path", "").endswith("/chat")
+        if collector is not None and scope["type"] == "http" and scope.get("method") == "POST" and (scope.get("path") in {"/v1/chat", "/v1/admin/chat"} or is_widget_chat):
+            with collector.request("/v1/widget/chat" if is_widget_chat else scope["path"]) as measurement:
                 async def measured_send(message):
                     if message["type"] == "http.response.start":
                         measurement.http_status = message["status"]
@@ -39,14 +54,22 @@ class LocalWorkspaceMiddleware:
         metric = current_request()
         request_id = metric.id.hex if metric is not None else uuid4().hex
         started, response_status = perf_counter(), 500
-        if not is_local_scope(scope):
+        widget_route = self.widget_route(scope)
+        public_widget = self.widget_public_enabled and widget_route
+        if public_widget:
+            host = dict(scope.get("headers", [])).get(b"host", b"").decode("ascii", errors="replace").lower()
+            if host != urlsplit(self.widget_public_origin).netloc.lower():
+                return await JSONResponse({"detail": "Widget host unavailable."}, 403)(scope, receive, send)
+        elif not is_local_scope(scope):
             return await JSONResponse({"detail": "Local access only.", "request_id": request_id}, 403)(scope, receive, send)
         headers = dict(scope.get("headers", []))
         origin = headers.get(b"origin")
         if origin:
-            expected = scope.get("scheme", "http").encode() + b"://" + headers.get(b"host", b"")
+            expected = self.widget_public_origin.encode() if public_widget else scope.get("scheme", "http").encode() + b"://" + headers.get(b"host", b"")
             if origin != expected:
                 return await JSONResponse({"detail": "Cross-origin requests are disabled."}, 403)(scope, receive, send)
+        if widget_route and scope.get("method") == "POST" and not origin:
+            return await JSONResponse({"detail": "Widget origin is required."}, 403)(scope, receive, send)
         upload = scope.get("path", "").endswith(("/documents/upload", "/documents/jobs"))
         costly = scope.get("method") == "POST"
         if costly and (self.active_requests >= self.max_active_requests or (upload and self.active_uploads)):

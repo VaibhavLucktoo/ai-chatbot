@@ -11,6 +11,8 @@ Assistants configures models and assigned documents, with confirmed lifecycle
 deletion. Chat selects an assistant with its own document scope and conversation
 history. Workspace default retains the existing environment-configured model.
 See [assistant configuration](docs/assistant-configuration.md).
+The **Website widget** page configures assistant chat for approved websites and
+generates script/iframe snippets. See [widget setup and HTTPS hosting](docs/website-widget.md).
 Assistant snapshots now use a bounded process cache with database revision checks.
 Analytics can filter assistants/providers and compare saved configuration revisions.
 See [Stage 2 setup and behavior](docs/assistant-caching-analytics.md).

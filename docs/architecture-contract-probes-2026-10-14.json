@@ -1,0 +1,2070 @@
+{
+  "operations": [
+    {
+      "method": "GET",
+      "path": "/v1/health",
+      "id": "health_v1_health_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HealthResponse"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/ready",
+      "id": "readiness_v1_ready_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadinessResponse"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "Service Unavailable",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReadinessResponse"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/documents/upload",
+      "id": "upload_document_v1_documents_upload_post",
+      "body": {
+        "multipart/form-data": {
+          "$ref": "#/components/schemas/Body_upload_document_v1_documents_upload_post"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUploadResponse"
+              }
+            }
+          }
+        },
+        "200": {
+          "description": "OK",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentUploadResponse"
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "This PDF is already being processed; retry later"
+        },
+        "413": {
+          "description": "PDF exceeds the size limit"
+        },
+        "415": {
+          "description": "Expected application/pdf"
+        },
+        "422": {
+          "description": "Invalid filename or PDF"
+        },
+        "500": {
+          "description": "Internal ingestion error"
+        },
+        "503": {
+          "description": "Document storage or processing unavailable"
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/documents/search",
+      "id": "search_documents_v1_documents_search_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/DocumentSearchRequest"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentSearchResponse"
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Invalid search parameters"
+        },
+        "422": {
+          "description": "Request schema validation failed"
+        },
+        "500": {
+          "description": "Search failed"
+        },
+        "503": {
+          "description": "Document storage unavailable"
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/chat",
+      "id": "chat_v1_chat_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/ChatRequest"
+        }
+      },
+      "parameters": [
+        {
+          "name": "X-Conversation-Key",
+          "in": "header",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Private capability required when conversation_id is supplied.",
+            "title": "X-Conversation-Key"
+          },
+          "description": "Private capability required when conversation_id is supplied."
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Answer with sources, an insufficient-context fallback, or document selection.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ChatResponse"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ClarificationResponse"
+                  }
+                ],
+                "title": "Response Chat V1 Chat Post"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Conversation capability invalid or documents outside the assistant's scope.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        },
+        "404": {
+          "description": "Selected assistant is missing or disabled.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        },
+        "409": {
+          "description": "Conversation is processing another turn.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Request body failed validation."
+        },
+        "429": {
+          "description": "LLM provider rate limit exceeded.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        },
+        "500": {
+          "description": "Retrieval, database, or internal processing failure.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        },
+        "502": {
+          "description": "LLM provider returned an error or an invalid response.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        },
+        "503": {
+          "description": "LLM provider is unavailable.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        },
+        "504": {
+          "description": "LLM request timed out.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatErrorResponse"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/status",
+      "id": "admin_status_v1_admin_status_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/documents",
+      "id": "admin_documents_v1_admin_documents_get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 50,
+            "minimum": 1,
+            "default": 25,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/chat",
+      "id": "admin_chat_v1_admin_chat_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/ChatRequest"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/documents/jobs",
+      "id": "submit_job_v1_documents_jobs_post",
+      "body": {
+        "multipart/form-data": {
+          "$ref": "#/components/schemas/Body_submit_job_v1_documents_jobs_post"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "202": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentJobResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/documents/jobs/{document_id}",
+      "id": "job_status_v1_documents_jobs__document_id__get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "document_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentJobResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/documents/{document_id}/activation",
+      "id": "activate_document_v1_documents__document_id__activation_patch",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/DocumentActivation"
+        }
+      },
+      "parameters": [
+        {
+          "name": "document_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          }
+        }
+      ],
+      "responses": {
+        "204": {
+          "description": "Successful Response"
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/documents/{document_id}",
+      "id": "delete_document_v1_documents__document_id__delete",
+      "body": {},
+      "parameters": [
+        {
+          "name": "document_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          }
+        }
+      ],
+      "responses": {
+        "204": {
+          "description": "Successful Response"
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/documents/{document_id}",
+      "id": "get_document_v1_documents__document_id__get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "document_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentDetail"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/documents",
+      "id": "list_documents_v1_documents_get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 50,
+            "minimum": 1,
+            "default": 25,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        },
+        {
+          "name": "status",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "enum": [
+                  "pending",
+                  "ready",
+                  "failed"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        {
+          "name": "active",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentListResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/documents/{document_id}/source",
+      "id": "download_source_v1_documents__document_id__source_get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "document_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/pdf": {}
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/documents/{document_id}/chunks/{chunk_id}",
+      "id": "get_source_chunk_v1_documents__document_id__chunks__chunk_id__get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "document_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          }
+        },
+        {
+          "name": "chunk_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Chunk Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChunkResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/session",
+      "id": "admin_session_v1_admin_session_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "403": {
+          "description": "Local access required."
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/metrics",
+      "id": "admin_metrics_v1_admin_metrics_get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "hours",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 720,
+            "minimum": 1,
+            "default": 24,
+            "title": "Hours"
+          }
+        },
+        {
+          "name": "model",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          }
+        },
+        {
+          "name": "assistant_id",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assistant Id"
+          }
+        },
+        {
+          "name": "workspace_only",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "boolean",
+            "default": false,
+            "title": "Workspace Only"
+          }
+        },
+        {
+          "name": "provider",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 50,
+            "minimum": 1,
+            "default": 25,
+            "title": "Limit"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnalyticsResponse"
+              }
+            }
+          }
+        },
+        "403": {
+          "description": "Local administrator session required."
+        },
+        "503": {
+          "description": "Analytics storage is unavailable."
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/assistants",
+      "id": "available_assistants_v1_assistants_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AssistantResponse"
+                },
+                "type": "array",
+                "title": "Response Available Assistants V1 Assistants Get"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/assistants/{assistant_id}/documents",
+      "id": "assistant_documents_v1_assistants__assistant_id__documents_get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assistant Id"
+          }
+        },
+        {
+          "name": "limit",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "maximum": 50,
+            "minimum": 1,
+            "default": 25,
+            "title": "Limit"
+          }
+        },
+        {
+          "name": "offset",
+          "in": "query",
+          "required": false,
+          "schema": {
+            "type": "integer",
+            "minimum": 0,
+            "default": 0,
+            "title": "Offset"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DocumentListResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/providers",
+      "id": "providers_v1_admin_providers_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/connections",
+      "id": "connections_v1_admin_connections_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/ConnectionResponse"
+                },
+                "type": "array",
+                "title": "Response Connections V1 Admin Connections Get"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/connections",
+      "id": "create_connection_v1_admin_connections_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/ConnectionCreate"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/admin/connections/{connection_id}",
+      "id": "update_connection_v1_admin_connections__connection_id__put",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/ConnectionUpdate"
+        }
+      },
+      "parameters": [
+        {
+          "name": "connection_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connection Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectionResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/admin/connections/{connection_id}",
+      "id": "remove_connection_v1_admin_connections__connection_id__delete",
+      "body": {},
+      "parameters": [
+        {
+          "name": "connection_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connection Id"
+          }
+        }
+      ],
+      "responses": {
+        "204": {
+          "description": "Successful Response"
+        },
+        "403": {
+          "description": "Admin access required."
+        },
+        "404": {
+          "description": "Connection not found."
+        },
+        "409": {
+          "description": "Connection is referenced by an assistant."
+        },
+        "503": {
+          "description": "Storage unavailable."
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/connections/models",
+      "id": "unsaved_models_v1_admin_connections_models_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/ModelDiscovery"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/connections/{connection_id}/models",
+      "id": "saved_models_v1_admin_connections__connection_id__models_get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "connection_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Connection Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/connections/test",
+      "id": "test_connection_v1_admin_connections_test_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/ConnectionTest"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/assistants",
+      "id": "admin_assistants_v1_admin_assistants_get",
+      "body": {},
+      "parameters": [],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "items": {
+                  "$ref": "#/components/schemas/AssistantResponse"
+                },
+                "type": "array",
+                "title": "Response Admin Assistants V1 Admin Assistants Get"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/admin/assistants",
+      "id": "create_assistant_v1_admin_assistants_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/AssistantWrite"
+        }
+      },
+      "parameters": [],
+      "responses": {
+        "201": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/admin/assistants/{assistant_id}",
+      "id": "update_assistant_v1_admin_assistants__assistant_id__put",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/AssistantWrite"
+        }
+      },
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assistant Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssistantResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/admin/assistants/{assistant_id}",
+      "id": "remove_assistant_v1_admin_assistants__assistant_id__delete",
+      "body": {},
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assistant Id"
+          }
+        }
+      ],
+      "responses": {
+        "204": {
+          "description": "Successful Response"
+        },
+        "403": {
+          "description": "Admin access required."
+        },
+        "404": {
+          "description": "Assistant not found."
+        },
+        "409": {
+          "description": "Assistant has an active chat."
+        },
+        "503": {
+          "description": "Storage unavailable."
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/widget/{widget_id}/sessions",
+      "id": "start_v1_widget__widget_id__sessions_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/VisitorStart"
+        }
+      },
+      "parameters": [
+        {
+          "name": "widget_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Widget Id"
+          }
+        }
+      ],
+      "responses": {
+        "201": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VisitorSession"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "POST",
+      "path": "/v1/widget/{widget_id}/sessions/{session_id}/chat",
+      "id": "widget_chat_v1_widget__widget_id__sessions__session_id__chat_post",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/VisitorChat"
+        }
+      },
+      "parameters": [
+        {
+          "name": "widget_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Widget Id"
+          }
+        },
+        {
+          "name": "session_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          }
+        },
+        {
+          "name": "X-Widget-Token",
+          "in": "header",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X-Widget-Token"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/ChatResponse"
+                  },
+                  {
+                    "$ref": "#/components/schemas/ClarificationResponse"
+                  }
+                ],
+                "title": "Response Widget Chat V1 Widget  Widget Id  Sessions  Session Id  Chat Post"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/widget/{widget_id}/sessions/{session_id}/passages/{chunk_id}",
+      "id": "passage_v1_widget__widget_id__sessions__session_id__passages__chunk_id__get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "widget_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Widget Id"
+          }
+        },
+        {
+          "name": "session_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          }
+        },
+        {
+          "name": "chunk_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Chunk Id"
+          }
+        },
+        {
+          "name": "X-Widget-Token",
+          "in": "header",
+          "required": false,
+          "schema": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "X-Widget-Token"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/v1/admin/assistants/{assistant_id}/widget",
+      "id": "get_widget_v1_admin_assistants__assistant_id__widget_get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assistant Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/WidgetResponse"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Response Get Widget V1 Admin Assistants  Assistant Id  Widget Get"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "PUT",
+      "path": "/v1/admin/assistants/{assistant_id}/widget",
+      "id": "save_widget_v1_admin_assistants__assistant_id__widget_put",
+      "body": {
+        "application/json": {
+          "$ref": "#/components/schemas/WidgetWrite"
+        }
+      },
+      "parameters": [
+        {
+          "name": "assistant_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Assistant Id"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WidgetResponse"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/widget/{widget_id}",
+      "id": "render_widget_widget__widget_id__get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "widget_id",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Widget Id"
+          }
+        },
+        {
+          "name": "parent_origin",
+          "in": "query",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Parent Origin"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "text/html": {
+              "schema": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    },
+    {
+      "method": "GET",
+      "path": "/widget-assets/{filename}",
+      "id": "widget_asset_widget_assets__filename__get",
+      "body": {},
+      "parameters": [
+        {
+          "name": "filename",
+          "in": "path",
+          "required": true,
+          "schema": {
+            "type": "string",
+            "title": "Filename"
+          }
+        }
+      ],
+      "responses": {
+        "200": {
+          "description": "Successful Response",
+          "content": {
+            "application/json": {
+              "schema": {}
+            }
+          }
+        },
+        "422": {
+          "description": "Validation Error",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HTTPValidationError"
+              }
+            }
+          }
+        }
+      },
+      "security": []
+    }
+  ],
+  "probes": {
+    "default_validation": {
+      "status": 422,
+      "body": {
+        "detail": [
+          {
+            "type": "string_too_short",
+            "loc": [
+              "body",
+              "question"
+            ],
+            "msg": "String should have at least 1 character",
+            "input": "",
+            "ctx": {
+              "min_length": 1
+            }
+          },
+          {
+            "type": "int_type",
+            "loc": [
+              "body",
+              "top_k"
+            ],
+            "msg": "Input should be a valid integer",
+            "input": "five"
+          }
+        ]
+      }
+    },
+    "configuration_validation": {
+      "status": 422,
+      "body": {
+        "detail": [
+          {
+            "loc": [
+              "body",
+              "requests_per_minute"
+            ],
+            "msg": "Input should be a valid integer",
+            "type": "int_type"
+          }
+        ]
+      }
+    },
+    "database_timeout_statuses": {
+      "job_status": 500,
+      "catalog_status": 503,
+      "job_content_type": "text/plain; charset=utf-8",
+      "catalog_body": {
+        "detail": "Document storage is temporarily unavailable."
+      }
+    },
+    "early_error_headers": {
+      "x-request-id": null,
+      "cache-control": null,
+      "x-content-type-options": null
+    },
+    "normal_headers": {
+      "x-request-id": "6ff042a81dcf4dd7afb35cfa4386468d",
+      "cache-control": "no-store",
+      "x-content-type-options": "nosniff"
+    },
+    "coerced_boolean": false,
+    "long_allowed_origin": {
+      "length": 373,
+      "accepted": true
+    },
+    "local_host_authority": {
+      "127.0.0.1": true,
+      "user@127.0.0.1": true,
+      "127.0.0.1/path": true,
+      "127.0.0.1:garbage": true
+    },
+    "schema_types": {
+      "DocumentJobResponse": {
+        "properties": {
+          "document_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Document Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_id",
+          "filename",
+          "status"
+        ],
+        "title": "DocumentJobResponse"
+      },
+      "VisitorSession": {
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Session Id"
+          },
+          "token": {
+            "type": "string",
+            "title": "Token"
+          },
+          "expires_at": {
+            "type": "string",
+            "title": "Expires At"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "session_id",
+          "token",
+          "expires_at"
+        ],
+        "title": "VisitorSession"
+      },
+      "AnalyticsResponse": {
+        "properties": {
+          "window": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Window"
+          },
+          "requests": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Requests"
+          },
+          "outcomes": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Outcomes"
+          },
+          "intents": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Intents"
+          },
+          "calls": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Calls"
+          },
+          "models": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "call_stages": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Call Stages"
+          },
+          "workflow_stages_ms": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Workflow Stages Ms"
+          },
+          "timeline": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Timeline"
+          },
+          "requests_last_minute": {
+            "type": "integer",
+            "title": "Requests Last Minute"
+          },
+          "available_models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Available Models"
+          },
+          "recent": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Recent"
+          },
+          "runtime": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Runtime"
+          },
+          "pricing": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Pricing"
+          },
+          "quality": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Quality"
+          },
+          "assistants": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Assistants"
+          },
+          "available_assistants": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Available Assistants"
+          },
+          "available_providers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Available Providers"
+          },
+          "configuration_cache": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Configuration Cache"
+          }
+        },
+        "type": "object",
+        "required": [
+          "window",
+          "requests",
+          "outcomes",
+          "intents",
+          "calls",
+          "models",
+          "call_stages",
+          "workflow_stages_ms",
+          "timeline",
+          "requests_last_minute",
+          "available_models",
+          "recent",
+          "runtime",
+          "pricing",
+          "quality"
+        ],
+        "title": "AnalyticsResponse"
+      }
+    }
+  }
+}

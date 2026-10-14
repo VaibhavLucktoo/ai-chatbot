@@ -10,6 +10,7 @@ from app.api.v1.document_lifecycle import router as lifecycle_router
 from app.api.v1.document_catalog import router as catalog_router
 from app.api.v1.metrics import router as metrics_router
 from app.api.v1.assistants import router as assistants_router, admin_router as assistant_admin_router
+from app.api.v1.widgets import router as widget_router, admin_router as widget_admin_router
 
 api_router = APIRouter()
 api_router.include_router(health_router)
@@ -23,3 +24,5 @@ api_router.include_router(catalog_router)
 api_router.include_router(metrics_router)
 api_router.include_router(assistants_router)
 api_router.include_router(assistant_admin_router)
+api_router.include_router(widget_router)
+api_router.include_router(widget_admin_router)

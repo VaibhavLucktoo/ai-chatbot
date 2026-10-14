@@ -99,6 +99,9 @@ class Database:
                         await connection.execute(select(Assistant).limit(0))
                         await connection.execute(select(AssistantDocument).limit(0))
                         await connection.execute(select(ProviderConnection).limit(0))
+                        from app.storage.models import WebsiteWidget, WidgetSession
+                        await connection.execute(select(WebsiteWidget).limit(0))
+                        await connection.execute(select(WidgetSession).limit(0))
                     return True
 
         except (SQLAlchemyError, TimeoutError, OSError) as exc:
