@@ -1,0 +1,63 @@
+# Optional Blueprint for NEW services. Existing services can use the same settings
+# manually; do not create a second service/database if you already have them.
+services:
+  - type: web
+    name: ai-chatbot
+    runtime: docker
+    region: singapore
+    plan: 1c-2g
+    numInstances: 1
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /v1/ready
+    autoDeployTrigger: checksPass
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: WORKSPACE_USERNAME
+        value: admin
+      - key: WORKSPACE_PASSWORD
+        generateValue: true
+      - key: ASSISTANT_ENCRYPTION_KEY
+        generateValue: true
+      - key: DB_HOST
+        fromDatabase:
+          name: ai-chatbot-db
+          property: host
+      - key: DB_PORT
+        value: "5432"
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: ai-chatbot-db
+          property: database
+      - key: POSTGRES_USER
+        fromDatabase:
+          name: ai-chatbot-db
+          property: user
+      - key: POSTGRES_PASSWORD
+        fromDatabase:
+          name: ai-chatbot-db
+          property: password
+      - key: EMBEDDING_WARMUP_ON_STARTUP
+        value: "true"
+      - key: WIDGET_PUBLIC_ENABLED
+        value: "false"
+      # Set these to the actual OpenAI-compatible provider/model you can access.
+      - key: LLM_BASE_URL
+        sync: false
+      - key: LLM_MODEL
+        sync: false
+      - key: LLM_API_KEY
+        sync: false
+      - key: LLM_TIMEOUT_SECONDS
+        value: "120"
+
+databases:
+  - name: ai-chatbot-db
+    region: singapore
+    plan: 0.1c-256mb
+    diskSizeGB: 1
+    postgresMajorVersion: "16"
+    databaseName: chatbot
+    user: chatbot
+    ipAllowList: []

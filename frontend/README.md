@@ -19,7 +19,9 @@ npm run dev
 Open `http://127.0.0.1:3000`. Vite binds only to loopback. Its proxy translates
 only the local UI origins for the backend; foreign origins remain rejected.
 The production build is tested locally with `npm run preview`, which uses the
-same local proxy. Remote/public hosting is outside the current supported scope.
+same local proxy. Hosted private previews use the repository-root Dockerfile to
+serve the production build and API from one origin, with workspace authentication.
+See [Render deployment](../docs/render-deployment.md).
 
 ## Checks
 

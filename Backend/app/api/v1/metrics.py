@@ -6,7 +6,7 @@ from typing import Annotated
 from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from sqlalchemy.exc import SQLAlchemyError
-from app.core.local_access import is_local_scope, require_admin_token
+from app.core.local_access import is_workspace_scope, require_admin_token
 
 # Deprecated schema location; retain compatibility for downstream imports.
 from app.schemas.metrics import AnalyticsResponse as AnalyticsResponse
@@ -24,7 +24,7 @@ router = APIRouter(prefix="/admin", tags=["local admin analytics"])
 )
 async def admin_session(request: Request):
     # Same trust boundary as /admin, which already embeds this ephemeral token.
-    if not is_local_scope(request.scope):
+    if not is_workspace_scope(request.scope):
         raise HTTPException(
             403, "The admin session is only available on the local machine."
         )

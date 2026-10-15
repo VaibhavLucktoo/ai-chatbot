@@ -10,7 +10,7 @@ from time import perf_counter
 from fastapi import HTTPException
 from starlette.responses import JSONResponse
 
-from app.core.local_access import is_local_scope
+from app.core.local_access import is_workspace_scope
 from app.services.llm import llm_request_resources
 from app.services.metrics import current_request
 
@@ -19,13 +19,15 @@ logger = logging.getLogger(__name__)
 
 class LocalWorkspaceMiddleware:
     def __init__(self, app, *, state, max_active_requests: int,
-                 widget_public_enabled=False, widget_public_origin="http://127.0.0.1:8000"):
+                 widget_public_enabled=False, widget_public_origin="http://127.0.0.1:8000",
+                 workspace_origin=""):
         self.app, self.state = app, state
         self.max_active_requests = max_active_requests
         self.active_requests = 0
         self.active_uploads = 0
         self.widget_public_enabled = widget_public_enabled
         self.widget_public_origin = widget_public_origin
+        self.workspace_origin = workspace_origin
 
     @staticmethod
     def widget_route(scope):
@@ -60,12 +62,17 @@ class LocalWorkspaceMiddleware:
             host = dict(scope.get("headers", [])).get(b"host", b"").decode("ascii", errors="replace").lower()
             if host != urlsplit(self.widget_public_origin).netloc.lower():
                 return await JSONResponse({"detail": "Widget host unavailable."}, 403)(scope, receive, send)
-        elif not is_local_scope(scope):
+        elif not (is_workspace_scope(scope) or (
+            self.workspace_origin and scope.get("method") == "GET"
+            and scope.get("path") in {"/v1/health", "/v1/ready"}
+        )):
             return await JSONResponse({"detail": "Local access only.", "request_id": request_id}, 403)(scope, receive, send)
         headers = dict(scope.get("headers", []))
         origin = headers.get(b"origin")
         if origin:
-            expected = self.widget_public_origin.encode() if public_widget else scope.get("scheme", "http").encode() + b"://" + headers.get(b"host", b"")
+            expected = (self.widget_public_origin.encode() if public_widget else
+                        self.workspace_origin.encode() if self.workspace_origin else
+                        scope.get("scheme", "http").encode() + b"://" + headers.get(b"host", b""))
             if origin != expected:
                 return await JSONResponse({"detail": "Cross-origin requests are disabled."}, 403)(scope, receive, send)
         if widget_route and scope.get("method") == "POST" and not origin:
@@ -115,7 +122,7 @@ class LocalWorkspaceMiddleware:
                     (b"x-request-id", request_id.encode()), (b"cache-control", b"no-store"),
                     (b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer"),
                 ]
-                if scope.get("path", "").startswith("/admin") or scope.get("path") == "/":
+                if scope.get("path", "").startswith("/admin") or (scope.get("path") == "/" and not self.workspace_origin):
                     message["headers"].append((b"content-security-policy", b"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"))
             await send(message)
 

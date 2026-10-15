@@ -5,9 +5,12 @@ Run backend commands from the repository's `Backend` directory. Shared caches an
 This release supports one trusted local operator, English text PDFs, and
 document questions and optional bounded conversational memory. Keep the API on
 loopback with proxy headers disabled.
-`APP_ENV=production` fails closed because user identity and per-document
-authorization are not implemented. A reverse proxy on loopback does not supply
-authorization and must not expose the service publicly.
+For hosted previews, `APP_ENV=production` enables an authenticated shared
+workspace, requiring a strong password, stable encryption key, HTTPS origin and
+built frontend. See [Render deployment](render-deployment.md). Every authenticated
+operator has administrator access to all documents; individual accounts and
+per-document authorization are not implemented. Local development retains its
+loopback boundary.
 
 ## Start and migrate
 

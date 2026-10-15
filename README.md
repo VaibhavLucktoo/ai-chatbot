@@ -76,5 +76,9 @@ See [backend setup and usage](Backend/README.md),
 [operations](docs/operations.md), and the
 [endpoint/architecture audit](docs/endpoint-architecture-audit-2026-10-12.md).
 
-The supported service is local and single-user. Serve the frontend from the
-same origin or use an appropriately configured development proxy.
+Local development uses the loopback workspace and Vite proxy. For a hosted private
+preview, the repository-root Dockerfile serves React and FastAPI together behind
+a workspace password. See [Render deployment](docs/render-deployment.md) for the
+existing-service settings, optional Blueprint, secrets and verification steps.
+All signed-in operators share administrator rights and documents; separate
+customer accounts and document authorization are not implemented.

@@ -8,6 +8,11 @@ from fastapi import HTTPException, Request
 LOCAL_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
+def is_workspace_scope(scope: dict) -> bool:
+    """Remote access is granted only by the production authentication middleware."""
+    return scope.get("state", {}).get("workspace_authenticated") is True or is_local_scope(scope)
+
+
 def is_local_scope(scope: dict) -> bool:
     headers = dict(scope.get("headers", []))
     try:
@@ -20,8 +25,8 @@ def is_local_scope(scope: dict) -> bool:
 
 async def require_admin_token(request: Request) -> None:
     import secrets
-    if not is_local_scope(request.scope):
-        raise HTTPException(403, "This admin workspace is only available on the local machine.")
+    if not is_workspace_scope(request.scope):
+        raise HTTPException(403, "An authenticated workspace session is required.")
     token = request.headers.get("X-Admin-Token", "")
     try:
         valid = secrets.compare_digest(token.encode("ascii"), request.app.state.admin_token.encode("ascii"))

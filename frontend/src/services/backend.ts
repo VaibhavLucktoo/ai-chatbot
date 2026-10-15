@@ -22,14 +22,15 @@ export async function request(path: string, options: RequestInit = {}, timeout =
   } catch (error) {
     const name = error instanceof Error ? error.name : '';
     if (name === 'AbortError' || name === 'TimeoutError') throw new ApiError('This request timed out. Your question and document selection are retained; try again shortly.');
-    throw new ApiError('Cannot connect to the backend. Check that the API is running on port 8000.');
+    throw new ApiError('Cannot connect to the backend. Check your connection and the service status.');
   }
   if (!response.ok) {
     const payload = await response.clone().json().catch(() => null);
     const raw = response.headers.get('Retry-After');
     const retry = raw ? (/^\d+$/.test(raw) ? Number(raw) : Math.max(0, Math.ceil((Date.parse(raw) - Date.now()) / 1000))) : undefined;
     const fallback: Record<number, string> = {
-      403: 'The backend rejected this request. Use the local UI on port 3000.',
+      401: 'Sign in to the workspace and reload this page.',
+      403: 'The backend rejected this request. Open the app from its configured workspace address.',
       404: 'This document or passage no longer exists.',
       413: 'The upload exceeds the 10 MiB PDF limit.',
       429: 'The backend or model provider is busy. Try again shortly.',

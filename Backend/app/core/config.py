@@ -29,6 +29,11 @@ class Settings(BaseSettings):
 
     app_name: str = Field(default="AI Chatbot", min_length=1)
     app_env: Literal["development", "test", "production"] = "development"
+    app_public_origin: str = ""
+    render_external_url: str = ""
+    workspace_username: str = "admin"
+    workspace_password: SecretStr = SecretStr("")
+    frontend_dist_dir: Path = PROJECT_ROOT / "frontend_dist"
     widget_public_enabled: bool = False
     widget_public_origin: str = "http://127.0.0.1:8000"
 
