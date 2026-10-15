@@ -84,12 +84,14 @@ class Database:
                     if check_schema:
                         # A bounded, zero-row query also verifies new schema columns.
                         from app.storage.models import (Document, DocumentChunk, ChatConversation, ChatMetric,
-                                                        ModelCallMetric, Assistant, AssistantDocument, ProviderConnection)
+                                                        ModelCallMetric, Assistant, AssistantDocument, ProviderConnection,
+                                                        DocumentMetadata)
                         from sqlalchemy import select
                         await connection.execute(select(Document.id, Document.attempt_id, Document.lease_expires_at,
                                                         Document.original_pdf, Document.processing_metadata, Document.active,
                                                         Document.ingestion_attempts).limit(0))
                         await connection.execute(select(DocumentChunk.id, DocumentChunk.embedding).limit(0))
+                        await connection.execute(select(DocumentMetadata).limit(0))
                         await connection.execute(select(ChatConversation.id, ChatConversation.owner_key_hash,
                                                         ChatConversation.history, ChatConversation.expires_at,
                                                         ChatConversation.attempt_id, ChatConversation.lease_expires_at,

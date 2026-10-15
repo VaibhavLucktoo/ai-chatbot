@@ -1,0 +1,23 @@
+{
+  "provider_credentials_checked": 1,
+  "provider_credentials_decryptable": 1,
+  "vector_reproduction": {
+    "checked": 137,
+    "max_cosine_distance": 8.881784197001252e-16,
+    "mismatches_above_0_00001": 0
+  },
+  "http_statuses": {
+    "/v1/health": 200,
+    "/v1/ready": 200,
+    "/admin": 200,
+    "/v1/admin/status": 200,
+    "/v1/admin/documents": 200,
+    "/v1/admin/metrics": 200,
+    "POST /v1/documents/search": 200
+  },
+  "search_result_count": 5,
+  "stored_content_retrieval": {
+    "results": 5,
+    "all_distances_finite": true
+  }
+}

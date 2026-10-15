@@ -30,6 +30,7 @@ from app.schemas.chat import ChatRequest, ChatResponse, ChatSource, Clarificatio
 from app.storage.models import Document
 from app.services.llm import LLMResponseError, generate_llm_response
 from app.services.retrieval import RetrievalProviderError, has_sufficient_evidence, retrieve_chunks
+from app.services.document_questions import is_document_identity_question
 from app.services.conversation_intent import (
     Turn, conversational_reply, detect_intent, resolve_follow_up,
     FOLLOW_UP_CLARIFICATION, UNSUPPORTED_ANSWER,
@@ -199,7 +200,7 @@ def validate_answer(answer: str, sources: list[ChatSource]) -> ChatResponse:
 
 def needs_document_selection(question: str) -> bool:
     """Conservative English heuristic, not general conversation understanding."""
-    return bool(re.search(
+    return is_document_identity_question(question) or bool(re.search(
         r"\b(?:this|that|the)\s+(?:document|pdf|file)\b"
         r"|\b(?:summari[sz]e|explain|describe)\s+(?:it|this|that)\b",
         question, re.IGNORECASE,
@@ -425,6 +426,10 @@ async def _generate(state: RAGState, runtime: Runtime[RAGContext]) -> dict:
             "\nYou are auditing a draft, not accepting its conclusions. Check each "
             "part of the question independently against EVERY passage. Correct "
             "omitted restrictions, approval clauses, consequences, and citations. "
+            "A conditional approval consequence does not establish an exception "
+            "to an eligibility restriction. If the passages give both without "
+            "explicit precedence, say their interaction is unclear and do not "
+            "label the approval clause as an exception or override. "
             "In particular, a claim that there is no provision must be checked "
             "against all passages. Describe relevant provisions even when they "
             "do not establish a precedence or resolve the user's situation. "

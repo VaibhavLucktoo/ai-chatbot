@@ -239,11 +239,11 @@ class RetrievalServiceTests(AsyncTestCase):
 
     @async_test
     async def test_storage_rejects_bad_vectors_without_a_connection(self):
-        for values, top_k in ((vector(), 0), (vector(), 21), (vector(), True),
+        for bad_values, top_k in ((vector(), 0), (vector(), 21), (vector(), True),
                               ([1.0] * 383, 5), ([0.0] * 384, 5),
                               ([float('nan')] * 384, 5), (['bad'] * 384, 5)):
             with self.subTest(top_k=top_k), self.assertRaises(ValueError):
-                await search_similar_chunks(object(), values, top_k)
+                await search_similar_chunks(object(), bad_values, top_k)
 
 
 class SearchApiTests(AsyncTestCase):

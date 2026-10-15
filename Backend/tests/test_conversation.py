@@ -53,7 +53,9 @@ class ConversationGraphTests(IsolatedAsyncioTestCase):
                 self.assertEqual(trace["intent"], expected)
                 self.assertFalse(trace["retrieval_performed"])
                 self.assertEqual(trace["workflow_steps"], ["route_intent"])
-                retrieve.assert_not_awaited(); generate.assert_not_awaited(); resolve.assert_not_awaited()
+                retrieve.assert_not_awaited()
+                generate.assert_not_awaited()
+                resolve.assert_not_awaited()
 
     async def test_follow_up_retrieves_fresh_evidence_and_preserves_explicit_scope(self):
         old_id, new_id = uuid4(), uuid4()
@@ -99,7 +101,8 @@ class ConversationGraphTests(IsolatedAsyncioTestCase):
                     response = await rag.answer_question(db, ChatRequest(question="Explain the second step again."), history=history)
                 self.assertEqual(response.sources, [])
                 self.assertEqual(response.answer, conversation_intent.FOLLOW_UP_CLARIFICATION)
-                resolve.assert_not_awaited(); retrieve.assert_not_awaited()
+                resolve.assert_not_awaited()
+                retrieve.assert_not_awaited()
 
     async def test_invalid_resolver_output_fails_closed_before_retrieval(self):
         for answer in ("plain prose", '{"question":"x","needs_clarification":false,"document_ids":["attacker"]}',
@@ -142,4 +145,5 @@ class ConversationServiceTests(IsolatedAsyncioTestCase):
                  patch.object(conversations, "release_conversation") as release:
                 with self.assertRaises(type(error)):
                     await conversations.answer_conversation(object(), object(), request, "a" * 64)
-                finish.assert_not_awaited(); release.assert_awaited_once()
+                finish.assert_not_awaited()
+                release.assert_awaited_once()

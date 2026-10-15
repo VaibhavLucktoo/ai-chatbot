@@ -50,7 +50,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
     async def test_success_uses_injected_session_and_serializes_sources(self):
         source = ChatSource(document_id=uuid4(), chunk_id=uuid4(), filename="report.pdf", page_number=2)
         result = ChatResponse(answer="The answer. [1]", sources=[source])
-        with patch("app.api.v1.chat.answer_question", return_value=result) as answer:
+        with patch("app.services.chat_service.answer_question", return_value=result) as answer:
             async with self.client() as client:
                 response = await client.post("/v1/chat", json={"question": "  Question  ", "top_k": 3})
         self.assertEqual(response.status_code, 200)
@@ -62,7 +62,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
                     {"question": "x" * 501}, {"question": "Q", "top_k": 0},
                     {"question": "Q", "top_k": 21}, {"question": "Q", "top_k": True},
                     {"question": "Q", "extra": "invalid"}, [])
-        with patch("app.api.v1.chat.answer_question") as answer:
+        with patch("app.services.chat_service.answer_question") as answer:
             async with self.client() as client:
                 for payload in payloads:
                     with self.subTest(payload=payload):
@@ -88,7 +88,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
         async with self.client() as client:
             for error, expected_status in cases:
                 with self.subTest(error=type(error).__name__, status=getattr(error, "status_code", None)):
-                    with patch("app.api.v1.chat.answer_question", side_effect=error):
+                    with patch("app.services.chat_service.answer_question", side_effect=error):
                         with self.assertLogs("app.api.v1.chat", level="WARNING") as logs:
                             response = await client.post("/v1/chat", json={"question": "Question"})
                     self.assertEqual(response.status_code, expected_status)
@@ -101,13 +101,13 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
             ChatResponse(answer=None, sources=[])
         except ValidationError as error:
             failure = error
-        with patch("app.api.v1.chat.answer_question", side_effect=failure):
+        with patch("app.services.chat_service.answer_question", side_effect=failure):
             async with self.client() as client:
                 response = await client.post("/v1/chat", json={"question": "Question"})
         self.assertEqual(response.status_code, 500)
 
     async def test_http_exceptions_preserve_their_status(self):
-        with patch("app.api.v1.chat.answer_question", side_effect=HTTPException(status_code=409, detail="Conflict")):
+        with patch("app.services.chat_service.answer_question", side_effect=HTTPException(status_code=409, detail="Conflict")):
             async with self.client() as client:
                 response = await client.post("/v1/chat", json={"question": "Question"})
         self.assertEqual(response.status_code, 409)
@@ -146,7 +146,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_missing_application_database_is_http_500(self):
         self.app.dependency_overrides.clear()
-        with patch("app.api.v1.chat.answer_question") as answer:
+        with patch("app.services.chat_service.answer_question") as answer:
             async with self.client() as client:
                 response = await client.post("/v1/chat", json={"question": "Question"})
         self.assertEqual(response.status_code, 500)
@@ -228,7 +228,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
                 context.__aexit__.return_value = False
                 getattr(context, stage).side_effect = SQLAlchemyError("private database credentials")
                 self.app.state.database = SimpleNamespace(session=Mock(return_value=context))
-                with patch("app.api.v1.chat.answer_question", return_value=ChatResponse(answer="Answer", sources=[])) as answer:
+                with patch("app.services.chat_service.answer_question", return_value=ChatResponse(answer="Answer", sources=[])) as answer:
                     async with self.client() as client:
                         response = await client.post("/v1/chat", json={"question": "Question"})
                 self.assertEqual(response.status_code, 500)
@@ -258,7 +258,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
 
             self.app.state.database = SimpleNamespace(session=session_context)
             with self.subTest(status=expected_status):
-                with patch("app.api.v1.chat.answer_question", side_effect=failure, return_value=ChatResponse(answer="Answer", sources=[])):
+                with patch("app.services.chat_service.answer_question", side_effect=failure, return_value=ChatResponse(answer="Answer", sources=[])):
                     async with self.client(app=observed_app) as client:
                         response = await client.post("/v1/chat", json={"question": "Question"})
                 self.assertEqual(response.status_code, expected_status)
@@ -276,7 +276,7 @@ class ChatApiTests(unittest.IsolatedAsyncioTestCase):
                 closed.append(True)
 
         self.app.state.database = SimpleNamespace(session=session_context)
-        with patch("app.api.v1.chat.answer_question", side_effect=asyncio.CancelledError):
+        with patch("app.services.chat_service.answer_question", side_effect=asyncio.CancelledError):
             async with self.client() as client:
                 with self.assertRaises(asyncio.CancelledError):
                     await client.post("/v1/chat", json={"question": "Question"})

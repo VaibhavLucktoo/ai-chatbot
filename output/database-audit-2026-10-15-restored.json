@@ -1,0 +1,1206 @@
+{
+  "checked_at_utc": "2026-10-15T05:48:46.548600+00:00",
+  "read_only": true,
+  "server": [
+    {
+      "postgres_version": "16.15 (Debian 16.15-1.pgdg13+2)",
+      "pgvector_version": "0.8.6"
+    }
+  ],
+  "migration": [
+    {
+      "version_num": "b07e75bee9d1"
+    }
+  ],
+  "table_counts": {
+    "assistant_documents": 1,
+    "assistants": 1,
+    "chat_conversations": 5,
+    "chat_metrics": 44,
+    "document_chunks": 137,
+    "documents": 3,
+    "model_call_metrics": 39,
+    "provider_connections": 1,
+    "website_widgets": 1,
+    "widget_sessions": 0
+  },
+  "table_fingerprints": {
+    "assistant_documents": "f3c5453fdfaefd84a785d2546d0a6468e0dfd7f529689bcb73c2338ee95b892c",
+    "assistants": "acc78a9edc01284de3e8a19acc1a2a9b5716f0b09226447322283ce597909bb6",
+    "chat_conversations": "1175878c070a29345b4e4f55c2d4fcd3f387651ad625f9ef020880fabb67f733",
+    "chat_metrics": "a30be4da75c96cbb0798e34e749ae6bf61e71bdc2e8cb85f46eb478dcb574700",
+    "document_chunks": "40dcdfaef06e1e1f2d8eef31a586f58c518ecbe7f0834bc0882cb2638eb47035",
+    "documents": "f8e6988b204af6ab1c949fb9e7174d43953fe8a60cbfd5932f90a2bdec940cc2",
+    "model_call_metrics": "f473169cd38fc02ae8b6b80f790bfc2ee26e53c9a7095a10489275c4a0b92746",
+    "provider_connections": "dba39231510528e164c1584c0e22336201552e55e349b19e91aa8ccfd620be56",
+    "website_widgets": "aea6c4db2be864e931aad787f6696a29fe9cdd5e10d37d2d738a6db756ff26c2",
+    "widget_sessions": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "document_states": [
+    {
+      "status": "ready",
+      "active": true,
+      "documents": 3,
+      "retained_pdfs": 1,
+      "processing_metadata_rows": 1,
+      "pdf_bytes": 224968
+    }
+  ],
+  "embeddings": [
+    {
+      "embedding_space": "fastembed:bge-small-en-v1.5:384:l2:v1",
+      "chunks": 137,
+      "min_dimensions": 384,
+      "max_dimensions": 384,
+      "min_norm": 0.9999999702307723,
+      "max_norm": 1.0000000299410114,
+      "non_normalized": 0,
+      "average_stored_vector_bytes": "1540.5839416058394161",
+      "text_bytes": 135077
+    }
+  ],
+  "indexes": [
+    {
+      "tablename": "alembic_version",
+      "indexname": "alembic_version_pkc",
+      "indexdef": "CREATE UNIQUE INDEX alembic_version_pkc ON public.alembic_version USING btree (version_num)"
+    },
+    {
+      "tablename": "assistant_documents",
+      "indexname": "ix_assistant_documents_document_id",
+      "indexdef": "CREATE INDEX ix_assistant_documents_document_id ON public.assistant_documents USING btree (document_id)"
+    },
+    {
+      "tablename": "assistant_documents",
+      "indexname": "pk_assistant_documents",
+      "indexdef": "CREATE UNIQUE INDEX pk_assistant_documents ON public.assistant_documents USING btree (assistant_id, document_id)"
+    },
+    {
+      "tablename": "assistants",
+      "indexname": "ix_assistants_connection_id",
+      "indexdef": "CREATE INDEX ix_assistants_connection_id ON public.assistants USING btree (connection_id)"
+    },
+    {
+      "tablename": "assistants",
+      "indexname": "pk_assistants",
+      "indexdef": "CREATE UNIQUE INDEX pk_assistants ON public.assistants USING btree (id)"
+    },
+    {
+      "tablename": "chat_conversations",
+      "indexname": "ix_chat_conversations_expires_at",
+      "indexdef": "CREATE INDEX ix_chat_conversations_expires_at ON public.chat_conversations USING btree (expires_at)"
+    },
+    {
+      "tablename": "chat_conversations",
+      "indexname": "pk_chat_conversations",
+      "indexdef": "CREATE UNIQUE INDEX pk_chat_conversations ON public.chat_conversations USING btree (id)"
+    },
+    {
+      "tablename": "chat_metrics",
+      "indexname": "ix_chat_metrics_assistant_started_at",
+      "indexdef": "CREATE INDEX ix_chat_metrics_assistant_started_at ON public.chat_metrics USING btree (assistant_id, started_at)"
+    },
+    {
+      "tablename": "chat_metrics",
+      "indexname": "ix_chat_metrics_started_at",
+      "indexdef": "CREATE INDEX ix_chat_metrics_started_at ON public.chat_metrics USING btree (started_at)"
+    },
+    {
+      "tablename": "chat_metrics",
+      "indexname": "pk_chat_metrics",
+      "indexdef": "CREATE UNIQUE INDEX pk_chat_metrics ON public.chat_metrics USING btree (id)"
+    },
+    {
+      "tablename": "document_chunks",
+      "indexname": "ix_document_chunks_content_english",
+      "indexdef": "CREATE INDEX ix_document_chunks_content_english ON public.document_chunks USING gin (to_tsvector('english'::regconfig, content))"
+    },
+    {
+      "tablename": "document_chunks",
+      "indexname": "pk_document_chunks",
+      "indexdef": "CREATE UNIQUE INDEX pk_document_chunks ON public.document_chunks USING btree (id)"
+    },
+    {
+      "tablename": "document_chunks",
+      "indexname": "uq_document_chunks_document_position",
+      "indexdef": "CREATE UNIQUE INDEX uq_document_chunks_document_position ON public.document_chunks USING btree (document_id, chunk_index)"
+    },
+    {
+      "tablename": "documents",
+      "indexname": "pk_documents",
+      "indexdef": "CREATE UNIQUE INDEX pk_documents ON public.documents USING btree (id)"
+    },
+    {
+      "tablename": "documents",
+      "indexname": "uq_documents_content_sha256",
+      "indexdef": "CREATE UNIQUE INDEX uq_documents_content_sha256 ON public.documents USING btree (content_sha256)"
+    },
+    {
+      "tablename": "model_call_metrics",
+      "indexname": "ix_model_call_metrics_request_id",
+      "indexdef": "CREATE INDEX ix_model_call_metrics_request_id ON public.model_call_metrics USING btree (request_id)"
+    },
+    {
+      "tablename": "model_call_metrics",
+      "indexname": "pk_model_call_metrics",
+      "indexdef": "CREATE UNIQUE INDEX pk_model_call_metrics ON public.model_call_metrics USING btree (id)"
+    },
+    {
+      "tablename": "provider_connections",
+      "indexname": "pk_provider_connections",
+      "indexdef": "CREATE UNIQUE INDEX pk_provider_connections ON public.provider_connections USING btree (id)"
+    },
+    {
+      "tablename": "website_widgets",
+      "indexname": "pk_website_widgets",
+      "indexdef": "CREATE UNIQUE INDEX pk_website_widgets ON public.website_widgets USING btree (id)"
+    },
+    {
+      "tablename": "website_widgets",
+      "indexname": "uq_website_widgets_assistant_id",
+      "indexdef": "CREATE UNIQUE INDEX uq_website_widgets_assistant_id ON public.website_widgets USING btree (assistant_id)"
+    },
+    {
+      "tablename": "widget_sessions",
+      "indexname": "ix_widget_sessions_expires_at",
+      "indexdef": "CREATE INDEX ix_widget_sessions_expires_at ON public.widget_sessions USING btree (expires_at)"
+    },
+    {
+      "tablename": "widget_sessions",
+      "indexname": "ix_widget_sessions_widget_id",
+      "indexdef": "CREATE INDEX ix_widget_sessions_widget_id ON public.widget_sessions USING btree (widget_id)"
+    },
+    {
+      "tablename": "widget_sessions",
+      "indexname": "pk_widget_sessions",
+      "indexdef": "CREATE UNIQUE INDEX pk_widget_sessions ON public.widget_sessions USING btree (id)"
+    }
+  ],
+  "constraints": [
+    {
+      "table_name": "alembic_version",
+      "name": "alembic_version_pkc",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (version_num)"
+    },
+    {
+      "table_name": "assistant_documents",
+      "name": "fk_assistant_documents_assistant_id_assistants",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "assistant_documents",
+      "name": "fk_assistant_documents_document_id_documents",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "assistant_documents",
+      "name": "pk_assistant_documents",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (assistant_id, document_id)"
+    },
+    {
+      "table_name": "assistants",
+      "name": "ck_assistants_context_limit",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((context_window_tokens >= 4096) AND (context_window_tokens <= 1048576)))"
+    },
+    {
+      "table_name": "assistants",
+      "name": "ck_assistants_output_limit",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((max_output_tokens >= 64) AND (max_output_tokens <= 8192)))"
+    },
+    {
+      "table_name": "assistants",
+      "name": "ck_assistants_positive_revision",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((revision > 0))"
+    },
+    {
+      "table_name": "assistants",
+      "name": "ck_assistants_temperature_limit",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((temperature >= (0)::double precision) AND (temperature <= (2)::double precision)))"
+    },
+    {
+      "table_name": "assistants",
+      "name": "ck_assistants_timeout_limit",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((timeout_seconds > (0)::double precision) AND (timeout_seconds <= (600)::double precision)))"
+    },
+    {
+      "table_name": "assistants",
+      "name": "ck_assistants_usable_context",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((context_window_tokens > ((max_output_tokens * 5) + 4560)))"
+    },
+    {
+      "table_name": "assistants",
+      "name": "fk_assistants_connection_id_provider_connections",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (connection_id) REFERENCES provider_connections(id) ON DELETE RESTRICT"
+    },
+    {
+      "table_name": "assistants",
+      "name": "pk_assistants",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "chat_conversations",
+      "name": "pk_chat_conversations",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "chat_metrics",
+      "name": "pk_chat_metrics",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "document_chunks",
+      "name": "ck_document_chunks_nonempty_content",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((length(btrim(content)) > 0))"
+    },
+    {
+      "table_name": "document_chunks",
+      "name": "ck_document_chunks_nonnegative_index",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((chunk_index >= 0))"
+    },
+    {
+      "table_name": "document_chunks",
+      "name": "ck_document_chunks_positive_page",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((page_number >= 1))"
+    },
+    {
+      "table_name": "document_chunks",
+      "name": "ck_document_chunks_supported_embedding_space",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((embedding_space)::text = 'fastembed:bge-small-en-v1.5:384:l2:v1'::text))"
+    },
+    {
+      "table_name": "document_chunks",
+      "name": "fk_document_chunks_document_id_documents",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (document_id) REFERENCES documents(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "document_chunks",
+      "name": "pk_document_chunks",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "document_chunks",
+      "name": "uq_document_chunks_document_position",
+      "type": "u",
+      "validated": true,
+      "definition": "UNIQUE (document_id, chunk_index)"
+    },
+    {
+      "table_name": "documents",
+      "name": "ck_documents_positive_page_count",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((page_count > 0))"
+    },
+    {
+      "table_name": "documents",
+      "name": "ck_documents_valid_status",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((status)::text = ANY (ARRAY[('pending'::character varying)::text, ('ready'::character varying)::text, ('failed'::character varying)::text])))"
+    },
+    {
+      "table_name": "documents",
+      "name": "pk_documents",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "documents",
+      "name": "uq_documents_content_sha256",
+      "type": "u",
+      "validated": true,
+      "definition": "UNIQUE (content_sha256)"
+    },
+    {
+      "table_name": "model_call_metrics",
+      "name": "fk_model_call_metrics_request_id_chat_metrics",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (request_id) REFERENCES chat_metrics(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "model_call_metrics",
+      "name": "pk_model_call_metrics",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "provider_connections",
+      "name": "ck_provider_connections_positive_revision",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((revision > 0))"
+    },
+    {
+      "table_name": "provider_connections",
+      "name": "ck_provider_connections_supported_provider",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((provider)::text = ANY (ARRAY[('groq'::character varying)::text, ('gemini'::character varying)::text])))"
+    },
+    {
+      "table_name": "provider_connections",
+      "name": "pk_provider_connections",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "website_widgets",
+      "name": "ck_website_widgets_day_limit",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((requests_per_day >= 1) AND (requests_per_day <= 10000)))"
+    },
+    {
+      "table_name": "website_widgets",
+      "name": "ck_website_widgets_minute_limit",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK (((requests_per_minute >= 1) AND (requests_per_minute <= 120)))"
+    },
+    {
+      "table_name": "website_widgets",
+      "name": "ck_website_widgets_positive_revision",
+      "type": "c",
+      "validated": true,
+      "definition": "CHECK ((revision > 0))"
+    },
+    {
+      "table_name": "website_widgets",
+      "name": "fk_website_widgets_assistant_id_assistants",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (assistant_id) REFERENCES assistants(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "website_widgets",
+      "name": "pk_website_widgets",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    },
+    {
+      "table_name": "website_widgets",
+      "name": "uq_website_widgets_assistant_id",
+      "type": "u",
+      "validated": true,
+      "definition": "UNIQUE (assistant_id)"
+    },
+    {
+      "table_name": "widget_sessions",
+      "name": "fk_widget_sessions_widget_id_website_widgets",
+      "type": "f",
+      "validated": true,
+      "definition": "FOREIGN KEY (widget_id) REFERENCES website_widgets(id) ON DELETE CASCADE"
+    },
+    {
+      "table_name": "widget_sessions",
+      "name": "pk_widget_sessions",
+      "type": "p",
+      "validated": true,
+      "definition": "PRIMARY KEY (id)"
+    }
+  ],
+  "column_types": [
+    {
+      "table_name": "alembic_version",
+      "column_name": "version_num",
+      "data_type": "character varying(32)",
+      "not_null": true
+    },
+    {
+      "table_name": "assistant_documents",
+      "column_name": "assistant_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "assistant_documents",
+      "column_name": "document_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "name",
+      "data_type": "character varying(100)",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "description",
+      "data_type": "character varying(500)",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "connection_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "model",
+      "data_type": "character varying(200)",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "active",
+      "data_type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "revision",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "max_output_tokens",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "context_window_tokens",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "temperature",
+      "data_type": "double precision",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "timeout_seconds",
+      "data_type": "double precision",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "assistants",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_conversations",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_conversations",
+      "column_name": "owner_key_hash",
+      "data_type": "character varying(64)",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_conversations",
+      "column_name": "history",
+      "data_type": "json",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_conversations",
+      "column_name": "expires_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_conversations",
+      "column_name": "attempt_id",
+      "data_type": "uuid",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_conversations",
+      "column_name": "lease_expires_at",
+      "data_type": "timestamp with time zone",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_conversations",
+      "column_name": "assistant_id",
+      "data_type": "uuid",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "instance_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "started_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "endpoint",
+      "data_type": "character varying(32)",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "workflow_version",
+      "data_type": "character varying(64)",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "prompt_version",
+      "data_type": "character varying(16)",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "http_status",
+      "data_type": "integer",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "outcome",
+      "data_type": "character varying(40)",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "intent",
+      "data_type": "character varying(24)",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "error_type",
+      "data_type": "character varying(64)",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "duration_ms",
+      "data_type": "double precision",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "graph_ms",
+      "data_type": "double precision",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "retrieval_performed",
+      "data_type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "result_count",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "source_count",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "stage_timings_ms",
+      "data_type": "json",
+      "not_null": true
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "assistant_id",
+      "data_type": "uuid",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "assistant_name",
+      "data_type": "character varying(100)",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "assistant_revision",
+      "data_type": "integer",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "connection_id",
+      "data_type": "uuid",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "connection_revision",
+      "data_type": "integer",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "configured_provider",
+      "data_type": "character varying(16)",
+      "not_null": false
+    },
+    {
+      "table_name": "chat_metrics",
+      "column_name": "configured_model",
+      "data_type": "character varying(200)",
+      "not_null": false
+    },
+    {
+      "table_name": "document_chunks",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "document_chunks",
+      "column_name": "document_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "document_chunks",
+      "column_name": "chunk_index",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "document_chunks",
+      "column_name": "page_number",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "document_chunks",
+      "column_name": "content",
+      "data_type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "document_chunks",
+      "column_name": "embedding_space",
+      "data_type": "character varying(128)",
+      "not_null": true
+    },
+    {
+      "table_name": "document_chunks",
+      "column_name": "embedding",
+      "data_type": "vector(384)",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "filename",
+      "data_type": "character varying(255)",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "content_sha256",
+      "data_type": "character varying(64)",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "page_count",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "status",
+      "data_type": "character varying(16)",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "attempt_id",
+      "data_type": "uuid",
+      "not_null": false
+    },
+    {
+      "table_name": "documents",
+      "column_name": "lease_expires_at",
+      "data_type": "timestamp with time zone",
+      "not_null": false
+    },
+    {
+      "table_name": "documents",
+      "column_name": "original_pdf",
+      "data_type": "bytea",
+      "not_null": false
+    },
+    {
+      "table_name": "documents",
+      "column_name": "processing_metadata",
+      "data_type": "json",
+      "not_null": false
+    },
+    {
+      "table_name": "documents",
+      "column_name": "active",
+      "data_type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "documents",
+      "column_name": "ingestion_attempts",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "request_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "stage",
+      "data_type": "character varying(16)",
+      "not_null": true
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "model",
+      "data_type": "character varying(200)",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "provider",
+      "data_type": "character varying(255)",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "status",
+      "data_type": "character varying(16)",
+      "not_null": true
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "error_type",
+      "data_type": "character varying(64)",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "provider_requested",
+      "data_type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "http_status",
+      "data_type": "integer",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "duration_ms",
+      "data_type": "double precision",
+      "not_null": true
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "queue_ms",
+      "data_type": "double precision",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "provider_ms",
+      "data_type": "double precision",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "input_tokens",
+      "data_type": "integer",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "output_tokens",
+      "data_type": "integer",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "total_tokens",
+      "data_type": "integer",
+      "not_null": false
+    },
+    {
+      "table_name": "model_call_metrics",
+      "column_name": "estimated_cost_usd",
+      "data_type": "numeric(18,10)",
+      "not_null": false
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "name",
+      "data_type": "character varying(100)",
+      "not_null": true
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "provider",
+      "data_type": "character varying(16)",
+      "not_null": true
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "encrypted_api_key",
+      "data_type": "text",
+      "not_null": true
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "active",
+      "data_type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "revision",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "created_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "provider_connections",
+      "column_name": "updated_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "assistant_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "enabled",
+      "data_type": "boolean",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "title",
+      "data_type": "character varying(100)",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "greeting",
+      "data_type": "character varying(500)",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "color",
+      "data_type": "character varying(7)",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "position",
+      "data_type": "character varying(5)",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "allowed_origins",
+      "data_type": "json",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "revision",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "requests_per_minute",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "requests_per_day",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "website_widgets",
+      "column_name": "usage",
+      "data_type": "json",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "widget_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "token_hash",
+      "data_type": "character varying(64)",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "conversation_id",
+      "data_type": "uuid",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "widget_revision",
+      "data_type": "integer",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "parent_origin",
+      "data_type": "character varying(300)",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "expires_at",
+      "data_type": "timestamp with time zone",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "usage",
+      "data_type": "json",
+      "not_null": true
+    },
+    {
+      "table_name": "widget_sessions",
+      "column_name": "allowed_chunks",
+      "data_type": "json",
+      "not_null": true
+    }
+  ],
+  "storage": [
+    {
+      "table_name": "alembic_version",
+      "table_bytes": 8192,
+      "index_bytes": 16384,
+      "total_bytes": 24576
+    },
+    {
+      "table_name": "assistant_documents",
+      "table_bytes": 8192,
+      "index_bytes": 32768,
+      "total_bytes": 40960
+    },
+    {
+      "table_name": "assistants",
+      "table_bytes": 16384,
+      "index_bytes": 32768,
+      "total_bytes": 49152
+    },
+    {
+      "table_name": "chat_conversations",
+      "table_bytes": 32768,
+      "index_bytes": 32768,
+      "total_bytes": 65536
+    },
+    {
+      "table_name": "chat_metrics",
+      "table_bytes": 24576,
+      "index_bytes": 49152,
+      "total_bytes": 73728
+    },
+    {
+      "table_name": "document_chunks",
+      "table_bytes": 475136,
+      "index_bytes": 196608,
+      "total_bytes": 671744
+    },
+    {
+      "table_name": "documents",
+      "table_bytes": 262144,
+      "index_bytes": 32768,
+      "total_bytes": 294912
+    },
+    {
+      "table_name": "model_call_metrics",
+      "table_bytes": 16384,
+      "index_bytes": 32768,
+      "total_bytes": 49152
+    },
+    {
+      "table_name": "provider_connections",
+      "table_bytes": 16384,
+      "index_bytes": 16384,
+      "total_bytes": 32768
+    },
+    {
+      "table_name": "website_widgets",
+      "table_bytes": 16384,
+      "index_bytes": 32768,
+      "total_bytes": 49152
+    },
+    {
+      "table_name": "widget_sessions",
+      "table_bytes": 8192,
+      "index_bytes": 24576,
+      "total_bytes": 32768
+    }
+  ],
+  "integrity": {
+    "orphan_chunks": 0,
+    "ready_documents_without_chunks": 0,
+    "chunks_on_unfinished_documents": 0,
+    "chunks_beyond_page_count": 0,
+    "non_contiguous_chunk_positions": 0,
+    "duplicate_document_hashes": 0,
+    "expired_conversations_still_stored": 0,
+    "expired_widget_sessions_still_stored": 0,
+    "invalid_conversation_key_hashes": 0,
+    "invalid_widget_token_hashes": 0,
+    "dangling_assistant_conversations": 0,
+    "widget_sessions_without_conversations": 0
+  },
+  "source_hashes": {
+    "retained_pdfs_checked": 1,
+    "mismatches": 0
+  },
+  "conversation_bounds": [
+    {
+      "max_turns": 6,
+      "max_json_bytes": 4275
+    }
+  ],
+  "other_schemas": [
+    {
+      "schema_name": "ingestion_test_dd0b98d53a234efba68363046c77a7ce"
+    }
+  ]
+}

@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.providers.base import BaseEmbeddingProvider
 from app.core.config import get_settings
+from app.services.document_questions import is_document_identity_question, metadata_fields_for_question
+from app.schemas.document_metadata import verified_chunk_facts
 from app.storage.db import Database
 from app.storage.documents import (
     StoredChunkResult,
@@ -46,6 +48,8 @@ def has_sufficient_evidence(
     query_terms: set[str] = set()
     matched_terms: set[str] = set()
     for chunk in chunks:
+        if verified_chunk_facts(chunk):
+            return True
         distance = chunk.get("cosine_distance")
         if (
             isinstance(distance, (int, float))
@@ -121,6 +125,15 @@ async def retrieve_chunks(
         )
 
     scope = {"allowed_document_ids": allowed_document_ids} if allowed_document_ids is not None else {}
+    identity_scope = selected_documents if selected_documents is not None else allowed_document_ids
+    if (identity_scope is not None and len(set(identity_scope)) == 1
+            and is_document_identity_question(normalized_query)):
+        # Only one explicitly selected/authorized document: bring its opening
+        # passage into the existing top-k budget. Never broaden authorization.
+        scope["include_document_identity"] = True
+    metadata_fields = metadata_fields_for_question(normalized_query)
+    if metadata_fields:
+        scope["metadata_fields"] = metadata_fields
     chunks = await search_similar_chunks(
         database=database,
         query_vector=vector,

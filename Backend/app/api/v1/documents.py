@@ -15,11 +15,15 @@ from fastapi import (
 from pydantic import ValidationError
 from sqlalchemy.exc import SQLAlchemyError
 
+# Deprecated helper locations; preserve the original callable identities.
+from app.api.common.uploads import (
+    READ_SIZE as READ_SIZE,
+    read_limited_pdf as read_limited_pdf,
+    validate_pdf_envelope as validate_pdf_envelope,
+)
 from app.providers.documents import (
-    MAX_PDF_BYTES,
     PDFExtractionError,
     PDFTooLargeError,
-    validate_pdf_bytes,
 )
 from app.providers.embeddings import get_embedding_provider
 from app.schemas.documents import (
@@ -37,53 +41,6 @@ from app.storage.db import Database
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/documents", tags=["documents"])
-
-READ_SIZE = 64 * 1024
-
-
-async def read_limited_pdf(file: UploadFile) -> bytes:
-    """Read in bounded blocks and reject files above MAX_PDF_BYTES."""
-
-    if file.size is not None and file.size > MAX_PDF_BYTES:
-        raise HTTPException(
-            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-            detail="PDF exceeds the 10 MB limit.",
-        )
-
-    data = bytearray()
-
-    while True:
-        remaining = MAX_PDF_BYTES + 1 - len(data)
-        part = await file.read(min(READ_SIZE, remaining))
-
-        if not part:
-            break
-
-        data.extend(part)
-
-        if len(data) > MAX_PDF_BYTES:
-            raise HTTPException(
-                status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-                detail="PDF exceeds the 10 MB limit.",
-            )
-
-    return bytes(data)
-
-
-def validate_pdf_envelope(data: bytes) -> None:
-    """Translate shared PDF byte checks into HTTP errors."""
-    try:
-        validate_pdf_bytes(data)
-    except PDFTooLargeError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_413_CONTENT_TOO_LARGE,
-            detail=str(exc),
-        ) from exc
-    except PDFExtractionError as exc:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=str(exc),
-        ) from exc
 
 
 @router.post(
@@ -122,10 +79,7 @@ async def upload_document(
         except ValidationError as exc:
             raise HTTPException(
                 status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-                detail=(
-                    "Provide a path-safe .pdf filename "
-                    "of at most 255 characters."
-                ),
+                detail=("Provide a path-safe .pdf filename of at most 255 characters."),
             ) from exc
 
         data = await read_limited_pdf(file)
@@ -249,7 +203,9 @@ async def search_documents(
             detail="Document search returned an invalid result.",
         ) from exc
     except RetrievalProviderError as exc:
-        logger.error("Embedding failure during document search (%s)", type(exc).__name__)
+        logger.error(
+            "Embedding failure during document search (%s)", type(exc).__name__
+        )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="The query embedding could not be generated.",
@@ -261,7 +217,9 @@ async def search_documents(
             detail="Invalid search parameters.",
         ) from exc
     except (SQLAlchemyError, TimeoutError) as exc:
-        logger.warning("Database failure during document search (%s)", type(exc).__name__)
+        logger.warning(
+            "Database failure during document search (%s)", type(exc).__name__
+        )
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Document storage is temporarily unavailable.",

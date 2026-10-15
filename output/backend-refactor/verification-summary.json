@@ -1,0 +1,14 @@
+{
+  "phases": {
+    "1": "248 passed, 1 skipped, 375 subtests passed in 125.33s (0:02:05)",
+    "2": "248 passed, 1 skipped, 375 subtests passed in 196.83s (0:03:16)",
+    "3": "248 passed, 1 skipped, 375 subtests passed in 124.42s (0:02:04)",
+    "4": "255 passed, 1 skipped, 375 subtests passed in 111.55s (0:01:51)"
+  },
+  "focused_tests": "16 passed, 22 subtests passed in 6.21s",
+  "openapi": "OpenAPI operations: 39\r\nUnique operation IDs: 39\r\nDuplicate operation IDs: 0\r\nPaths, methods, parameters, request schemas, status codes and existing response schemas: unchanged\r\nTags: consistent\r\nApplication modules imported successfully: 80",
+  "ruff": "All checks passed!",
+  "runtime": "Startup, embedding warmup, health, readiness, and admin checks passed.",
+  "schema_drift": false,
+  "data_preservation": "Application table counts and content fingerprints: unchanged (10/10 tables)\r\nTemporary test schemas remaining: 0\r\nMigration revision: b07e75bee9d1"
+}

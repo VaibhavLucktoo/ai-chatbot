@@ -25,6 +25,7 @@ class PolicyLiveTests(AsyncTestCase):
     @async_test
     async def test_policy_questions(self):
         document_id = UUID(os.environ["POLICY_DOCUMENT_ID"])
+        assistant_id = UUID(os.environ["POLICY_ASSISTANT_ID"]) if os.environ.get("POLICY_ASSISTANT_ID") else None
         cases = json.loads((PROJECT_ROOT / "evaluation/questions.json").read_text(encoding="utf-8"))
         directory = CACHE_ROOT / "policy-evaluation"
         directory.mkdir(parents=True, exist_ok=True)
@@ -37,6 +38,7 @@ class PolicyLiveTests(AsyncTestCase):
             with self.subTest(case=case["id"]):
                 trace = await trace_question(ChatRequest(
                     question=case["question"], top_k=case["top_k"], document_ids=[document_id],
+                    assistant_id=assistant_id,
                 ))
                 path = directory / f"{case['id']}.json"
                 path.write_text(json.dumps(trace, indent=2, ensure_ascii=False, default=str), encoding="utf-8")

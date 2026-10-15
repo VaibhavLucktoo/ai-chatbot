@@ -175,7 +175,7 @@ class UploadApiTests(AsyncTestCase):
                 with self.subTest(filename=filename):
                     response = await client.post('/v1/documents/upload', files={'file': (filename, data, mime)})
                     self.assertEqual(response.status_code, expected, response.text)
-            with patch('app.api.v1.documents.MAX_PDF_BYTES', 10):
+            with patch('app.api.common.uploads.MAX_PDF_BYTES', 10):
                 response = await client.post('/v1/documents/upload', files={'file': ('big.pdf', b'x' * 11, 'application/pdf')})
                 self.assertEqual(response.status_code, 413)
             self.assertEqual((await client.post('/v1/documents/upload')).status_code, 422)
@@ -183,7 +183,7 @@ class UploadApiTests(AsyncTestCase):
     @async_test
     async def test_unknown_file_size_is_still_bounded(self):
         upload = UploadFile(BytesIO(b'x' * 11), filename='big.pdf')
-        with patch('app.api.v1.documents.MAX_PDF_BYTES', 10):
+        with patch('app.api.common.uploads.MAX_PDF_BYTES', 10):
             with self.assertRaises(HTTPException) as caught:
                 await read_limited_pdf(upload)
         self.assertEqual(caught.exception.status_code, 413)

@@ -101,6 +101,23 @@ class DocumentChunk(Base):
     )
 
 
+class DocumentMetadata(Base):
+    """Versioned document facts and their searchable summary, separate from chunks."""
+    __tablename__ = "document_metadata"
+    __table_args__ = (
+        CheckConstraint("version > 0", name="positive_version"),
+        CheckConstraint(f"embedding_space = '{EMBEDDING_SPACE}'", name="supported_embedding_space"),
+    )
+
+    document_id: Mapped[UUID] = mapped_column(ForeignKey("documents.id", ondelete="CASCADE"), primary_key=True)
+    version: Mapped[int] = mapped_column(Integer)
+    facts: Mapped[list] = mapped_column(JSON)
+    summary: Mapped[str] = mapped_column(Text)
+    embedding: Mapped[list[float]] = mapped_column(VECTOR(EMBEDDING_DIMENSIONS))
+    embedding_space: Mapped[str] = mapped_column(String(128))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class ChatConversation(Base):
     """Private bounded turn memory, not persisted graph/source-passage state."""
 

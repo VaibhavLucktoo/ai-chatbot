@@ -17,6 +17,8 @@ from pydantic import ValidationError
 from app.core.config import CACHE_ROOT, get_settings
 from app.schemas.chat import ChatRequest
 from app.services.rag import answer_question
+from app.services.assistants import load_assistant_runtime, stateless_assistant_turn
+from app.services.llm import assistant_model_resources
 from app.storage.db import Database
 from run import create_event_loop
 
@@ -32,8 +34,18 @@ async def trace_question(request: ChatRequest) -> dict:
             embedding_model=settings.embedding_model,
         )
         database = Database(settings)
+        assistant = None
+        if request.assistant_id is not None:
+            assistant = await load_assistant_runtime(database, request.assistant_id, request.document_ids)
+            trace["assistant_id"] = str(assistant.id)
+            trace["assistant_revision"] = assistant.revision
         async with database.session() as session:
-            await answer_question(session, request, trace=trace)
+            if assistant is None:
+                await answer_question(session, request, trace=trace)
+            else:
+                with assistant_model_resources(assistant.model_settings):
+                    async with stateless_assistant_turn(database, assistant.id):
+                        await answer_question(session, request, trace=trace, assistant=assistant)
     except Exception as exc:
         # Exception messages can contain credentials or provider response data.
         trace["error_type"] = type(exc).__name__
@@ -55,11 +67,13 @@ def main() -> None:
     parser.add_argument("question")
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--document-id", type=UUID, action="append", dest="document_ids")
+    parser.add_argument("--assistant-id", type=UUID)
     parser.add_argument("--output", type=Path)
     args = parser.parse_args()
     try:
         request = ChatRequest(
             question=args.question, top_k=args.top_k, document_ids=args.document_ids,
+            assistant_id=args.assistant_id,
         )
     except ValidationError:
         parser.error("Use a nonblank question of at most 500 characters, top-k 1–20, "

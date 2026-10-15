@@ -9,7 +9,7 @@ from app.api.v1.router import api_router
 from app.core.config import get_settings
 from app.core.middleware import LocalWorkspaceMiddleware
 from app.core.lifespan import lifespan
-from app.api.v1.widgets import page_router as widget_page_router
+from app.api.v1.widget_assets import page_router as widget_page_router
 
 ADMIN_DIRECTORY = Path(__file__).parent / "admin"
 

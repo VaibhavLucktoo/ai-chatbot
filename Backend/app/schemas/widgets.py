@@ -74,3 +74,13 @@ class VisitorSession(WidgetSchema):
     session_id: UUID
     token: str
     expires_at: str
+
+
+class WidgetPassageResponse(WidgetSchema):
+    id: UUID
+    document_id: UUID
+    filename: str
+    page_number: int
+    chunk_index: int
+    # Return exactly the stored text; do not strip whitespace during serialization.
+    content: str

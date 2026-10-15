@@ -1,0 +1,6 @@
+OpenAPI operations: 39
+Unique operation IDs: 39
+Duplicate operation IDs: 0
+Paths, methods, parameters, request schemas, status codes and existing response schemas: unchanged
+Tags: consistent
+Application modules imported successfully: 80

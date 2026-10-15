@@ -1,7 +1,8 @@
 """Public deployment entry point: widget chat/assets only, no admin or document APIs."""
 from fastapi import FastAPI
 
-from app.api.v1.widgets import page_router, router
+from app.api.v1.widget_assets import page_router
+from app.api.v1.widget_visitor import router
 from app.core.config import get_settings
 from app.core.lifespan import lifespan
 from app.core.middleware import LocalWorkspaceMiddleware

@@ -75,7 +75,7 @@ class DocumentClarificationTests(IsolatedAsyncioTestCase):
             question="Which document?", original_question="Summarize it",
             top_k=5, documents=[],
         )
-        with patch("app.api.v1.chat.answer_question", new_callable=AsyncMock, return_value=response):
+        with patch("app.services.chat_service.answer_question", new_callable=AsyncMock, return_value=response):
             async with httpx.AsyncClient(
                 transport=httpx.ASGITransport(app=app), base_url="http://test",
             ) as client:

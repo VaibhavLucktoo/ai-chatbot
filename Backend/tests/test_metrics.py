@@ -7,7 +7,6 @@ from decimal import Decimal
 from types import SimpleNamespace
 from unittest import IsolatedAsyncioTestCase
 from unittest.mock import patch
-from uuid import uuid4
 import httpx
 from fastapi import FastAPI
 from sqlalchemy.ext.asyncio import AsyncSession

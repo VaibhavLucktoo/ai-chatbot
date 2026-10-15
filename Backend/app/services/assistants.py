@@ -7,49 +7,32 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 from uuid import UUID, uuid4
 
-from pydantic import SecretStr
 from sqlalchemy import delete, func, insert, select, update
-from sqlalchemy.exc import IntegrityError
 
 from app.providers.registry import ProviderModelSettings, provider_settings
-from app.schemas.assistants import AssistantResponse, AssistantWrite, ConnectionCreate, ConnectionResponse, ConnectionUpdate
+from app.schemas.assistants import AssistantResponse, AssistantWrite
 from app.services.credential_vault import CredentialVault
 from app.storage.db import Database
 from app.storage.models import Assistant, AssistantDocument, ProviderConnection, Document, ChatConversation
 
+# Deprecated import locations; preserve the original callable identities.
+from app.services.provider_service import (
+    delete_connection as delete_connection,
+    _connection_columns as _connection_columns,
+    list_connections as list_connections,
+    save_connection as save_connection,
+    connection_credentials as connection_credentials,
+)
+
+# Deprecated import locations; retain exception identity for existing callers.
+from app.services.configuration_errors import (
+    AssistantNotFound as AssistantNotFound,
+    AssistantAccessError as AssistantAccessError,
+    AssistantConfigurationError as AssistantConfigurationError,
+    AssistantConflict as AssistantConflict,
+)
+
 logger = logging.getLogger(__name__)
-
-
-class AssistantNotFound(RuntimeError):
-    pass
-
-
-class AssistantAccessError(RuntimeError):
-    pass
-
-
-class AssistantConfigurationError(RuntimeError):
-    pass
-
-
-class AssistantConflict(RuntimeError):
-    pass
-
-
-async def delete_connection(database: Database, identifier: UUID) -> None:
-    try:
-        async with database.transaction() as connection:
-            found = await connection.scalar(select(ProviderConnection.id).where(
-                ProviderConnection.id == identifier).with_for_update())
-            if found is None:
-                raise AssistantNotFound("Provider connection not found.")
-            used = await connection.scalar(select(Assistant.id).where(Assistant.connection_id == identifier).limit(1))
-            if used is not None:
-                raise AssistantConflict("Connection is used by an assistant. Reassign or delete that assistant first, including disabled assistants.")
-            await connection.execute(delete(ProviderConnection).where(ProviderConnection.id == identifier))
-    except IntegrityError:
-        raise AssistantConflict("Connection is still used by an assistant. Refresh and reassign it before deleting.") from None
-    database.assistant_cache.invalidate()
 
 
 async def delete_assistant(database: Database, identifier: UUID) -> None:
@@ -99,58 +82,12 @@ class AssistantRuntime:
     provider: str = ""
 
 
-def _connection_columns():
-    return [ProviderConnection.id, ProviderConnection.name, ProviderConnection.provider,
-            ProviderConnection.active, ProviderConnection.revision,
-            ProviderConnection.created_at, ProviderConnection.updated_at]
 
 
-async def list_connections(database: Database) -> list[ConnectionResponse]:
-    async with database.transaction() as connection:
-        rows = (await connection.execute(select(*_connection_columns()).order_by(ProviderConnection.created_at))).mappings().all()
-    return [ConnectionResponse.model_validate(dict(row)) for row in rows]
 
 
-async def save_connection(database: Database, payload: ConnectionCreate | ConnectionUpdate,
-                          identifier: UUID | None = None) -> ConnectionResponse:
-    vault = CredentialVault(database.settings)
-    if identifier is None:
-        identifier = uuid4()
-        encrypted = await asyncio.to_thread(vault.encrypt, payload.api_key,
-                                             provider=payload.provider, connection_id=str(identifier))
-        values = {"id": identifier, "name": payload.name, "provider": payload.provider,
-                  "encrypted_api_key": encrypted}
-        async with database.transaction() as connection:
-            row = (await connection.execute(insert(ProviderConnection).values(**values)
-                                            .returning(*_connection_columns()))).mappings().one()
-    else:
-        async with database.transaction() as connection:
-            provider = await connection.scalar(select(ProviderConnection.provider).where(ProviderConnection.id == identifier))
-        if provider is None:
-            raise AssistantNotFound("Provider connection not found.")
-        values = {"name": payload.name, "active": payload.active,
-                  "revision": ProviderConnection.revision + 1, "updated_at": func.now()}
-        if payload.api_key is not None:
-            values["encrypted_api_key"] = await asyncio.to_thread(vault.encrypt, payload.api_key,
-                                                                  provider=provider, connection_id=str(identifier))
-        async with database.transaction() as connection:
-            row = (await connection.execute(update(ProviderConnection).where(ProviderConnection.id == identifier)
-                                            .values(**values).returning(*_connection_columns()))).mappings().one_or_none()
-        if row is None:
-            raise AssistantNotFound("Provider connection not found.")
-    database.assistant_cache.invalidate()
-    return ConnectionResponse.model_validate(dict(row))
 
 
-async def connection_credentials(database: Database, identifier: UUID) -> tuple[str, SecretStr]:
-    async with database.transaction() as connection:
-        row = (await connection.execute(select(ProviderConnection.provider, ProviderConnection.encrypted_api_key)
-                                        .where(ProviderConnection.id == identifier, ProviderConnection.active.is_(True)))).one_or_none()
-    if row is None:
-        raise AssistantNotFound("Provider connection is missing or disabled.")
-    key = await asyncio.to_thread(CredentialVault(database.settings).decrypt, row.encrypted_api_key,
-                                  provider=row.provider, connection_id=str(identifier))
-    return row.provider, key
 
 
 async def list_assistants(database: Database, *, active_only: bool = False) -> list[AssistantResponse]:

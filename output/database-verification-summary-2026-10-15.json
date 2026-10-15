@@ -1,0 +1,48 @@
+{
+  "original_table_counts_unchanged": true,
+  "original_all_table_fingerprints_unchanged": true,
+  "restored_table_counts_match": true,
+  "restored_all_table_fingerprints_match": true,
+  "restored_index_definitions_match": true,
+  "restored_all_constraints_validated": true,
+  "original_test_schemas_remaining": 0,
+  "postgres_healthy": true,
+  "alembic_head": "b07e75bee9d1",
+  "alembic_schema_drift": false,
+  "tests": {
+    "passed": 248,
+    "skipped": 1,
+    "subtests_passed": 375,
+    "seconds": 194.64
+  },
+  "backup_file": ".cache/backups/database-audit-20261015-638b4c0a.dump",
+  "restore_database": "restore_audit_20261015_638b4c0a",
+  "restore_note": "The backup was taken during isolated integration tests and also contains a temporary fixture schema; all public application tables match.",
+  "runtime": {
+    "provider_credentials_checked": 1,
+    "provider_credentials_decryptable": 1,
+    "vector_reproduction": {
+      "checked": 137,
+      "max_cosine_distance": 8.881784197001252e-16,
+      "mismatches_above_0_00001": 0
+    },
+    "http_statuses": {
+      "/v1/health": 200,
+      "/v1/ready": 200,
+      "/admin": 200,
+      "/v1/admin/status": 200,
+      "/v1/admin/documents": 200,
+      "/v1/admin/metrics": 200,
+      "POST /v1/documents/search": 200
+    },
+    "search_result_count": 5,
+    "stored_content_retrieval": {
+      "results": 5,
+      "all_distances_finite": true
+    }
+  },
+  "remaining_data_gaps": {
+    "documents_missing_original_pdf": 2,
+    "documents_missing_processing_metadata": 2
+  }
+}

@@ -10,6 +10,7 @@ from pydantic import (
     ConfigDict,
     Field,
     StringConstraints,
+    StrictBool,
     field_validator,
     model_validator,
 )
@@ -219,3 +220,14 @@ class DocumentSearchResponse(StrictSchema):
     top_k: int = Field(ge=1, le=20)
     matches: int = Field(ge=0, le=20)
     results: list[DocumentChunkResult]
+
+
+class DocumentJobResponse(BaseModel):
+    document_id: UUID
+    filename: str
+    status: str
+
+
+class DocumentActivation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    active: StrictBool

@@ -153,7 +153,8 @@ class WidgetStorageTests(AsyncTestCase):
         app = FastAPI()
         app.state.database = self.database
         app.state.metrics = MetricsCollector(self.database)
-        app.include_router(router, prefix="/v1"); app.include_router(page_router)
+        app.include_router(router, prefix="/v1")
+        app.include_router(page_router)
         app.add_middleware(LocalWorkspaceMiddleware, state=app.state, max_active_requests=4,
             widget_public_enabled=True, widget_public_origin="https://chat.example.com")
         answer = AsyncMock(return_value=ChatResponse(answer="The policy says this. [1]", sources=[

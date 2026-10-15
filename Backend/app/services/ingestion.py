@@ -14,6 +14,7 @@ from app.providers.pdf_process import extract_pdf_isolated
 from app.schemas.documents import ChunkInput, DocumentUploadMetadata, IngestionPayload
 from app.services.chunking import ChunkingError, chunk_document, TOKENIZER_REVISION
 from app.services.document_hash import pdf_sha256
+from app.services.document_metadata import extract_document_metadata, ensure_document_metadata, metadata_record
 from app.storage.db import Database
 from app.storage.documents import (
     ExistingDocument,
@@ -88,6 +89,12 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
     if existing is not None and (existing.status == "ready" or (existing.status == "pending" and existing.lease_active)):
         if existing.status == "ready":
             await retain_existing_source(database, digest, data)
+            try:
+                await ensure_document_metadata(database, embeddings, existing.id)
+            except Exception as exc:
+                # A historical ready document remains usable during an embedding
+                # outage. The idempotent backfill can retry its missing metadata.
+                logger.warning("Duplicate metadata backfill deferred (%s)", type(exc).__name__)
         return _existing_result(existing)
 
     if (
@@ -136,6 +143,13 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
                 f"Document exceeds the {MAX_CHUNKS_PER_DOCUMENT}-chunk limit."
             )
 
+        chunk_ids = [uuid4() for _ in chunks]
+        identity = await asyncio.to_thread(extract_document_metadata, claimed.filename, [
+            {"id": identifier, "page_number": chunk.page_number, "content": chunk.content}
+            for identifier, chunk in zip(chunk_ids, chunks, strict=True)
+        ])
+        identity_vector = None
+
         records: list[dict[str, object]] = []
         for start in range(0, len(chunks), EMBED_BATCH_SIZE):
             payload = IngestionPayload(
@@ -145,15 +159,20 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
                     content=chunk.content,
                 ) for chunk in chunks[start:start + EMBED_BATCH_SIZE]],
             )
-            vectors = await embeddings.embed_documents(
-                [chunk.content for chunk in payload.chunks]
-            )
-            if len(vectors) != len(payload.chunks):
+            texts = [chunk.content for chunk in payload.chunks]
+            include_summary = start + EMBED_BATCH_SIZE >= len(chunks) and len(texts) < EMBED_BATCH_SIZE
+            if include_summary:
+                texts.append(identity.summary)
+            vectors = await embeddings.embed_documents(texts)
+            if len(vectors) != len(texts):
                 raise IngestionProcessingError(
                     "Embedding count does not match the chunk count."
                 )
 
-            for chunk, vector in zip(payload.chunks, vectors, strict=True):
+            if include_summary:
+                identity_vector = vectors[-1]
+                vectors = vectors[:-1]
+            for offset, (chunk, vector) in enumerate(zip(payload.chunks, vectors, strict=True)):
                 if (
                     len(vector) != EMBEDDING_DIMENSIONS
                     or not all(math.isfinite(value) for value in vector)
@@ -163,16 +182,23 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
                         "Expected finite, normalized 384-dimensional embeddings."
                     )
                 records.append({
-                    "id": uuid4(), "document_id": claimed.id,
+                    "id": chunk_ids[start + offset], "document_id": claimed.id,
                     "chunk_index": chunk.chunk_index,
                     "page_number": chunk.page_number,
                     "content": chunk.content,
                     "embedding_space": embeddings.space_id,
                     "embedding": vector,
                 })
+        if identity_vector is None:
+            summary_vectors = await embeddings.embed_documents([identity.summary])
+            if len(summary_vectors) != 1:
+                raise IngestionProcessingError("Metadata embedding count mismatch.")
+            identity_vector = summary_vectors[0]
+        identity_record = metadata_record(identity, identity_vector)
         if heartbeat.done():
             heartbeat.result()
-        await complete_document(database, claimed.id, records, attempt_id=attempt_id)
+        await complete_document(database, claimed.id, records, attempt_id=attempt_id,
+                                document_metadata=identity_record)
     except (Exception, asyncio.CancelledError) as exc:
         try:
             # Preserve retryability when a request is cancelled during inference.

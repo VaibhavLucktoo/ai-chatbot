@@ -1,5 +1,4 @@
 """Widget origin, capability and isolation checks without real provider calls."""
-import asyncio
 import html
 import json
 import re
@@ -82,7 +81,7 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
 
     async def test_public_disabled_and_cross_origin_posts_fail_closed(self):
         path = f"/v1/widget/{self.widget_id}/sessions"
-        with patch("app.api.v1.widgets.start_visitor", AsyncMock()) as start:
+        with patch("app.api.v1.widget_visitor.start_visitor", AsyncMock()) as start:
             async with self.remote_client() as client:
                 for origin in (None, "https://shop.example.com", "https://evil.example.com"):
                     response = await client.post(path, json={"parent_origin": "https://shop.example.com"}, headers={"Origin": origin} if origin else {})
@@ -95,7 +94,7 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
 
     async def test_iframe_response_escapes_untrusted_titles_and_sets_exact_frame_policy(self):
         self.widget["title"] += " __TITLE__ __CONFIG__"
-        with patch("app.api.v1.widgets.widget_page", AsyncMock(return_value=self.widget)):
+        with patch("app.api.v1.widget_assets.widget_page", AsyncMock(return_value=self.widget)):
             async with self.remote_client() as client:
                 response = await client.get(f"/widget/{self.widget_id}", params={"parent_origin": "https://shop.example.com"})
         self.assertEqual(response.status_code, 200)
@@ -110,7 +109,7 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
         conversation = uuid4()
         auth = AsyncMock(return_value=(self.widget, {"conversation_id": conversation}))
         run = AsyncMock(return_value=ChatResponse(answer="Hello", sources=[]))
-        with patch("app.api.v1.widgets.visitor", auth), patch("app.api.v1.widgets.run_chat", run), patch("app.api.v1.widgets.remember_sources", AsyncMock()):
+        with patch("app.api.v1.widget_visitor.visitor", auth), patch("app.api.v1.widget_visitor.run_chat", run), patch("app.api.v1.widget_visitor.remember_sources", AsyncMock()):
             async with self.remote_client() as client:
                 path = f"/v1/widget/{self.widget_id}/sessions/{self.session_id}/chat"
                 headers = {"Origin": "https://chat.example.com", "X-Widget-Token": self.token}
@@ -128,7 +127,7 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
         async with httpx.AsyncClient(transport=httpx.ASGITransport(self.app, client=("127.0.0.1", 4)), base_url="http://127.0.0.1") as client:
             path = f"/v1/admin/assistants/{self.assistant_id}/widget"
             self.assertEqual((await client.put(path, json={"enabled": True})).status_code, 403)
-            with patch("app.api.v1.widgets.admin_widget", AsyncMock(return_value=None)):
+            with patch("app.api.v1.widget_admin.admin_widget", AsyncMock(return_value=None)):
                 self.assertEqual((await client.get(path, headers={"X-Admin-Token": "admin-test"})).status_code, 200)
 
     async def test_dedicated_gateway_contains_no_admin_or_workspace_routes_even_on_loopback(self):

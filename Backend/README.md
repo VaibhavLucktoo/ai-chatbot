@@ -280,6 +280,11 @@ when comparing their results.
 ```
 
 Chat releases its retrieval transaction before contacting the language model.
+For identity questions about one selected or assigned document, retrieval reserves
+one of the existing `top_k` slots for its first compatible passage, where identifying
+headers and footers often appear. The same ready/active and document authorization
+filters apply. Ordinary clause searches retain their hybrid ranking; no extra
+embedding or language-model call is added for document identity.
 Grounding rules are sent as a system message. Generation uses temperature zero
 and a 300-token default output limit (2,048 for the two GPT-OSS special cases);
 `LLM_MAX_OUTPUT_TOKENS` overrides it. Incomplete output is rejected. Input bytes,
@@ -305,22 +310,26 @@ The JSON records the request, exact ranked chunks and distances, system/user
 messages, raw provider response when available, model answer, and final response.
 If a step fails, earlier results and the exception type are retained. No trace
 is recorded during normal API use. Trace files contain private document text;
-keep them local. The command uses the same configured provider as chat.
+keep them local. Use `--assistant-id YOUR_ASSISTANT_UUID` to use that saved
+assistant's model, document assignments, and access checks. Without it, the
+command uses the workspace model configured in the environment.
 Use `--top-k` to match your API request and `--output` to choose a new filename.
 
 `evaluation/questions.json` contains representative questions for the existing
-51-page policy document, including the probation-leave case. These are evaluation
-examples; the original failed question was not supplied verbatim. Run the live
-checks explicitly:
+51-page policy document, including the reported policy-owner failure, blank
+Disclosing Party name, header contact details, and probation-leave cases.
+Run the live checks explicitly:
 
 ```powershell
 $env:RUN_POLICY_TESTS = "1"
 $env:POLICY_DOCUMENT_ID = "YOUR_DOCUMENT_UUID"
+$env:POLICY_ASSISTANT_ID = "YOUR_ASSISTANT_UUID" # Match the assistant selected in chat.
 $env:POLICY_EVALUATION_INTERVAL_SECONDS = "20" # Pace calls for provider quotas.
 uv run pytest tests/test_policy_live.py -v
 ```
 
-This uses the real stored policy and configured language model. It saves traces
+This uses the real stored policy and selected assistant's language model
+(or the workspace model if `POLICY_ASSISTANT_ID` is unset). It saves traces
 in `.cache/policy-evaluation/` and checks fallback behavior, expected cited pages,
 and known invented entitlements/durations. The multipart regression also checks
 the restriction and probation-extension consequence. Review answers against each case's `review_criteria`;

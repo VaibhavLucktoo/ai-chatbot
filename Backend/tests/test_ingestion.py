@@ -89,7 +89,7 @@ class IngestionDatabaseTests(AsyncTestCase):
         async with api_client(self.database) as client:
             submitted = await client.post('/v1/documents/jobs', files={'file': ('durable.pdf', data, 'application/pdf')})
             self.assertEqual(submitted.status_code, 202, submitted.text)
-            job = submitted.json()
+            submitted.json()
             async with self.database.transaction() as connection:
                 retained = await connection.scalar(select(Document.original_pdf).where(Document.content_sha256 == pdf_sha256(data)))
             self.assertEqual(retained, data)

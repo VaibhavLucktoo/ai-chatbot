@@ -1,0 +1,3 @@
+Application table counts and content fingerprints: unchanged (10/10 tables)
+Temporary test schemas remaining: 0
+Migration revision: b07e75bee9d1

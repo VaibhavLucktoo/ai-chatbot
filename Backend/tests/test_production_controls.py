@@ -2,7 +2,7 @@
 import asyncio
 import multiprocessing
 import os
-from unittest.mock import AsyncMock, patch
+from unittest.mock import patch
 from types import SimpleNamespace
 import httpx
 from fastapi import FastAPI, Request

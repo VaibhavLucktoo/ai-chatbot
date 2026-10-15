@@ -1,5 +1,45 @@
 [
   {
+    "id": "policy-owner",
+    "question": "who is the owner of this policy",
+    "top_k": 5,
+    "expected_page_groups": [[1, 7, 18]],
+    "expect_fallback": false,
+    "forbidden_answer_phrases": ["company's owner", "company owner", "shareholder", "ownership of the organization"],
+    "required_answer_patterns": ["360\\s*bytes"],
+    "review_criteria": "Identify the supported issuing/responsible organization, 360 Bytes. Do not confuse policy ownership with ownership of the company, or invent the legal Disclosing Party name left blank in the NDA."
+  },
+  {
+    "id": "disclosing-party",
+    "question": "What is the full legal name of the Disclosing Party in this agreement?",
+    "top_k": 5,
+    "expected_page_groups": [[1]],
+    "expect_fallback": false,
+    "forbidden_answer_phrases": ["360 bytes private limited", "360 bytes pvt"],
+    "required_answer_patterns": ["blank|unspecified|not (?:explicitly )?(?:provided|stated|specified|named)|does not (?:provide|state|specify|name)|do not (?:provide|state|specify|name)"],
+    "review_criteria": "Explain that the legal party name is blank in the template. Company branding is not proof of that party's full legal name."
+  },
+  {
+    "id": "company-branding",
+    "question": "What company website and email appear in the header of this policy?",
+    "top_k": 5,
+    "expected_page_groups": [[1]],
+    "expect_fallback": false,
+    "forbidden_answer_phrases": [],
+    "required_answer_patterns": ["www\\.360-bytes\\.com", "business@360-bytes\\.com"],
+    "review_criteria": "Return the exact website and email from the retained page-one evidence, with a page citation."
+  },
+  {
+    "id": "confirmed-leave",
+    "question": "How many privileged, sick and casual leave days are employees entitled to after completing probation?",
+    "top_k": 5,
+    "expected_page_groups": [[9]],
+    "expect_fallback": false,
+    "forbidden_answer_phrases": [],
+    "required_answer_patterns": ["18|eighteen", "6|six"],
+    "review_criteria": "After probation: Privileged Leave 18, Sick Leave 6, Casual Leave 6 per calendar year. Verify each quantity belongs to its leave category."
+  },
+  {
     "id": "probation-leave",
     "question": "Can I take leave during probation?",
     "top_k": 5,
@@ -24,7 +64,7 @@
     "expected_page_groups": [[9, 11], [47]],
     "expect_fallback": false,
     "forbidden_answer_phrases": ["entitled to 18", "entitled to eighteen", "no provision", "cannot approve"],
-    "required_answer_patterns": ["no leave|not entitled|not eligible|no entitlement|not.*eligible|not.*entitled", "extend|extension"],
+    "required_answer_patterns": ["no leave|not entitled|not eligible|no entitlement|not.*eligible|not.*entitled", "extend|extension", "unclear|ambiguous|not (?:clear|specified|established)|do not (?:specify|establish|clarify|state)|does not (?:specify|establish|clarify|state)"],
     "review_criteria": "State the probation leave restriction and separately explain manager-approved leave extends probation. Do not invent precedence, annual entitlements, or approval criteria."
   },
   {

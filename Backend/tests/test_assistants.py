@@ -88,7 +88,7 @@ class AssistantApiTests(unittest.IsolatedAsyncioTestCase):
         @asynccontextmanager
         async def no_lease(database, identifier):
             yield
-        guard = patch("app.api.v1.chat.stateless_assistant_turn", no_lease)
+        guard = patch("app.services.chat_service.stateless_assistant_turn", no_lease)
         guard.start()
         self.addCleanup(guard.stop)
 
@@ -151,7 +151,7 @@ class AssistantApiTests(unittest.IsolatedAsyncioTestCase):
             await asyncio.sleep(0)
             seen.append((config.model, config.api_key.get_secret_value()))
             return json.dumps({"answer": config.model, "source_numbers": [1]})
-        with patch("app.api.v1.chat.load_assistant_runtime", side_effect=load), \
+        with patch("app.services.chat_service.load_assistant_runtime", side_effect=load), \
              patch.object(rag, "search_similar_chunks", side_effect=retrieve), \
              patch.object(rag, "generate_llm_response", side_effect=generate):
             async with self.client() as client:
@@ -190,8 +190,8 @@ class AssistantApiTests(unittest.IsolatedAsyncioTestCase):
         metrics = MetricsCollector(SimpleNamespace(settings=SimpleNamespace(
             metrics_queue_capacity=10, metrics_write_timeout_seconds=1, metrics_model_prices={})))
         with metrics.request("/v1/chat") as measurement, \
-             patch("app.api.v1.chat.load_assistant_runtime", return_value=runtime), \
-             patch("app.api.v1.chat.answer_question", return_value=ChatResponse(answer="PRIVATE_ANSWER", sources=[])):
+             patch("app.services.chat_service.load_assistant_runtime", return_value=runtime), \
+             patch("app.services.chat_service.answer_question", return_value=ChatResponse(answer="PRIVATE_ANSWER", sources=[])):
             await run_chat(self.db, ChatRequest(question="PRIVATE_QUESTION", assistant_id=identifier),
                            conversation_database=self.app.state.database)
             measurement.http_status = 200
@@ -209,8 +209,8 @@ class AssistantApiTests(unittest.IsolatedAsyncioTestCase):
         for error, status in ((AssistantNotFound("Assistant is missing or disabled."), 404),
                               (AssistantAccessError("Documents are not assigned."), 403),
                               (CredentialError("Saved key is unavailable."), 503)):
-            with self.subTest(status=status), patch("app.api.v1.chat.load_assistant_runtime", side_effect=error), \
-                 patch("app.api.v1.chat.answer_question") as generate:
+            with self.subTest(status=status), patch("app.services.chat_service.load_assistant_runtime", side_effect=error), \
+                 patch("app.services.chat_service.answer_question") as generate:
                 async with self.client() as client:
                     response = await client.post("/v1/chat", json={"question": "Question", "assistant_id": str(uuid4())})
                 self.assertEqual(response.status_code, status)

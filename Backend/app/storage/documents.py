@@ -18,6 +18,7 @@ from app.storage.models import (
     EMBEDDING_SPACE,
     Document,
     DocumentChunk,
+    DocumentMetadata,
 )
 
 RRF_K = 60
@@ -51,7 +52,7 @@ def _rrf_scores(vector_candidates, lexical_candidates):
     )
 
 
-def _hybrid_search(statement, distance, query: str, top_k: int):
+def _hybrid_search(statement, distance, query: str, top_k: int, *, include_document_identity: bool = False):
     """Build both candidate lists and fuse ranks in one database snapshot."""
     candidate_k = min(max(top_k * 3, 10), 50)
     vector_order = (distance.asc(), DocumentChunk.id.asc())
@@ -79,9 +80,26 @@ def _hybrid_search(statement, distance, query: str, top_k: int):
         .order_by(*lexical_order).limit(candidate_k).subquery("lexical")
     )
     fused = _rrf_scores(vector_candidates, lexical_candidates)
+    if include_document_identity:
+        # Use the same ready/active/model/authorization filters as BOTH ranked
+        # lists. This bounded candidate is included even outside the rank pools.
+        opening = (
+            statement.with_only_columns(DocumentChunk.id.label("chunk_id"))
+            .order_by(DocumentChunk.page_number, DocumentChunk.chunk_index, DocumentChunk.id)
+            .limit(1).subquery("document_identity")
+        )
+        ranked = (
+            statement.outerjoin(fused, DocumentChunk.id == fused.c.chunk_id)
+            .outerjoin(opening, DocumentChunk.id == opening.c.chunk_id)
+            .where(or_(fused.c.chunk_id.is_not(None), opening.c.chunk_id.is_not(None)))
+            .order_by(opening.c.chunk_id.is_not(None).desc(),
+                      fused.c.rrf_score.desc().nulls_last(), DocumentChunk.id.asc())
+        )
+    else:
+        ranked = statement.join(fused, DocumentChunk.id == fused.c.chunk_id).order_by(
+            fused.c.rrf_score.desc(), DocumentChunk.id.asc())
     return (
-        statement.join(fused, DocumentChunk.id == fused.c.chunk_id)
-        .order_by(fused.c.rrf_score.desc(), DocumentChunk.id.asc())
+        ranked
         .limit(top_k)
         .add_columns(
             func.tsvector_to_array(func.to_tsvector("english", query)).label("query_lexemes"),
@@ -249,6 +267,7 @@ async def claim_document(
         ).one_or_none()
 
         if retried is not None:
+            await connection.execute(delete(DocumentMetadata).where(DocumentMetadata.document_id == retried.id))
             await connection.execute(
                 delete(DocumentChunk).where(
                     DocumentChunk.document_id == retried.id,
@@ -266,7 +285,7 @@ async def complete_document(
     database: Database,
     document_id: UUID,
     records: list[dict[str, object]],
-    *, attempt_id: UUID,
+    *, attempt_id: UUID, document_metadata: dict | None = None,
 ) -> None:
     """Commit every chunk and the ready status in one transaction."""
     if not records:
@@ -287,6 +306,8 @@ async def complete_document(
                 insert(DocumentChunk.__table__),
                 records[start:start + MAX_INGESTION_BATCH_SIZE],
             )
+        if document_metadata is not None:
+            await connection.execute(insert(DocumentMetadata).values(document_id=document_id, **document_metadata))
 
 
 async def fail_document(database: Database, document_id: UUID, *, attempt_id: UUID) -> None:
@@ -339,6 +360,7 @@ async def search_similar_chunks(
     document_ids: Sequence[UUID] | None = None,
     query: str | None = None,
     allowed_document_ids: Sequence[UUID] | None = None,
+    include_document_identity: bool = False,
 ) -> list[StoredChunkResult]:
     """Return up to top_k compatible ready chunks, with original cosine distances.
 
@@ -406,7 +428,8 @@ async def search_similar_chunks(
     if query is None:
         statement = statement.order_by(distance.asc(), DocumentChunk.id.asc()).limit(top_k)
     else:
-        statement = _hybrid_search(statement, distance, query, top_k)
+        statement = _hybrid_search(statement, distance, query, top_k,
+                                   include_document_identity=include_document_identity)
 
     if isinstance(database, AsyncSession):
         # The caller owns the session and its transaction. Retrieval must not
