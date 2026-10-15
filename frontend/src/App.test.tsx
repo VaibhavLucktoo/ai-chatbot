@@ -171,6 +171,44 @@ describe('Initial connected workspace', () => {
     await waitFor(() => expect(documents.some(doc => doc.id === firstId)).toBe(false));
     expect(requests.filter(row => row.method === 'DELETE')).toHaveLength(1);
   });
+  it('removes a pending upload immediately and ignores its stale in-flight poll', async () => {
+    const fetch = vi.mocked(globalThis.fetch);
+    const original = fetch.getMockImplementation()!;
+    let releasePoll: ((response: Response) => void) | undefined;
+    fetch.mockImplementation((input, options) => {
+      if (input === `/v1/documents/jobs/${newId}`) return new Promise<Response>(resolve => {releasePoll = resolve;});
+      return original(input, options);
+    });
+    const user = await start();
+    await user.click(within(screen.getByRole('navigation', {name: 'Main navigation'})).getByRole('button', {name: /^Documents/}));
+    await user.upload(screen.getByLabelText('Choose PDF'), new File(['%PDF fixture'], 'New.pdf', {type: 'application/pdf'}));
+    await user.click(screen.getByRole('button', {name: 'Upload PDF'}));
+    await screen.findByText(/PDF received/);
+    await waitFor(() => expect(releasePoll).toBeDefined(), {timeout: 4000});
+    await user.click(screen.getByRole('button', {name: 'Delete New.pdf'}));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', {name: 'Delete permanently'}));
+    await waitFor(() => expect(screen.queryByText('New.pdf')).toBeNull());
+    releasePoll!(Response.json({document_id: newId, filename: 'New.pdf', status: 'pending'}));
+    await waitFor(() => expect(screen.queryByText('Upload activity')).toBeNull());
+    expect(screen.queryByText('New.pdf')).toBeNull();
+  });
+  it('dismisses a stale row when retrying an already completed delete returns 404', async () => {
+    const fetch = vi.mocked(globalThis.fetch);
+    const original = fetch.getMockImplementation()!;
+    fetch.mockImplementation((input, options) => {
+      if (input === `/v1/documents/${firstId}` && options?.method === 'DELETE') {
+        documents = documents.filter(doc => doc.id !== firstId);
+        return Promise.resolve(Response.json({detail: 'Document not found.'}, {status: 404}));
+      }
+      return original(input, options);
+    });
+    const user = await start();
+    await user.click(within(screen.getByRole('navigation', {name: 'Main navigation'})).getByRole('button', {name: /^Documents/}));
+    await user.click(screen.getByRole('button', {name: 'Delete First.pdf'}));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', {name: 'Delete permanently'}));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.queryByText('First.pdf')).toBeNull();
+  });
   it('disables a legacy missing-source download', async () => {
     const user = await start(); await user.click(within(screen.getByRole('navigation', {name: 'Main navigation'})).getByRole('button', {name: /^Documents/}));
     expect((screen.getByRole('button', {name: 'Download Second.pdf'}) as HTMLButtonElement).disabled).toBe(true);

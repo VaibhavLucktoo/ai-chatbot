@@ -4,9 +4,11 @@ import asyncio
 
 from app.core.config import CACHE_ROOT
 from app.providers.fastembed_provider import FastEmbedProvider
+from app.services.chunking import _get_tokenizer
 
 
 async def main():
+    _get_tokenizer()
     provider = FastEmbedProvider(cache_dir=CACHE_ROOT / "fastembed", threads=2)
     try:
         await provider.embed_query("Container embedding readiness")

@@ -207,6 +207,10 @@ async def _find_document(
     )
 
 
+class DocumentClaimLostError(RuntimeError):
+    """A queued document was deleted or replaced before its worker could claim it."""
+
+
 async def claim_document(
     database: Database,
     *,
@@ -217,31 +221,43 @@ async def claim_document(
     lease_seconds: int = 120,
     original_pdf: bytes | None = None,
     processing_metadata: dict | None = None,
+    expected_document_id: UUID | None = None,
 ) -> ClaimedDocument | ExistingDocument:
     """Allow only one request to create or retry a given PDF."""
     attempt_id = attempt_id or uuid4()
     async with database.transaction() as connection:
-        created = (
-            await connection.execute(
-                pg_insert(Document.__table__)
-                .values(
-                    id=uuid4(),
-                    filename=filename,
-                    content_sha256=content_sha256,
-                    page_count=page_count,
-                    status="pending",
-                    attempt_id=attempt_id,
-                    lease_expires_at=func.now() + timedelta(seconds=lease_seconds),
-                    original_pdf=original_pdf,
-                    processing_metadata=processing_metadata,
-                    ingestion_attempts=1,
+        created = None
+        if expected_document_id is not None:
+            # Recovery may only claim its selected row. Never recreate a queued
+            # source that an operator deleted while parsing was in progress.
+            identifier = await connection.scalar(select(Document.id).where(
+                Document.id == expected_document_id,
+                Document.content_sha256 == content_sha256,
+            ).with_for_update())
+            if identifier is None:
+                raise DocumentClaimLostError("The queued document was removed.")
+        else:
+            created = (
+                await connection.execute(
+                    pg_insert(Document.__table__)
+                    .values(
+                        id=uuid4(),
+                        filename=filename,
+                        content_sha256=content_sha256,
+                        page_count=page_count,
+                        status="pending",
+                        attempt_id=attempt_id,
+                        lease_expires_at=func.now() + timedelta(seconds=lease_seconds),
+                        original_pdf=original_pdf,
+                        processing_metadata=processing_metadata,
+                        ingestion_attempts=1,
+                    )
+                    .on_conflict_do_nothing(
+                        index_elements=[Document.content_sha256],
+                    )
+                    .returning(Document.id, Document.filename)
                 )
-                .on_conflict_do_nothing(
-                    index_elements=[Document.content_sha256],
-                )
-                .returning(Document.id, Document.filename)
-            )
-        ).one_or_none()
+            ).one_or_none()
 
         if created is not None:
             return ClaimedDocument(created.id, created.filename, False, attempt_id)

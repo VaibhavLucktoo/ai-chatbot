@@ -21,6 +21,7 @@ interface ChatbotState {
   assistantError?: string; assistantsLoading: boolean; refreshAssistants: () => Promise<void>;
   chatDocuments: DocumentInfo[];
   discardAssistant: (id: string) => void;
+  discardDocument: (id: string) => void;
 }
 const Context = createContext<ChatbotState | undefined>(undefined);
 
@@ -61,7 +62,7 @@ export function ChatbotProvider({children}: {children: React.ReactNode}) {
     const readiness = ready.status === 'fulfilled' ? ready.value.status
       : ready.reason instanceof ApiError && ready.reason.status === 503 ? 'not_ready' : 'unknown';
     setHealth({api, readiness, checkedAt: new Date().toISOString(),
-      error: api === 'offline' ? 'Cannot reach the API on port 8000. Start the backend and check again.'
+      error: api === 'offline' ? 'The backend is not responding. It may be restarting; connection checks will retry automatically.'
         : readiness === 'not_ready' ? 'The API is running, but the database/schema or embedding model is not ready.'
         : readiness === 'unknown' ? 'The readiness check failed. Check the backend connection.' : undefined});
     healthBusy.current = false;
@@ -105,6 +106,16 @@ export function ChatbotProvider({children}: {children: React.ReactNode}) {
 
   const [jobs, setJobs] = useState<Record<string, DocumentJob>>({});
   const [pollError, setPollError] = useState<string>();
+  const removedDocuments = useRef(new Set<string>());
+  const discardDocument = useCallback((id: string) => {
+    removedDocuments.current.add(id);
+    ++documentGeneration.current;
+    setJobs(previous => {const next = {...previous}; delete next[id]; return next;});
+    setPage(previous => ({...previous, items: previous.items.filter(doc => doc.id !== id),
+      total: Math.max(0, previous.total - Number(previous.items.some(doc => doc.id === id)))}));
+    setReadyDocuments(previous => previous.filter(doc => doc.id !== id));
+    setSelectedIds(previous => previous.filter(selected => selected !== id));
+  }, []);
   const pendingIds = [...new Set([
     ...Object.values(jobs).filter(job => job.status === 'pending').map(job => job.document_id),
     ...page.items.filter(doc => doc.status === 'pending').map(doc => doc.id),
@@ -118,12 +129,13 @@ export function ChatbotProvider({children}: {children: React.ReactNode}) {
       let finished = false; let problem: string | undefined;
       const updates: Record<string, DocumentJob> = {};
       results.forEach((result, index) => {
+        const id = pendingIds.split(',')[index];
+        if (removedDocuments.current.has(id)) return;
         if (result.status === 'fulfilled') {
           updates[result.value.document_id] = result.value;
           if (result.value.status !== 'pending') finished = true;
         } else if (result.reason instanceof ApiError && result.reason.status === 404) {
-          const id = pendingIds.split(',')[index];
-          setJobs(previous => {const next = {...previous}; delete next[id]; return next;});
+          discardDocument(id);
           finished = true;
         } else problem = describeError(result.reason);
       });
@@ -134,7 +146,7 @@ export function ChatbotProvider({children}: {children: React.ReactNode}) {
     };
     timer = setTimeout(() => void poll(), 1500);
     return () => {disposed = true; clearTimeout(timer);};
-  }, [pendingIds, refreshDocuments]);
+  }, [pendingIds, refreshDocuments, discardDocument]);
   const upload = async (file: File) => {
     const job = await backend.submit(file);
     setJobs(previous => ({...previous, [job.document_id]: job}));
@@ -183,7 +195,7 @@ export function ChatbotProvider({children}: {children: React.ReactNode}) {
   return <Context.Provider value={{tab, setTab, theme, toggleTheme: () => setTheme(theme === 'light' ? 'dark' : 'light'),
     health, refreshHealth, page, offset, setOffset, readyDocuments, documentsLoading, documentError, refreshDocuments,
     selectedIds, setSelectedIds, jobs, pollError, upload, messages, generating, send,
-    assistants, assistantId, setAssistant, assistantError, assistantsLoading, refreshAssistants, chatDocuments, discardAssistant,
+    assistants, assistantId, setAssistant, assistantError, assistantsLoading, refreshAssistants, chatDocuments, discardAssistant, discardDocument,
     clearChat: () => {if (!generationBusy.current) {setMessages([]); setSession(newChatSession(assistantId));}}}}>{children}</Context.Provider>;
 }
 export function useChatbot() {

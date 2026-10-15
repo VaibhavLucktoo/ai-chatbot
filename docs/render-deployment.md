@@ -109,6 +109,23 @@ Delete temporary resources in the Render dashboard when finished to stop charges
 
 The readiness probe checks PostgreSQL/schema and embedding warmup. It does not
 validate model credentials: use the UI's model test and a real chat request.
+The image defaults to one embedding thread and inference batches of four to
+reduce CPU contention and peak inference memory. `EMBEDDING_THREADS` and
+`EMBEDDING_BATCH_SIZE` can override those values; smaller batches do not change
+the model or require reindexing. These settings do not guarantee that the full
+application fits in a 512 MB service.
+Both the pinned embedding model and the separate chunk tokenizer are cached in
+the image, so indexing does not need a first-upload tokenizer download. CI runs
+the production image with Hugging Face offline mode and verifies a synthetic PDF
+can be indexed and deleted while liveness checks continue to succeed.
+
+If an upload stays Processing while requests fail, inspect the exact request
+status and Render Events/runtime logs at that time. A successful `200` health
+check does not explain a separate failed polling or delete request. Confirm
+`Out of memory`, `Killed`/exit 137, or health-check failures before attributing an
+outage to resource limits. Deleted queued uploads are fenced against background
+recovery, and processing stops between embedding batches after deletion.
+
 HTTP Basic sign-in is browser-managed; close the browser session or rotate the
 workspace password to revoke access. This deployment runs one process/instance
 because admin tokens, concurrency limits and authentication failure throttling

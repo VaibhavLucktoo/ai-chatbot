@@ -16,12 +16,15 @@ function errorText(detail: unknown): string | undefined {
   if (Array.isArray(detail)) return detail.map((item) => `${(item.loc ?? []).slice(1).join('.')}: ${item.msg ?? 'Invalid value'}`).join('; ');
 }
 export async function request(path: string, options: RequestInit = {}, timeout = 20000): Promise<Response> {
+  const chat = path === '/v1/chat' || path === '/v1/admin/chat';
   let response: Response;
   try {
     response = await fetch(path, {...options, signal: options.signal ?? AbortSignal.timeout(timeout)});
   } catch (error) {
-    const name = error instanceof Error ? error.name : '';
-    if (name === 'AbortError' || name === 'TimeoutError') throw new ApiError('This request timed out. Your question and document selection are retained; try again shortly.');
+    const name = error && typeof error === 'object' && 'name' in error ? error.name : '';
+    if (name === 'AbortError' || name === 'TimeoutError') throw new ApiError(chat
+      ? 'This request timed out. Your question and document selection are retained; try again shortly.'
+      : 'The server did not respond in time. Refresh the status before trying again; the operation may still complete.');
     throw new ApiError('Cannot connect to the backend. Check your connection and the service status.');
   }
   if (!response.ok) {
@@ -34,9 +37,11 @@ export async function request(path: string, options: RequestInit = {}, timeout =
       404: 'This document or passage no longer exists.',
       413: 'The upload exceeds the 10 MiB PDF limit.',
       429: 'The backend or model provider is busy. Try again shortly.',
-      502: 'The model could not produce a valid answer. Try again or refine the question.',
+      502: chat ? 'The model could not produce a valid answer. Try again or refine the question.'
+        : 'The backend is temporarily unreachable or restarting. Status will update when it reconnects.',
       503: 'A backend dependency is unavailable. Check status and try again.',
-      504: 'Answer generation timed out. Your original request is available to retry.',
+      504: chat ? 'Answer generation timed out. Your original request is available to retry.'
+        : 'The server did not respond in time. Refresh the status before trying again.',
     };
     throw new ApiError(errorText(payload?.detail) ?? fallback[response.status] ?? `Request failed (HTTP ${response.status}).`,
       response.status, Number.isFinite(retry) ? retry : undefined, response.headers.get('X-Request-ID') ?? undefined);

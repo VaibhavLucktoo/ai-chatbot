@@ -108,6 +108,46 @@ class IngestionDatabaseTests(AsyncTestCase):
             self.assertIsNone(await self.document(data))
 
     @async_test
+    async def test_deleting_during_queued_parse_cannot_recreate_the_document(self):
+        from app.services.recovery import recover_once
+        from app.providers.documents import extract_pdf
+        data = make_pdf('Delete while parsing')
+        async with api_client(self.database) as client:
+            submitted = await client.post('/v1/documents/jobs', files={'file': ('queued.pdf', data, 'application/pdf')})
+            identifier = submitted.json()['document_id']
+            async def parse_then_delete(*args, **kwargs):
+                response = await client.delete(f'/v1/documents/{identifier}')
+                self.assertEqual(response.status_code, 204)
+                return extract_pdf(data)
+            with patch('app.services.recovery.get_embedding_provider', return_value=self.embeddings), patch(
+                'app.services.ingestion.extract_pdf_isolated', side_effect=parse_then_delete,
+            ):
+                self.assertTrue(await recover_once(self.database))
+            self.assertIsNone(await self.document(data))
+            self.assertEqual(self.embeddings.batch_sizes, [])
+
+    @async_test
+    async def test_deleting_during_embeddings_stops_the_remaining_batches(self):
+        from app.services.recovery import recover_once
+        data = make_pdf('Delete while embedding')
+        batches = []
+        async with api_client(self.database) as client:
+            submitted = await client.post('/v1/documents/jobs', files={'file': ('queued.pdf', data, 'application/pdf')})
+            identifier = submitted.json()['document_id']
+            async def embed_then_delete(texts):
+                batches.append(len(texts))
+                response = await client.delete(f'/v1/documents/{identifier}')
+                self.assertEqual(response.status_code, 204)
+                return [[1.0] + [0.0] * 383 for _ in texts]
+            chunks = [TextChunk(index, 1, f'Chunk {index}') for index in range(65)]
+            with patch('app.services.recovery.get_embedding_provider', return_value=self.embeddings), patch(
+                'app.services.ingestion.chunk_document', return_value=chunks,
+            ), patch.object(self.embeddings, 'embed_documents', side_effect=embed_then_delete):
+                self.assertTrue(await recover_once(self.database))
+            self.assertEqual(len(batches), 1)
+            self.assertIsNone(await self.document(data))
+
+    @async_test
     async def test_invalid_queued_pdf_fails_without_retry_loop(self):
         from app.services.recovery import recover_once
         data = b'%PDF-1.7\ninvalid\n%%EOF\n'

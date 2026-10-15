@@ -22,6 +22,7 @@ def get_embedding_provider() -> BaseEmbeddingProvider:
     provider = FastEmbedProvider(
         cache_dir=settings.embedding_cache_dir,
         threads=settings.embedding_threads,
+        batch_size=settings.embedding_batch_size,
     )
 
     if settings.embedding_dimensions != provider.dimensions:

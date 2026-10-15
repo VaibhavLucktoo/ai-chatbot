@@ -27,6 +27,7 @@ from app.storage.documents import (
     abandon_document_claim,
     release_document_claim,
     retain_existing_source,
+    DocumentClaimLostError,
 )
 from app.storage.models import EMBEDDING_DIMENSIONS, EMBEDDING_SPACE
 
@@ -63,17 +64,19 @@ def _existing_result(document: ExistingDocument) -> IngestionResult:
 async def ingest_pdf(
     *, database: Database, embeddings: BaseEmbeddingProvider,
     filename: str, data: bytes,
+    expected_document_id: UUID | None = None,
 ) -> IngestionResult:
     settings = getattr(database, "settings", None)
     try:
         async with asyncio.timeout(getattr(settings, "ingestion_timeout_seconds", 600)):
             return await _ingest_pdf(database=database, embeddings=embeddings, filename=filename,
-                                     data=data, lease_seconds=getattr(settings, "ingestion_lease_seconds", 120))
+                                     data=data, lease_seconds=getattr(settings, "ingestion_lease_seconds", 120),
+                                     expected_document_id=expected_document_id)
     except TimeoutError as exc:
         raise IngestionProcessingError("Document processing exceeded its deadline; re-upload to retry.") from exc
 
 
-async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
+async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds, expected_document_id=None):
     """Claim a PDF, embed it, and publish its chunks atomically."""
     try:
         metadata = DocumentUploadMetadata(
@@ -86,6 +89,8 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
     validate_pdf_bytes(data)
     digest = pdf_sha256(data)
     existing = await find_document_by_hash(database, digest)
+    if expected_document_id is not None and (existing is None or existing.id != expected_document_id):
+        raise DocumentClaimLostError("The queued document was removed.")
     if existing is not None and (existing.status == "ready" or (existing.status == "pending" and existing.lease_active)):
         if existing.status == "ready":
             await retain_existing_source(database, digest, data)
@@ -107,16 +112,19 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
 
     # Invalid files are rejected before reserving a database row.
     settings = getattr(database, "settings", None)
+    logger.info("PDF processing stage=parse document_id=%s", expected_document_id or "new")
     extracted = await extract_pdf_isolated(
         data, timeout_seconds=getattr(settings, "pdf_parse_timeout_seconds", 30),
         memory_mb=getattr(settings, "pdf_parse_memory_mb", 512),
     )
     claimed, heartbeat, attempt_id = None, None, uuid4()
+    stage = "claim"
     try:
         claimed = await claim_document(
             database, filename=metadata.filename, content_sha256=digest,
             page_count=extracted.page_count, attempt_id=attempt_id, lease_seconds=lease_seconds,
             original_pdf=data,
+            expected_document_id=expected_document_id,
             processing_metadata={
                 "pipeline_version": 2, "embedding_space": embeddings.space_id,
                 "packages": {name: version(name) for name in ("pypdf", "fastembed", "tokenizers")},
@@ -137,6 +145,7 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
                 await renew_document_lease(database, claimed.id, attempt_id, lease_seconds)
         heartbeat = asyncio.create_task(keep_lease())
         # No database connection is held during tokenization or inference.
+        stage = "chunking"
         chunks = await asyncio.to_thread(chunk_document, extracted)
         if len(chunks) > MAX_CHUNKS_PER_DOCUMENT:
             raise ChunkingError(
@@ -144,6 +153,7 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
             )
 
         chunk_ids = [uuid4() for _ in chunks]
+        stage = "metadata"
         identity = await asyncio.to_thread(extract_document_metadata, claimed.filename, [
             {"id": identifier, "page_number": chunk.page_number, "content": chunk.content}
             for identifier, chunk in zip(chunk_ids, chunks, strict=True)
@@ -151,7 +161,16 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
         identity_vector = None
 
         records: list[dict[str, object]] = []
+        stage = "embedding"
         for start in range(0, len(chunks), EMBED_BATCH_SIZE):
+            if expected_document_id is not None:
+                # Stop between batches when a queued upload has been deleted.
+                try:
+                    await renew_document_lease(database, claimed.id, attempt_id, lease_seconds)
+                except RuntimeError:
+                    raise DocumentClaimLostError("The queued document is no longer owned by this worker.") from None
+            logger.info("PDF processing stage=embedding document_id=%s completed_chunks=%d total_chunks=%d",
+                        claimed.id, start, len(chunks))
             payload = IngestionPayload(
                 document_id=claimed.id, page_count=extracted.page_count,
                 chunks=[ChunkInput(
@@ -197,9 +216,13 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
         identity_record = metadata_record(identity, identity_vector)
         if heartbeat.done():
             heartbeat.result()
+        stage = "publish"
         await complete_document(database, claimed.id, records, attempt_id=attempt_id,
                                 document_metadata=identity_record)
     except (Exception, asyncio.CancelledError) as exc:
+        if not isinstance(exc, (asyncio.CancelledError, DocumentClaimLostError)):
+            logger.warning("PDF processing failed stage=%s cause=%s document_id=%s",
+                           stage, type(exc).__name__, getattr(claimed, "id", expected_document_id))
         try:
             # Preserve retryability when a request is cancelled during inference.
             if isinstance(exc, asyncio.CancelledError):
@@ -214,7 +237,7 @@ async def _ingest_pdf(*, database, embeddings, filename, data, lease_seconds):
                 getattr(claimed, "id", "unconfirmed"), type(cleanup_error).__name__,
             )
         if isinstance(exc, (
-            ChunkingError, IngestionProcessingError, asyncio.CancelledError,
+            ChunkingError, IngestionProcessingError, DocumentClaimLostError, asyncio.CancelledError,
         )):
             raise
         raise IngestionProcessingError(

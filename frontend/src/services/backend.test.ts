@@ -2,6 +2,16 @@ import {describe, expect, it, vi} from 'vitest';
 import {ApiError, backend, describeError, request} from './backend';
 
 describe('Live API adapter', () => {
+  it('reports document gateway failures without blaming model generation', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>Bad gateway</html>', {status: 502})));
+    await expect(backend.job('pending-id')).rejects.toThrow('backend is temporarily unreachable');
+    await expect(backend.delete('pending-id')).rejects.toThrow('backend is temporarily unreachable');
+    await expect(backend.chat({question: 'Question', top_k: 5})).rejects.toThrow('model could not produce a valid answer');
+  });
+  it('keeps a timed-out delete distinct from a timed-out question', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new DOMException('Timeout', 'TimeoutError')));
+    await expect(backend.delete('pending-id')).rejects.toThrow('operation may still complete');
+  });
   it('sends the strict backend chat payload through a relative URL', async () => {
     const fetch = vi.fn().mockResolvedValue(Response.json({answer: 'Supported answer.', sources: []}));
     vi.stubGlobal('fetch', fetch);

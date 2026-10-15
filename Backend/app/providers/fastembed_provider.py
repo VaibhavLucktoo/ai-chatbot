@@ -23,9 +23,11 @@ class FastEmbedProvider(BaseEmbeddingProvider):
         *,
         cache_dir: Path,
         threads: int = 2,
+        batch_size: int = 4,
     ) -> None:
         self._cache_dir = cache_dir
         self._threads = threads
+        self._batch_size = batch_size
         self._model: TextEmbedding | None = None
         self._lock = Lock()
         self._executor = ThreadPoolExecutor(max_workers=1, thread_name_prefix="pdf-embeddings")
@@ -105,7 +107,7 @@ class FastEmbedProvider(BaseEmbeddingProvider):
             else:
                 generated = self._model.passage_embed(
                     texts,
-                    batch_size=32,
+                    batch_size=self._batch_size,
                 )
 
             vectors: list[Embedding] = []

@@ -5,7 +5,7 @@ import {useChatbot} from '../../context/ChatbotContext';
 export function BackendStatus() {
   const {health, refreshHealth, page, readyDocuments, documentError} = useChatbot();
   const cards = [
-    {title: 'API connection', detail: 'The application can reach the backend process.', value: health.api === 'online' ? 'Online' : health.api === 'checking' ? 'Checking' : 'Offline', ok: health.api === 'online', icon: Server},
+    {title: 'API connection', detail: 'Checks whether the application can reach the backend process.', value: health.api === 'online' ? 'Online' : health.api === 'checking' ? 'Checking' : 'Offline', ok: health.api === 'online', icon: Server},
     {title: 'Backend readiness', detail: 'Database, required schema, and embedding warmup.', value: health.readiness === 'ready' ? 'Ready' : health.readiness === 'not_ready' ? 'Not ready' : health.readiness === 'checking' ? 'Checking' : 'Unavailable', ok: health.readiness === 'ready', icon: Database},
   ];
   return <section className="max-w-5xl mx-auto px-5 md:px-8 py-6 md:py-8 space-y-6">
@@ -26,7 +26,7 @@ export function BackendStatus() {
       <p><CheckCircle2 className="inline h-4 w-4 mr-2 text-blue-500"/>Checks refresh every 20 seconds. Upload jobs are polled separately while processing.</p>
       <p>Readiness does not test the language model provider. Quota limits, provider outages, and generation errors are shown on the affected chat request.</p>
       <p>This is a local, single-operator workspace. Chat remembers recent turns for follow-ups; document answers use fresh passages. Clear chat starts a new conversation.</p>
-      <p>To start the API, run <code className="text-xs bg-slate-100 dark:bg-slate-800 rounded px-1">uv run python run.py</code> from the <code>Backend</code> directory. For existing setup details, see the repository README.</p>
+      <p>For a hosted service, check its deployment events and runtime logs when the backend is unavailable. Local setup instructions are in the repository README.</p>
     </div>
   </section>;
 }

@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends libgomp1 && rm 
 RUN pip install --no-cache-dir uv==0.12.18
 COPY Backend/pyproject.toml Backend/uv.lock ./
 RUN uv sync --locked --no-dev
-ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
+ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 EMBEDDING_THREADS=1
 COPY Backend/app ./app
 COPY Backend/scripts ./scripts
 COPY Backend/migrations ./migrations

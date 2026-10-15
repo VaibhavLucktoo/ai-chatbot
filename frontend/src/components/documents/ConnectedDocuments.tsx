@@ -1,7 +1,7 @@
 import React, {useRef, useState} from 'react';
 import {Archive, ArrowLeft, ArrowRight, Check, Download, FileText, Loader2, MessageSquare, RefreshCw, Trash2, Upload, X} from 'lucide-react';
 import {useChatbot} from '../../context/ChatbotContext';
-import {backend, describeError, MAX_PDF_BYTES} from '../../services/backend';
+import {ApiError, backend, describeError, MAX_PDF_BYTES} from '../../services/backend';
 import type {DocumentInfo, DocumentStatus} from '../../types/backend';
 
 function StatusBadge({status, active}: {status: DocumentStatus; active?: boolean}) {
@@ -15,7 +15,7 @@ function StatusBadge({status, active}: {status: DocumentStatus; active?: boolean
 
 export function ConnectedDocuments() {
   const {page, offset, setOffset, documentsLoading, documentError, refreshDocuments, setSelectedIds, setTab,
-    upload, jobs, pollError, health} = useChatbot();
+    upload, jobs, pollError, health, discardDocument} = useChatbot();
   const [filter, setFilter] = useState('');
   const [file, setFile] = useState<File>();
   const [uploading, setUploading] = useState(false);
@@ -49,8 +49,11 @@ export function ConnectedDocuments() {
     if (busyId) return;
     setBusyId(doc.id); setActionError(undefined);
     try {
-      await work();
-      if (remove) {setConfirmDelete(undefined); setSelectedIds(previous => previous.filter(id => id !== doc.id));}
+      try {await work();} catch (error) {
+        // A previous delete can have committed before its response was lost.
+        if (!(remove && error instanceof ApiError && error.status === 404)) throw error;
+      }
+      if (remove) {setConfirmDelete(undefined); discardDocument(doc.id);}
       await refreshDocuments();
     } catch (error) {setActionError(describeError(error));}
     finally {setBusyId(undefined);}
@@ -85,7 +88,7 @@ export function ConnectedDocuments() {
     </div>
     {!!recentJobs.length && <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
       <h2 className="text-xs font-semibold mb-3">Upload activity</h2><div className="space-y-2">{recentJobs.map(job => <div key={job.document_id} className="flex justify-between gap-3 text-xs items-center"><span className="truncate">{job.filename}</span><StatusBadge status={job.status}/></div>)}</div>
-      {recentJobs.some(job => job.status === 'failed') && <p className="mt-3 text-xs text-rose-600 dark:text-rose-400">An upload failed. Check that the PDF has searchable text and meets the limits, then re-upload its original file to retry.</p>}
+      {recentJobs.some(job => job.status === 'failed') && <p className="mt-3 text-xs text-rose-600 dark:text-rose-400">An upload failed. The PDF may be unsupported, or processing was interrupted. Retry the original file when the backend is ready.</p>}
     </div>}
     {pollError && <p role="alert" className="text-sm text-amber-700 dark:text-amber-300">Status polling paused by a connection error: {pollError} It will retry automatically.</p>}
     {documentError && <div role="alert" className="rounded-xl border border-rose-200 dark:border-rose-900 bg-rose-50 dark:bg-rose-950 p-4 text-sm text-rose-700 dark:text-rose-300">{documentError} Existing rows may be stale. <button onClick={() => void refreshDocuments()} className="underline">Try again</button></div>}

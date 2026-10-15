@@ -40,6 +40,10 @@ services:
           property: password
       - key: EMBEDDING_WARMUP_ON_STARTUP
         value: "true"
+      - key: EMBEDDING_BATCH_SIZE
+        value: "4"
+      - key: EMBEDDING_THREADS
+        value: "1"
       - key: WIDGET_PUBLIC_ENABLED
         value: "false"
       # Set these to the actual OpenAI-compatible provider/model you can access.

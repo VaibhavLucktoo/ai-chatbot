@@ -2,9 +2,11 @@ from dataclasses import dataclass
 from functools import lru_cache
 
 from huggingface_hub import hf_hub_download
+from huggingface_hub.errors import LocalEntryNotFoundError
 from tokenizers import Tokenizer
 
 from app.providers.documents import ExtractedDocument
+from app.core.config import CACHE_ROOT
 
 MODEL_NAME = "BAAI/bge-small-en-v1.5"
 TOKENIZER_REVISION = "5c38ec7c405ec4b44b94cc5a9bb96e735b38267a"
@@ -28,11 +30,16 @@ class TextChunk:
 @lru_cache(maxsize=1)
 def _get_tokenizer() -> Tokenizer:
     """Download/cache BGE's tokenizer configuration once."""
-    tokenizer_path = hf_hub_download(
+    download_options = dict(
         repo_id=MODEL_NAME,
         filename="tokenizer.json",
         revision=TOKENIZER_REVISION,
+        cache_dir=str(CACHE_ROOT / "tokenizers"),
     )
+    try:
+        tokenizer_path = hf_hub_download(**download_options, local_files_only=True)
+    except LocalEntryNotFoundError:
+        tokenizer_path = hf_hub_download(**download_options)
     tokenizer = Tokenizer.from_file(tokenizer_path)
     # Chunk the entire page, even if the downloaded config enables truncation.
     tokenizer.no_truncation()

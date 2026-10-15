@@ -51,3 +51,32 @@ jobs:
       - run: npm test
         working-directory: frontend
       - run: docker build -t chatbot-production .
+      - name: Start disposable database
+        run: >-
+          docker run -d --name chatbot-smoke-db --network host
+          -e POSTGRES_DB=chatbot_smoke -e POSTGRES_USER=smoke
+          -e POSTGRES_PASSWORD=ci-only-password
+          pgvector/pgvector:0.8.6-pg16-trixie
+      - name: Wait for disposable database
+        run: |
+          for attempt in $(seq 1 30); do
+            if docker exec chatbot-smoke-db pg_isready -h 127.0.0.1 -U smoke -d chatbot_smoke; then exit 0; fi
+            sleep 1
+          done
+          exit 1
+      - name: Start production image with offline model caches
+        run: >-
+          docker run -d --name chatbot-smoke --network host --memory=2g
+          -e APP_ENV=production -e APP_PUBLIC_ORIGIN=https://smoke.example.com
+          -e HOSTED_SMOKE_TEST=1 -e POSTGRES_DB=chatbot_smoke
+          -e POSTGRES_USER=smoke -e POSTGRES_PASSWORD=ci-only-password
+          -e DB_HOST=127.0.0.1 -e DB_PORT=5432 -e PORT=8000
+          -e WORKSPACE_USERNAME=smoke -e WORKSPACE_PASSWORD=ci-only-workspace-password-with-32-characters
+          -e ASSISTANT_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+          -e HF_HUB_OFFLINE=1 -e INGESTION_RECOVERY_INTERVAL_SECONDS=5
+          chatbot-production
+      - name: Verify actual PDF indexing and deletion
+        run: docker exec chatbot-smoke python -m scripts.verify_hosted_runtime
+      - name: Hosted runtime logs
+        if: always()
+        run: docker logs chatbot-smoke
