@@ -12,5 +12,4 @@ RUN useradd --create-home chatbot && mkdir -p /app/.cache && chown chatbot:chatb
 USER chatbot
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
 EXPOSE 8000
-# Host networking preserves loopback checks; this container runs on Linux.
-CMD ["python", "run.py"]
+CMD ["sh", "-c", "alembic upgrade head && exec python run.py"]
