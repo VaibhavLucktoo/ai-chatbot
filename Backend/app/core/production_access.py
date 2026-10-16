@@ -8,6 +8,7 @@ import base64
 import binascii
 from collections import deque
 from hashlib import sha256
+import re
 import secrets
 from time import monotonic
 from urllib.parse import urlsplit
@@ -67,6 +68,11 @@ class ProductionAccessMiddleware:
         password_ok = secrets.compare_digest(sha256(password).digest(), self.password_digest)
         return user_ok and password_ok
 
+    @staticmethod
+    def public_widget_path(path: str) -> bool:
+        return (path.startswith("/widget-assets/") or path.startswith("/v1/widget/")
+            or re.fullmatch(r"/widget/[0-9a-fA-F-]{36}", path) is not None)
+
     async def __call__(self, scope, receive, send):
         if scope["type"] == "lifespan":
             return await self.app(scope, receive, send)
@@ -91,6 +97,8 @@ class ProductionAccessMiddleware:
                         b"object-src 'none'; base-uri 'none'; form-action 'self'"
                     ),
                 }
+                if self.public_widget_path(scope.get("path", "")):
+                    additions[b"access-control-allow-origin"] = b"*"
                 headers.extend((name, value) for name, value in additions.items() if name not in names)
                 message["headers"] = headers
             await send(message)
@@ -100,14 +108,15 @@ class ProductionAccessMiddleware:
         headers = dict(scope.get("headers", []))
         if headers.get(b"host", b"").lower() != self.host:
             return await JSONResponse({"detail": "Workspace host unavailable."}, 400)(scope, receive, secure_send)
+        public_widget = self.public_widget_path(scope.get("path", ""))
         origin = headers.get(b"origin")
-        if origin is not None and origin != self.origin.encode("ascii"):
+        if not public_widget and origin is not None and origin != self.origin.encode("ascii"):
             return await JSONResponse({"detail": "Cross-origin requests are disabled."}, 403)(scope, receive, secure_send)
         # Basic credentials are browser-managed and automatically included by fetch.
         # Reject browser cross-site requests even when a GET has no Origin header.
         landing = (scope.get("method") == "GET" and scope.get("path") == "/"
                    and headers.get(b"sec-fetch-mode") == b"navigate")
-        if headers.get(b"sec-fetch-site") == b"cross-site" and not landing:
+        if not public_widget and headers.get(b"sec-fetch-site") == b"cross-site" and not landing:
             return await JSONResponse({"detail": "Cross-site requests are disabled."}, 403)(scope, receive, secure_send)
         probe = scope.get("method") == "GET" and scope.get("path") in {"/v1/health", "/v1/ready"}
         if not probe:

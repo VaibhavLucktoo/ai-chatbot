@@ -69,5 +69,5 @@ async def widget_asset(filename: str):
     return Response(
         (ASSETS / filename).read_bytes(),
         media_type=types[filename],
-        headers={"Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff"},
+        headers={"Access-Control-Allow-Origin": "*", "Cache-Control": "no-cache", "X-Content-Type-Options": "nosniff"},
     )

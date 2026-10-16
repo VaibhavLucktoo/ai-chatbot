@@ -79,14 +79,17 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
         async with self.remote_client("https://other.example.com") as client:
             self.assertEqual((await client.get("/widget-assets/loader.js")).status_code, 403)
 
-    async def test_public_disabled_and_cross_origin_posts_fail_closed(self):
+    async def test_public_widget_posts_require_origin_but_bypass_generic_origin_filter(self):
         path = f"/v1/widget/{self.widget_id}/sessions"
-        with patch("app.api.v1.widget_visitor.start_visitor", AsyncMock()) as start:
+        session = {"session_id": self.session_id, "token": self.token, "expires_at": "2026-10-16T00:00:00+00:00"}
+        with patch("app.api.v1.widget_visitor.start_visitor", AsyncMock(return_value=session)) as start:
             async with self.remote_client() as client:
-                for origin in (None, "https://shop.example.com", "https://evil.example.com"):
-                    response = await client.post(path, json={"parent_origin": "https://shop.example.com"}, headers={"Origin": origin} if origin else {})
-                    self.assertEqual(response.status_code, 403)
-            start.assert_not_awaited()
+                response = await client.post(path, json={"parent_origin": "https://shop.example.com"})
+                self.assertEqual(response.status_code, 403)
+                for origin in ("https://shop.example.com", "https://evil.example.com"):
+                    response = await client.post(path, json={"parent_origin": "https://shop.example.com"}, headers={"Origin": origin})
+                    self.assertEqual(response.status_code, 201)
+            self.assertEqual(start.await_count, 2)
         app = FastAPI()
         app.add_middleware(LocalWorkspaceMiddleware, state=SimpleNamespace(), max_active_requests=1)
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app, client=("198.51.100.10", 3)), base_url="https://chat.example.com") as client:
