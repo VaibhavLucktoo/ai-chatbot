@@ -79,7 +79,7 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
         async with self.remote_client("https://other.example.com") as client:
             self.assertEqual((await client.get("/widget-assets/loader.js")).status_code, 403)
 
-    async def test_public_widget_posts_require_origin_but_bypass_generic_origin_filter(self):
+    async def test_public_widget_posts_require_the_iframe_host_origin(self):
         path = f"/v1/widget/{self.widget_id}/sessions"
         session = {"session_id": self.session_id, "token": self.token, "expires_at": "2026-10-16T00:00:00+00:00"}
         with patch("app.api.v1.widget_visitor.start_visitor", AsyncMock(return_value=session)) as start:
@@ -88,8 +88,10 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
                 self.assertEqual(response.status_code, 403)
                 for origin in ("https://shop.example.com", "https://evil.example.com"):
                     response = await client.post(path, json={"parent_origin": "https://shop.example.com"}, headers={"Origin": origin})
-                    self.assertEqual(response.status_code, 201)
-            self.assertEqual(start.await_count, 2)
+                    self.assertEqual(response.status_code, 403)
+                response = await client.post(path, json={"parent_origin": "https://shop.example.com"}, headers={"Origin": "https://chat.example.com"})
+                self.assertEqual(response.status_code, 201)
+            self.assertEqual(start.await_count, 1)
         app = FastAPI()
         app.add_middleware(LocalWorkspaceMiddleware, state=SimpleNamespace(), max_active_requests=1)
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app, client=("198.51.100.10", 3)), base_url="https://chat.example.com") as client:
@@ -105,6 +107,8 @@ class WidgetApiTests(IsolatedAsyncioTestCase):
         self.assertIn("&lt;img", response.text)
         self.assertIn("frame-ancestors https://shop.example.com;", response.headers["content-security-policy"])
         self.assertNotIn("unsafe-inline", response.headers["content-security-policy"])
+        self.assertNotIn("x-frame-options", response.headers)
+        self.assertEqual(len(response.headers.get_list("content-security-policy")), 1)
         config = json.loads(html.unescape(re.search(r'data-config="([^"]*)"', response.text).group(1)))
         self.assertEqual(config["title"], self.widget["title"])
 

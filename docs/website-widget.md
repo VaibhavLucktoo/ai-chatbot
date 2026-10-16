@@ -69,7 +69,18 @@ WIDGET_PUBLIC_ENABLED=true
 WIDGET_PUBLIC_ORIGIN=https://chat.example.com
 ```
 
-Run the dedicated gateway from `Backend` behind a reverse proxy:
+For an existing production workspace service, set these variables on that service
+and redeploy. Use its exact HTTPS address as `WIDGET_PUBLIC_ORIGIN`, or a widget
+domain routed to the same service with its original `Host` preserved. Only widget
+pages, static assets and visitor APIs are public on the configured widget host.
+The workspace dashboard and admin APIs still require workspace credentials and
+send `X-Frame-Options: DENY` with `frame-ancestors 'none'`. Public visitor API
+requests originate inside the iframe at the widget origin; the embedding website
+is checked separately against the widget's saved allowed origins. Widget iframe
+responses omit XFO and preserve that allowlist in CSP; assets use
+`frame-ancestors *`. Public access remains disabled unless explicitly enabled.
+
+Alternatively, run the dedicated gateway from `Backend` behind a reverse proxy:
 
 ```text
 uv run uvicorn app.widget_gateway:create_widget_gateway --factory --host 127.0.0.1 --port 8001 --no-proxy-headers

@@ -32,11 +32,15 @@ def create_app() -> FastAPI:
     application.state.admin_token = secrets.token_urlsafe(32)
     application.add_middleware(LocalWorkspaceMiddleware, state=application.state,
                                max_active_requests=settings.local_max_active_requests,
-                               workspace_origin=origin)
+                               workspace_origin=origin,
+                               widget_public_enabled=settings.widget_public_enabled,
+                               widget_public_origin=settings.widget_public_origin)
     if production:
         application.add_middleware(ProductionAccessMiddleware, origin=origin,
                                    username=settings.workspace_username,
-                                   password=settings.workspace_password.get_secret_value())
+                                   password=settings.workspace_password.get_secret_value(),
+                                   widget_public_enabled=settings.widget_public_enabled,
+                                   widget_public_origin=settings.widget_public_origin)
     application.mount("/admin-assets", StaticFiles(directory=ADMIN_DIRECTORY), name="admin-assets")
 
     if not production:

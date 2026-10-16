@@ -3,7 +3,6 @@
 from uuid import uuid4
 import asyncio
 import logging
-import re
 from urllib.parse import urlsplit
 from time import perf_counter
 
@@ -11,6 +10,7 @@ from fastapi import HTTPException
 from starlette.responses import JSONResponse
 
 from app.core.local_access import is_workspace_scope
+from app.core.framing import LOCAL_CSP, framing_headers, widget_route
 from app.services.llm import llm_request_resources
 from app.services.metrics import current_request
 
@@ -29,15 +29,25 @@ class LocalWorkspaceMiddleware:
         self.widget_public_origin = widget_public_origin
         self.workspace_origin = workspace_origin
 
-    @staticmethod
-    def widget_route(scope):
-        path, method = scope.get("path", ""), scope.get("method")
-        identifier = r"[0-9a-fA-F-]{36}"
-        return ((method == "GET" and (re.fullmatch(r"/widget/" + identifier, path)
-                                      or path.startswith("/widget-assets/")))
-                or (path.startswith("/v1/widget/") and method in {"GET", "POST"}))
+    widget_route = staticmethod(widget_route)
 
     async def __call__(self, scope, receive, send):
+        original_send = send
+
+        async def framed_send(message):
+            # Production's outer middleware owns private workspace headers.
+            if message["type"] == "http.response.start" and (
+                not self.workspace_origin or self.widget_route(scope)
+            ):
+                message = dict(message)
+                message["headers"] = framing_headers(
+                    message.get("headers", []), widget=self.widget_route(scope),
+                    asset=scope.get("path", "").startswith("/widget-assets/"),
+                    workspace_policy=LOCAL_CSP,
+                )
+            await original_send(message)
+
+        send = framed_send
         collector = getattr(self.state, "metrics", None)
         is_widget_chat = scope.get("path", "").startswith("/v1/widget/") and scope.get("path", "").endswith("/chat")
         if collector is not None and scope["type"] == "http" and scope.get("method") == "POST" and (scope.get("path") in {"/v1/chat", "/v1/admin/chat"} or is_widget_chat):
@@ -74,8 +84,11 @@ class LocalWorkspaceMiddleware:
                             scope.get("scheme", "http").encode() + b"://" + headers.get(b"host", b""))
                 if origin != expected:
                     return await JSONResponse({"detail": "Cross-origin requests are disabled."}, 403)(scope, receive, send)
-        elif widget_route and scope.get("method") == "POST" and not origin:
-            return await JSONResponse({"detail": "Widget origin is required."}, 403)(scope, receive, send)
+        elif scope.get("path", "").startswith("/v1/widget/"):
+            if scope.get("method") == "POST" and not origin:
+                return await JSONResponse({"detail": "Widget origin is required."}, 403)(scope, receive, send)
+            if origin and origin != self.widget_public_origin.encode("ascii"):
+                return await JSONResponse({"detail": "Invalid widget API origin."}, 403)(scope, receive, send)
         upload = scope.get("path", "").endswith(("/documents/upload", "/documents/jobs"))
         costly = scope.get("method") == "POST"
         if costly and (self.active_requests >= self.max_active_requests or (upload and self.active_uploads)):
@@ -122,9 +135,8 @@ class LocalWorkspaceMiddleware:
                     (b"x-content-type-options", b"nosniff"), (b"referrer-policy", b"no-referrer"),
                 ]
                 if scope.get("path", "").startswith("/widget-assets/"):
-                    message["headers"].append((b"access-control-allow-origin", b"*"))
-                if scope.get("path", "").startswith("/admin") or (scope.get("path") == "/" and not self.workspace_origin):
-                    message["headers"].append((b"content-security-policy", b"default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'"))
+                    if not any(name.lower() == b"access-control-allow-origin" for name, _ in message["headers"]):
+                        message["headers"].append((b"access-control-allow-origin", b"*"))
             await send(message)
 
         if costly:

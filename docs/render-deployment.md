@@ -6,9 +6,13 @@ password before loading the app. All authenticated operators share documents,
 models, assistants, analytics and administrator rights. This is suitable for a
 private demonstration/shared workspace, not separate customer accounts.
 
-Only `GET /v1/health` and `GET /v1/ready` are available without credentials. Website
-widget routes also require workspace credentials on this service. Use the separate
-widget gateway described in `website-widget.md` when public embedding is needed.
+`GET /v1/health` and `GET /v1/ready` are available without credentials. To allow
+anonymous website widgets on this service, set `WIDGET_PUBLIC_ENABLED=true` and
+`WIDGET_PUBLIC_ORIGIN` to the exact HTTPS widget origin (normally the service's
+public origin). Only widget pages, widget assets and visitor APIs bypass workspace
+sign-in; dashboard/admin routes retain Basic Auth and framing protection. Widget
+pages still require a saved, approved embedding website. Public access defaults to
+disabled. A separate widget gateway is also supported; see `website-widget.md`.
 Interactive API documentation stays available in local development and is disabled
 in the hosted workspace.
 
