@@ -7,8 +7,8 @@ import {AssistantWidgetPreview} from './AssistantWidgetPreview';
 
 const initial = (): WidgetWrite => ({enabled: false, title: 'Document Assistant', greeting: 'Hello! What would you like to know?',
   color: '#2563eb', position: 'right', allowed_origins: [window.location.origin], requests_per_minute: 20, requests_per_day: 500});
-const inputClass = 'mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-3 py-2 text-sm';
-const buttonClass = 'rounded-lg border border-slate-200 dark:border-slate-700 px-3 py-2 text-xs disabled:opacity-50';
+const inputClass = 'mt-1.5 block w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white/80 dark:bg-slate-900/80 px-3.5 py-2 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 transition-colors shadow-2xs';
+const buttonClass = 'rounded-xl border border-slate-200 dark:border-slate-700 bg-white/70 dark:bg-slate-800/70 hover:bg-slate-50 dark:hover:bg-slate-700 px-3.5 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 transition-all disabled:opacity-50 cursor-pointer shadow-2xs';
 function escapeAttribute(value: string) {
   return value.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
@@ -75,8 +75,8 @@ export function WebsiteWidgetPanel() {
       onChange={event => setAssistantId(event.target.value)}><option value="">Choose an assistant</option>{assistants.map(item => <option key={item.id} value={item.id}>{item.name}{!item.active ? ' (disabled)' : ''}</option>)}</select></label>
     {!assistants.length && !loading && <p className="text-sm text-slate-500">Create an assistant and assign its PDFs in Assistants first.</p>}
     {assistantId && <div className="grid lg:grid-cols-2 gap-6">
-      <form onSubmit={save} className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4">
-        <h3 className="text-sm font-semibold">Widget settings</h3>
+      <form onSubmit={save} className="rounded-3xl border border-slate-200/90 dark:border-slate-800/90 glass-panel p-6 md:p-7 space-y-4 shadow-xs">
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Widget settings</h3>
         <fieldset disabled={loading || saving} className="space-y-4">
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.enabled} onChange={event => setForm({...form, enabled: event.target.checked})}/>Enable website widget</label>
           {!selected?.active && <p className="text-xs text-amber-700">This assistant is disabled. Enable it in Assistants before visitors can chat.</p>}
@@ -93,8 +93,8 @@ export function WebsiteWidgetPanel() {
         </fieldset>
       </form>
       <div className="space-y-5">
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 space-y-4">
-          <h3 className="text-sm font-semibold">Add to your website</h3>
+        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800/90 glass-panel p-6 md:p-7 space-y-4 shadow-xs">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100">Add to your website</h3>
           {!saved ? <p className="text-sm text-slate-500">Save your widget to generate its embed code.</p> : <>
             <div className="flex items-center justify-between text-xs"><span className={usable ? 'text-emerald-600' : 'text-slate-500'}>{usable ? 'Enabled' : 'Disabled'} · {saved.requests_today} / {saved.requests_per_day} questions today (UTC)</span>
               <button className={buttonClass} type="button" disabled={saving || loading} aria-label="Refresh widget settings" onClick={() => void load(assistantId)}><RefreshCw className="h-3 w-3"/></button></div>
@@ -111,8 +111,8 @@ export function WebsiteWidgetPanel() {
             <p className="text-xs text-slate-500">Usage appears in Analytics under {selected?.name}. Widget requests are labelled /v1/widget/chat.</p>
           </>}
         </div>
-        <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5">
-          <h3 className="text-sm font-semibold flex gap-2 items-center"><Code className="h-4 w-4"/>Website preview</h3>
+        <div className="rounded-3xl border border-slate-200/90 dark:border-slate-800/90 glass-panel p-6 md:p-7 shadow-xs">
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 flex gap-2 items-center"><Code className="h-4 w-4 text-blue-500"/>Website preview</h3>
           <p className="mt-2 text-xs text-slate-500">Click the chat icon to see how visitors open your assistant.</p>
           <div className="relative mt-4 h-[620px] overflow-hidden rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950" aria-label="Widget website preview">
             <div aria-hidden="true" className="p-5 space-y-6">
