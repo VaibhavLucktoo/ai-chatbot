@@ -7,30 +7,75 @@ const label = (value: string) => value.replaceAll('_', ' ');
 const count = (value: number | null | undefined) => value == null ? 'Unavailable' : value.toLocaleString();
 const duration = (value: number | null | undefined) => value == null ? 'Unavailable' : `${value.toLocaleString(undefined, {maximumFractionDigits: 1})} ms`;
 const money = (value: number | null | undefined) => value == null ? 'Unavailable' : `$${value.toFixed(6)}`;
-const box = 'rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5';
+const box = 'rounded-3xl border border-slate-200/90 dark:border-slate-800/90 glass-panel p-5 md:p-6 shadow-xs';
 
 function Run({run}: {run: MetricRun}) {
   const [open, setOpen] = useState(false);
-  return <div className="border-b border-slate-100 dark:border-slate-800 last:border-0">
-    <button onClick={() => setOpen(!open)} aria-expanded={open} aria-label={`Inspect request ${run.id}`} className="w-full text-left grid grid-cols-[1fr_auto] sm:grid-cols-[1.2fr_1fr_1fr_auto] gap-3 items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-950 text-xs">
-      <span><span className="block font-medium capitalize">{label(run.outcome)}</span><span className="text-slate-500">{new Date(run.started_at).toLocaleString()}</span></span>
-      <span className="hidden sm:block text-slate-500">{run.intent ? label(run.intent) : 'No graph execution'}<br/>{run.calls.length} model attempt(s)</span>
-      <span className="hidden sm:block">{duration(run.duration_ms)}<br/><span className="text-slate-500">HTTP {run.http_status ?? 'not completed'}</span></span>
-      {open ? <ChevronUp className="w-4 h-4"/> : <ChevronDown className="w-4 h-4"/>}
-    </button>
-    {open && <div className="px-3 pb-4 space-y-3 text-xs">
-      <p className="text-slate-500 break-all">Request {run.id} · {run.endpoint} · {run.workflow_version} · prompt {run.prompt_version ?? 'not used'}</p>
-      <p>Assistant: {run.assistant_name || run.assistant_id || 'Workspace / older history'} · Configuration: {run.assistant_revision ?? 'unknown'} · Connection revision: {run.connection_revision ?? 'unknown'} · {run.configured_provider ?? 'Provider not resolved'} / {run.configured_model ?? 'Model not resolved'}</p>
-      <p>Retrieved: {run.retrieval_performed ? `${run.result_count} candidates` : 'No'} · Returned sources: {run.source_count}{run.error_type ? ` · Error: ${run.error_type}` : ''}</p>
-      <div className="flex flex-wrap gap-2">{Object.entries(run.stage_timings_ms).map(([stage, time]) => <span key={stage} className="rounded bg-slate-100 dark:bg-slate-800 px-2 py-1">{label(stage)}: {duration(time)}</span>)}</div>
-      {run.calls.map(call => <div key={call.id} className="rounded-xl bg-slate-50 dark:bg-slate-950 p-3 space-y-1">
-        <p className="font-medium capitalize">{label(call.stage)} · {call.status} · {call.model ?? 'Model not resolved'}</p>
-        <p>Provider attempt: {call.provider_requested ? 'Yes' : 'No'} · {duration(call.duration_ms)} · Queue: {duration(call.queue_ms)} · Provider: {duration(call.provider_ms)}</p>
-        <p>Input: {count(call.input_tokens)} · Output: {count(call.output_tokens)} · Total reported: {count(call.total_tokens)} · Estimated cost: {money(call.estimated_cost_usd)}</p>
-        {call.error_type && <p className="text-amber-700 dark:text-amber-300">{call.error_type}{call.http_status ? ` (HTTP ${call.http_status})` : ''}</p>}
-      </div>)}
-    </div>}
-  </div>;
+  return (
+    <div className="border-b border-slate-100/90 dark:border-slate-800/80 last:border-0">
+      <button
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        aria-label={`Inspect request ${run.id}`}
+        className="w-full text-left grid grid-cols-[1fr_auto] sm:grid-cols-[1.2fr_1fr_1fr_auto] gap-3 items-center p-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/40 text-xs transition-colors cursor-pointer"
+      >
+        <span>
+          <span className="block font-semibold capitalize text-slate-800 dark:text-slate-100">{label(run.outcome)}</span>
+          <span className="text-slate-500 font-mono text-[11px]">{new Date(run.started_at).toLocaleString()}</span>
+        </span>
+        <span className="hidden sm:block text-slate-500 dark:text-slate-400">
+          {run.intent ? label(run.intent) : 'No graph execution'}
+          <br />
+          <span className="font-mono text-[11px]">{run.calls.length} model attempt(s)</span>
+        </span>
+        <span className="hidden sm:block">
+          <span className="font-mono text-slate-700 dark:text-slate-300">{duration(run.duration_ms)}</span>
+          <br />
+          <span className="text-slate-500 text-[11px]">HTTP {run.http_status ?? 'not completed'}</span>
+        </span>
+        {open ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+      </button>
+      {open && (
+        <div className="px-4 pb-4 space-y-3 text-xs bg-slate-50/50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800/60 pt-3">
+          <p className="text-slate-500 dark:text-slate-400 font-mono text-[11px] break-all">
+            Request {run.id} · {run.endpoint} · {run.workflow_version} · prompt {run.prompt_version ?? 'not used'}
+          </p>
+          <p className="text-slate-700 dark:text-slate-300">
+            Assistant: <span className="font-semibold">{run.assistant_name || run.assistant_id || 'Workspace / older history'}</span> · Configuration: {run.assistant_revision ?? 'unknown'} · Connection revision: {run.connection_revision ?? 'unknown'} · {run.configured_provider ?? 'Provider not resolved'} / {run.configured_model ?? 'Model not resolved'}
+          </p>
+          <p className="text-slate-700 dark:text-slate-300">
+            Retrieved: {run.retrieval_performed ? `${run.result_count} candidates` : 'No'} · Returned sources: {run.source_count}
+            {run.error_type ? ` · Error: ${run.error_type}` : ''}
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {Object.entries(run.stage_timings_ms).map(([stage, time]) => (
+              <span key={stage} className="rounded-lg bg-slate-100/90 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 px-2.5 py-1 text-[11px] font-mono">
+                {label(stage)}: {duration(time)}
+              </span>
+            ))}
+          </div>
+          {run.calls.map(call => (
+            <div key={call.id} className="rounded-2xl bg-white dark:bg-slate-950/80 border border-slate-200/70 dark:border-slate-800/70 p-3.5 space-y-1.5 shadow-2xs">
+              <p className="font-semibold capitalize text-slate-800 dark:text-slate-200">
+                {label(call.stage)} · {call.status} · {call.model ?? 'Model not resolved'}
+              </p>
+              <p className="text-slate-500 dark:text-slate-400 text-[11px] font-mono">
+                Provider attempt: {call.provider_requested ? 'Yes' : 'No'} · {duration(call.duration_ms)} · Queue: {duration(call.queue_ms)} · Provider: {duration(call.provider_ms)}
+              </p>
+              <p className="text-slate-600 dark:text-slate-300 text-[11px]">
+                Input: {count(call.input_tokens)} · Output: {count(call.output_tokens)} · Total reported: {count(call.total_tokens)} · Estimated cost: {money(call.estimated_cost_usd)}
+              </p>
+              {call.error_type && (
+                <p className="text-amber-700 dark:text-amber-300 font-medium">
+                  {call.error_type}{call.http_status ? ` (HTTP ${call.http_status})` : ''}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function ModelAnalyticsPanel() {
@@ -82,14 +127,117 @@ export function ModelAnalyticsPanel() {
     ['Provider response time', duration(data.calls.average_provider_ms), `Average queue wait ${duration(data.calls.average_queue_ms)}`],
   ] : [];
   return <section className="max-w-7xl mx-auto p-5 md:p-8 space-y-6">
-    <div className="flex flex-wrap justify-between items-start gap-4"><div><p className="text-xs text-blue-600 dark:text-blue-400 font-medium">Local admin</p><h1 className="text-xl font-semibold mt-1">Model analytics</h1><p className="text-sm text-slate-500 mt-1">Measured chat activity, provider usage, and performance.</p></div>
-      <button onClick={() => setRefresh(value => value + 1)} disabled={loading} className="inline-flex gap-2 items-center text-xs border rounded-lg border-slate-200 dark:border-slate-700 px-3 py-2 disabled:opacity-50"><RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`}/>Refresh metrics</button></div>
-    <div className="flex flex-wrap items-center gap-4 text-xs">
-      <label>Period <select aria-label="Analytics period" value={hours} onChange={event => {setHours(Number(event.target.value)); setOffset(0);}} className="ml-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2">{[[1, 'Last hour'], [24, 'Last 24 hours'], [168, 'Last 7 days'], [720, 'Last 30 days']].map(([value, title]) => <option key={value} value={value}>{title}</option>)}</select></label>
-      <label>Model <select aria-label="Analytics model" value={model} onChange={event => {setModel(event.target.value); setOffset(0);}} className="ml-2 max-w-64 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2"><option value="">All models</option>{[...new Set([...(data?.available_models ?? []), ...(model ? [model] : [])])].map(name => <option key={name}>{name}</option>)}</select></label>
-      <span className="text-slate-400">Refreshes every 15 seconds{updatedAt ? ` · Last received ${new Date(updatedAt).toLocaleTimeString()}` : ''}</span>
-      <label>Assistant <select aria-label="Analytics assistant" value={assistant} onChange={event => {setAssistant(event.target.value); setOffset(0);}} className="ml-2 max-w-64 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2"><option value="">All assistants</option><option value="workspace">Workspace / older history</option>{assistantChoices.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}{assistant && assistant !== 'workspace' && !assistantChoices.some(item => item.id === assistant) && <option value={assistant}>{assistant}</option>}</select></label>
-      <label>Provider <select aria-label="Analytics provider" value={provider} onChange={event => {setProvider(event.target.value); setOffset(0);}} className="ml-2 max-w-64 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-2"><option value="">All providers</option>{[...new Set([...providerChoices, ...(provider ? [provider] : [])])].map(name => <option key={name}>{name}</option>)}</select></label>
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div>
+        <div className="flex items-center gap-2">
+          <p className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/70 text-blue-700 dark:text-blue-300 border border-blue-200/60 dark:border-blue-800/60 uppercase">
+            Local admin
+          </p>
+          <span className="text-xs text-slate-400 font-mono">telemetry pipeline</span>
+        </div>
+        <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white mt-1">Model analytics</h1>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Measured chat activity, provider usage, and performance.</p>
+      </div>
+
+      <button
+        onClick={() => setRefresh(value => value + 1)}
+        disabled={loading}
+        className="self-start sm:self-auto inline-flex items-center gap-2 text-xs font-medium rounded-xl border border-slate-200/90 dark:border-slate-800/90 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md px-3.5 py-2 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800/60 shadow-2xs transition-all disabled:opacity-50 cursor-pointer"
+      >
+        <RefreshCw className={`w-3.5 h-3.5 text-slate-500 ${loading ? 'animate-spin' : ''}`} />
+        Refresh metrics
+      </button>
+    </div>
+
+    {/* Filter Toolbar */}
+    <div className="flex flex-wrap items-center gap-3.5 text-xs rounded-2xl glass-panel border border-slate-200/90 dark:border-slate-800/90 p-4">
+      <label className="flex items-center text-slate-600 dark:text-slate-300 font-medium">
+        Period
+        <select
+          aria-label="Analytics period"
+          value={hours}
+          onChange={event => {
+            setHours(Number(event.target.value));
+            setOffset(0);
+          }}
+          className="ml-2 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 transition-colors shadow-2xs cursor-pointer"
+        >
+          {[
+            [1, 'Last hour'],
+            [24, 'Last 24 hours'],
+            [168, 'Last 7 days'],
+            [720, 'Last 30 days'],
+          ].map(([value, title]) => (
+            <option key={value} value={value}>
+              {title}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      <label className="flex items-center text-slate-600 dark:text-slate-300 font-medium">
+        Model
+        <select
+          aria-label="Analytics model"
+          value={model}
+          onChange={event => {
+            setModel(event.target.value);
+            setOffset(0);
+          }}
+          className="ml-2 max-w-64 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 transition-colors shadow-2xs cursor-pointer"
+        >
+          <option value="">All models</option>
+          {[...new Set([...(data?.available_models ?? []), ...(model ? [model] : [])])].map(name => (
+            <option key={name}>{name}</option>
+          ))}
+        </select>
+      </label>
+
+      <label className="flex items-center text-slate-600 dark:text-slate-300 font-medium">
+        Assistant
+        <select
+          aria-label="Analytics assistant"
+          value={assistant}
+          onChange={event => {
+            setAssistant(event.target.value);
+            setOffset(0);
+          }}
+          className="ml-2 max-w-64 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 transition-colors shadow-2xs cursor-pointer"
+        >
+          <option value="">All assistants</option>
+          <option value="workspace">Workspace / older history</option>
+          {assistantChoices.map(item => (
+            <option key={item.id} value={item.id}>
+              {item.name}
+            </option>
+          ))}
+          {assistant && assistant !== 'workspace' && !assistantChoices.some(item => item.id === assistant) && (
+            <option value={assistant}>{assistant}</option>
+          )}
+        </select>
+      </label>
+
+      <label className="flex items-center text-slate-600 dark:text-slate-300 font-medium">
+        Provider
+        <select
+          aria-label="Analytics provider"
+          value={provider}
+          onChange={event => {
+            setProvider(event.target.value);
+            setOffset(0);
+          }}
+          className="ml-2 max-w-64 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-xs text-slate-800 dark:text-slate-200 outline-none focus:border-blue-500 transition-colors shadow-2xs cursor-pointer"
+        >
+          <option value="">All providers</option>
+          {[...new Set([...providerChoices, ...(provider ? [provider] : [])])].map(name => (
+            <option key={name}>{name}</option>
+          ))}
+        </select>
+      </label>
+
+      <span className="text-slate-400 dark:text-slate-500 text-[11px] font-mono ml-auto">
+        Refreshes every 15 seconds{updatedAt ? ` · Last received ${new Date(updatedAt).toLocaleTimeString()}` : ''}
+      </span>
     </div>
     {loading && <p role="status" className="text-sm text-slate-500">Loading measured activity…</p>}
     {error && <div role="alert" className="rounded-xl bg-rose-50 dark:bg-rose-950 text-rose-700 dark:text-rose-300 p-4 text-sm">Analytics unavailable: {error} <button onClick={() => setRefresh(value => value + 1)} className="underline">Retry metrics</button></div>}
