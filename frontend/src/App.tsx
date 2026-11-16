@@ -17,7 +17,9 @@ import {
   ShieldCheck,
   ChevronRight,
 } from 'lucide-react';
+import type {LucideIcon} from 'lucide-react';
 import {ChatbotProvider, useChatbot} from './context/ChatbotContext';
+import type {Tab} from './context/ChatbotContext';
 import {ConnectedChat} from './components/chat/ConnectedChat';
 import {ConnectedDocuments} from './components/documents/ConnectedDocuments';
 import {BackendStatus} from './components/admin/BackendStatus';
@@ -25,7 +27,9 @@ import {ModelAnalyticsPanel} from './components/admin/ModelAnalytics';
 import {AssistantSettingsPanel} from './components/admin/AssistantSettings';
 import {WebsiteWidgetPanel} from './components/embed/WebsiteWidgetPanel';
 
-const navGroups = [
+type NavItem = {id: Tab; label: string; icon: LucideIcon};
+
+const navGroups: {title: string; items: NavItem[]}[] = [
   {
     title: 'Workspace',
     items: [
